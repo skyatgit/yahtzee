@@ -1,0 +1,1 @@
+export { ScoreBoard } from './ScoreCard';

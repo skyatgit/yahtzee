@@ -1,0 +1,134 @@
+/**
+ * 游戏结束 - 深色主题
+ */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 1000;
+}
+
+.modal {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 380px;
+  width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.trophy {
+  font-size: 56px;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text);
+  margin-top: 10px;
+}
+
+.result {
+  text-align: center;
+  margin-bottom: 20px;
+  padding: 20px;
+  background: var(--primary);
+  color: #fff;
+  border-radius: 12px;
+}
+
+.winner {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.winnerLabel {
+  font-size: 13px;
+  opacity: 0.8;
+}
+
+.winnerName {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.winnerScore {
+  font-size: 32px;
+  font-weight: 700;
+}
+
+.tie {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tieText {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.tieScore {
+  font-size: 14px;
+}
+
+.rankings {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.rankItem {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  background: var(--bg-muted);
+  border-radius: 8px;
+}
+
+.rankItem.first {
+  background: rgba(212, 168, 80, 0.15);
+  border: 1px solid var(--accent);
+}
+
+.rank {
+  width: 32px;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.playerName {
+  flex: 1;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.playerScore {
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--accent);
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+}
+
+.actions button {
+  flex: 1;
+}

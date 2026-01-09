@@ -1,0 +1,44 @@
+/**
+ * 深色主题为默认
+ */
+
+:root {
+  --bg: #1e1e1e;
+  --bg-card: #2a2a2a;
+  --bg-muted: #333;
+  --bg-hover: #3a3a3a;
+  
+  --text: #e8e8e8;
+  --text-secondary: #aaa;
+  --text-muted: #777;
+  
+  --border: #444;
+  --border-light: #555;
+  
+  --primary: #5a9a6a;
+  --primary-hover: #4a8a5a;
+  
+  --accent: #d4a850;
+  
+  --success: #5a9a6a;
+  --danger: #c55;
+  
+  --radius: 8px;
+  --radius-lg: 12px;
+  
+  --font: system-ui, -apple-system, sans-serif;
+}
+
+[data-theme="light"] {
+  --bg: #f5f5f3;
+  --bg-card: #fff;
+  --bg-muted: #eee;
+  --bg-hover: #e8e8e8;
+  
+  --text: #333;
+  --text-secondary: #666;
+  --text-muted: #999;
+  
+  --border: #ddd;
+  --border-light: #ccc;
+}

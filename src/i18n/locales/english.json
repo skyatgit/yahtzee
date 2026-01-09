@@ -1,0 +1,112 @@
+{
+  "game": {
+    "title": "Yahtzee",
+    "subtitle": "Dice Game"
+  },
+  "menu": {
+    "localGame": "Local Game",
+    "onlineGame": "Online Game",
+    "createRoom": "Create Room",
+    "joinRoom": "Join Room",
+    "settings": "Settings",
+    "back": "Back",
+    "start": "Start Game",
+    "waiting": "Waiting..."
+  },
+  "setup": {
+    "playerCount": "Player Count",
+    "players": "Players",
+    "playerName": "Player Name",
+    "playerType": "Player Type",
+    "human": "Human",
+    "ai": "Computer",
+    "aiDifficulty": "AI Difficulty",
+    "easy": "Easy",
+    "medium": "Normal",
+    "hard": "Hard"
+  },
+  "online": {
+    "roomId": "Room ID",
+    "copyRoomId": "Copy Room ID",
+    "copied": "Copied",
+    "enterRoomId": "Enter Room ID",
+    "join": "Join",
+    "connecting": "Connecting...",
+    "connected": "Connected",
+    "disconnected": "Disconnected",
+    "waitingForHost": "Waiting for host to start",
+    "waitingForPlayers": "Waiting for other players",
+    "playerJoined": "{name} joined the game",
+    "playerLeft": "{name} left the game",
+    "connectionFailed": "Connection failed",
+    "roomNotFound": "Room not found"
+  },
+  "game": {
+    "round": "Round",
+    "rollsLeft": "Rolls Left",
+    "roll": "Roll Dice",
+    "yourTurn": "Your Turn",
+    "aiTurn": "{name}'s Turn",
+    "selectScore": "Select a score",
+    "gameOver": "Game Over",
+    "winner": "Winner",
+    "tie": "Tie",
+    "playAgain": "Play Again",
+    "backToMenu": "Back to Menu"
+  },
+  "score": {
+    "upperSection": "Upper Section",
+    "lowerSection": "Lower Section",
+    "ones": "Ones",
+    "twos": "Twos",
+    "threes": "Threes",
+    "fours": "Fours",
+    "fives": "Fives",
+    "sixes": "Sixes",
+    "upperTotal": "Upper Subtotal",
+    "upperBonus": "Bonus (≥63)",
+    "upperFinal": "Upper Total",
+    "threeOfAKind": "Three of a Kind",
+    "fourOfAKind": "Four of a Kind",
+    "fullHouse": "Full House",
+    "smallStraight": "Small Straight",
+    "largeStraight": "Large Straight",
+    "yahtzee": "Yahtzee",
+    "chance": "Chance",
+    "yahtzeeBonus": "Yahtzee Bonus",
+    "lowerTotal": "Lower Total",
+    "grandTotal": "Grand Total"
+  },
+  "tooltip": {
+    "ones": "Sum of all ones",
+    "twos": "Sum of all twos",
+    "threes": "Sum of all threes",
+    "fours": "Sum of all fours",
+    "fives": "Sum of all fives",
+    "sixes": "Sum of all sixes",
+    "upperBonus": "Get 35 bonus points if upper section ≥ 63",
+    "threeOfAKind": "At least 3 same dice, score sum of all dice",
+    "fourOfAKind": "At least 4 same dice, score sum of all dice",
+    "fullHouse": "3 of one kind + 2 of another, score 25",
+    "smallStraight": "4 consecutive dice, score 30",
+    "largeStraight": "5 consecutive dice, score 40",
+    "yahtzee": "All 5 dice the same, score 50",
+    "chance": "Sum of all dice",
+    "yahtzeeBonus": "Extra Yahtzee +100 each"
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "sound": "Sound",
+    "music": "Music",
+    "theme": "Theme",
+    "darkMode": "Dark Mode",
+    "lightMode": "Light Mode"
+  },
+  "common": {
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "ok": "OK",
+    "loading": "Loading..."
+  }
+}

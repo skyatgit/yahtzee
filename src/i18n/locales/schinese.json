@@ -1,0 +1,112 @@
+{
+  "game": {
+    "title": "快艇骰子",
+    "subtitle": "Yahtzee"
+  },
+  "menu": {
+    "localGame": "本地游戏",
+    "onlineGame": "联机游戏",
+    "createRoom": "创建房间",
+    "joinRoom": "加入房间",
+    "settings": "设置",
+    "back": "返回",
+    "start": "开始游戏",
+    "waiting": "等待中..."
+  },
+  "setup": {
+    "playerCount": "玩家数量",
+    "players": "玩家",
+    "playerName": "玩家名称",
+    "playerType": "玩家类型",
+    "human": "玩家",
+    "ai": "电脑",
+    "aiDifficulty": "电脑难度",
+    "easy": "简单",
+    "medium": "普通",
+    "hard": "困难"
+  },
+  "online": {
+    "roomId": "房间号",
+    "copyRoomId": "复制房间号",
+    "copied": "已复制",
+    "enterRoomId": "输入房间号",
+    "join": "加入",
+    "connecting": "连接中...",
+    "connected": "已连接",
+    "disconnected": "已断开",
+    "waitingForHost": "等待房主开始游戏",
+    "waitingForPlayers": "等待其他玩家加入",
+    "playerJoined": "{name} 加入了游戏",
+    "playerLeft": "{name} 离开了游戏",
+    "connectionFailed": "连接失败",
+    "roomNotFound": "房间不存在"
+  },
+  "game": {
+    "round": "回合",
+    "rollsLeft": "剩余次数",
+    "roll": "摇骰子",
+    "yourTurn": "你的回合",
+    "aiTurn": "{name}的回合",
+    "selectScore": "选择记分项",
+    "gameOver": "游戏结束",
+    "winner": "获胜者",
+    "tie": "平局",
+    "playAgain": "再来一局",
+    "backToMenu": "返回主菜单"
+  },
+  "score": {
+    "upperSection": "上半区",
+    "lowerSection": "下半区",
+    "ones": "1点",
+    "twos": "2点",
+    "threes": "3点",
+    "fours": "4点",
+    "fives": "5点",
+    "sixes": "6点",
+    "upperTotal": "上半区小计",
+    "upperBonus": "奖励分 (≥63分)",
+    "upperFinal": "上半区总计",
+    "threeOfAKind": "三条",
+    "fourOfAKind": "四骰同花",
+    "fullHouse": "葫芦",
+    "smallStraight": "小顺",
+    "largeStraight": "大顺",
+    "yahtzee": "快艇",
+    "chance": "全选",
+    "yahtzeeBonus": "快艇奖励",
+    "lowerTotal": "下半区总计",
+    "grandTotal": "总分"
+  },
+  "tooltip": {
+    "ones": "所有1点的总和",
+    "twos": "所有2点的总和",
+    "threes": "所有3点的总和",
+    "fours": "所有4点的总和",
+    "fives": "所有5点的总和",
+    "sixes": "所有6点的总和",
+    "upperBonus": "上半区≥63分可获得35分奖励",
+    "threeOfAKind": "至少三个相同点数，得所有骰子的总和",
+    "fourOfAKind": "至少四个相同点数，得所有骰子的总和",
+    "fullHouse": "三个相同加两个相同，得25分",
+    "smallStraight": "四个连续数字，得30分",
+    "largeStraight": "五个连续数字，得40分",
+    "yahtzee": "五个相同点数，得50分",
+    "chance": "所有骰子的总和",
+    "yahtzeeBonus": "额外快艇每次+100分"
+  },
+  "settings": {
+    "title": "设置",
+    "language": "语言",
+    "sound": "音效",
+    "music": "音乐",
+    "theme": "主题",
+    "darkMode": "深色模式",
+    "lightMode": "浅色模式"
+  },
+  "common": {
+    "confirm": "确定",
+    "cancel": "取消",
+    "ok": "好的",
+    "loading": "加载中..."
+  }
+}

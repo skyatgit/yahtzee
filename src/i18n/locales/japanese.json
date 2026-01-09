@@ -1,0 +1,112 @@
+{
+  "game": {
+    "title": "ヤッツィー",
+    "subtitle": "Yahtzee"
+  },
+  "menu": {
+    "localGame": "ローカルゲーム",
+    "onlineGame": "オンラインゲーム",
+    "createRoom": "部屋を作成",
+    "joinRoom": "部屋に参加",
+    "settings": "設定",
+    "back": "戻る",
+    "start": "ゲーム開始",
+    "waiting": "待機中..."
+  },
+  "setup": {
+    "playerCount": "プレイヤー数",
+    "players": "プレイヤー",
+    "playerName": "プレイヤー名",
+    "playerType": "プレイヤータイプ",
+    "human": "プレイヤー",
+    "ai": "コンピュータ",
+    "aiDifficulty": "AI難易度",
+    "easy": "簡単",
+    "medium": "普通",
+    "hard": "難しい"
+  },
+  "online": {
+    "roomId": "部屋番号",
+    "copyRoomId": "部屋番号をコピー",
+    "copied": "コピーしました",
+    "enterRoomId": "部屋番号を入力",
+    "join": "参加",
+    "connecting": "接続中...",
+    "connected": "接続済み",
+    "disconnected": "切断済み",
+    "waitingForHost": "ホストの開始を待っています",
+    "waitingForPlayers": "他のプレイヤーを待っています",
+    "playerJoined": "{name}がゲームに参加しました",
+    "playerLeft": "{name}がゲームを離れました",
+    "connectionFailed": "接続に失敗しました",
+    "roomNotFound": "部屋が見つかりません"
+  },
+  "game": {
+    "round": "ラウンド",
+    "rollsLeft": "残り回数",
+    "roll": "サイコロを振る",
+    "yourTurn": "あなたの番",
+    "aiTurn": "{name}の番",
+    "selectScore": "スコアを選択",
+    "gameOver": "ゲーム終了",
+    "winner": "勝者",
+    "tie": "引き分け",
+    "playAgain": "もう一度プレイ",
+    "backToMenu": "メニューに戻る"
+  },
+  "score": {
+    "upperSection": "上段",
+    "lowerSection": "下段",
+    "ones": "1の目",
+    "twos": "2の目",
+    "threes": "3の目",
+    "fours": "4の目",
+    "fives": "5の目",
+    "sixes": "6の目",
+    "upperTotal": "上段小計",
+    "upperBonus": "ボーナス (≥63)",
+    "upperFinal": "上段合計",
+    "threeOfAKind": "スリーカード",
+    "fourOfAKind": "フォーカード",
+    "fullHouse": "フルハウス",
+    "smallStraight": "スモールストレート",
+    "largeStraight": "ラージストレート",
+    "yahtzee": "ヤッツィー",
+    "chance": "チャンス",
+    "yahtzeeBonus": "ヤッツィーボーナス",
+    "lowerTotal": "下段合計",
+    "grandTotal": "総得点"
+  },
+  "tooltip": {
+    "ones": "1の目の合計",
+    "twos": "2の目の合計",
+    "threes": "3の目の合計",
+    "fours": "4の目の合計",
+    "fives": "5の目の合計",
+    "sixes": "6の目の合計",
+    "upperBonus": "上段≥63点で35点ボーナス",
+    "threeOfAKind": "同じ目が3つ以上、全てのサイコロの合計",
+    "fourOfAKind": "同じ目が4つ以上、全てのサイコロの合計",
+    "fullHouse": "3つ+2つの組み合わせ、25点",
+    "smallStraight": "4つの連続した数字、30点",
+    "largeStraight": "5つの連続した数字、40点",
+    "yahtzee": "5つ同じ目、50点",
+    "chance": "全てのサイコロの合計",
+    "yahtzeeBonus": "追加ヤッツィーで+100点"
+  },
+  "settings": {
+    "title": "設定",
+    "language": "言語",
+    "sound": "効果音",
+    "music": "音楽",
+    "theme": "テーマ",
+    "darkMode": "ダークモード",
+    "lightMode": "ライトモード"
+  },
+  "common": {
+    "confirm": "確認",
+    "cancel": "キャンセル",
+    "ok": "OK",
+    "loading": "読み込み中..."
+  }
+}

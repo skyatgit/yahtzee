@@ -1,0 +1,101 @@
+/**
+ * 游戏板 - 深色主题
+ */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.header {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+}
+
+.roundInfo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text);
+}
+
+.roundLabel {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.roundNumber {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.turnInfo {
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 20px;
+}
+
+.myTurn {
+  background: var(--primary);
+  color: #fff;
+}
+
+.otherTurn {
+  background: var(--bg-muted);
+  color: var(--text-secondary);
+}
+
+.mainArea {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.scoreSection {
+  flex-shrink: 0;
+  width: 360px;
+  background: var(--bg-card);
+  border-right: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.diceSection {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+}
+
+@media (max-width: 640px) {
+  .mainArea { flex-direction: column; }
+  .scoreSection {
+    order: 1;
+    width: 100%;
+    flex: 1;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+  .diceSection { order: 2; flex: none; padding: 16px; }
+}
+
+@media (max-height: 500px) and (orientation: landscape) {
+  .header { padding: 8px 16px; }
+  .scoreSection { width: 300px; }
+}
+
+@media (min-width: 1200px) {
+  .scoreSection { width: 440px; }
+}

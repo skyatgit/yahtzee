@@ -1,0 +1,227 @@
+/**
+ * 计分板 - 深色主题
+ */
+
+.board {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-card);
+  overflow: hidden;
+}
+
+.table {
+  width: 100%;
+  height: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.table th,
+.table td {
+  padding: 0;
+  text-align: center;
+  vertical-align: middle;
+  font-size: 13px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+}
+
+.playerHeader {
+  background: var(--bg-muted);
+  font-weight: 600;
+  font-size: 12px;
+  height: 44px;
+  border-bottom: 2px solid var(--border) !important;
+}
+
+.playerHeader.activePlayer {
+  background: var(--primary);
+  color: #fff;
+}
+
+.playerHeader.localPlayerHeader:not(.activePlayer) {
+  background: rgba(90, 154, 106, 0.2);
+  color: var(--primary);
+}
+
+.playerName {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 0 6px;
+}
+
+.aiTag {
+  display: inline-block;
+  font-size: 10px;
+  padding: 2px 5px;
+  background: var(--accent);
+  color: #000;
+  border-radius: 3px;
+  margin-left: 4px;
+}
+
+.categoryHeader {
+  width: 100px;
+  text-align: left !important;
+  padding-left: 12px !important;
+  background: var(--bg-card);
+}
+
+.sectionRow td {
+  background: var(--bg-muted);
+  font-weight: 600;
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-align: left !important;
+  padding: 6px 12px !important;
+  height: 28px;
+}
+
+.categoryName {
+  text-align: left !important;
+  padding-left: 12px !important;
+  font-size: 13px;
+  color: var(--text-secondary);
+  background: var(--bg-card);
+}
+
+.scoreCell {
+  font-weight: 600;
+  font-size: 14px;
+  cursor: default;
+  transition: background 0.15s;
+  height: 34px;
+}
+
+.scoreCell.currentPlayer {
+  background: rgba(212, 168, 80, 0.15);
+}
+
+.scoreCell.available {
+  background: rgba(90, 154, 106, 0.2);
+  cursor: pointer;
+}
+
+.scoreCell.available:hover {
+  background: rgba(90, 154, 106, 0.35);
+}
+
+.scoreCell.filled {
+  color: var(--text);
+}
+
+.scoreCell.zero {
+  color: var(--text-muted);
+}
+
+.previewScore {
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.emptyScore {
+  color: var(--text-muted);
+}
+
+.zeroScore {
+  color: var(--text-muted);
+}
+
+.subtotalRow td {
+  background: var(--bg-muted);
+  font-size: 12px;
+  font-weight: 600;
+  height: 32px;
+  border-top: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+
+.subtotalRow td:first-child {
+  text-align: left !important;
+  padding-left: 12px !important;
+}
+
+.subtotalCell {
+  font-size: 13px !important;
+}
+
+.bonusEarned {
+  color: var(--primary) !important;
+  font-weight: 700;
+}
+
+.bonusRow td {
+  background: rgba(212, 168, 80, 0.1);
+  font-size: 12px;
+  height: 30px;
+  color: var(--accent);
+}
+
+.bonusRow td:first-child {
+  text-align: left !important;
+  padding-left: 12px !important;
+}
+
+.bonusCell {
+  font-size: 13px !important;
+  font-weight: 600;
+}
+
+.totalRow td {
+  background: var(--bg-muted);
+  color: var(--text);
+  font-weight: 700;
+  font-size: 15px;
+  height: 48px;
+  border: none;
+}
+
+.totalRow td:first-child {
+  text-align: left !important;
+  padding-left: 12px !important;
+}
+
+.totalCell {
+  font-size: 20px !important;
+  color: var(--accent);
+}
+
+@media (max-width: 640px) {
+  .categoryHeader { width: 80px; }
+  .table th, .table td { font-size: 12px; }
+  .categoryName { font-size: 12px; padding-left: 8px !important; }
+  .scoreCell { font-size: 13px; height: 28px; }
+  .sectionRow td { padding: 4px 8px !important; font-size: 10px; height: 24px; }
+  .playerHeader { height: 38px; }
+  .playerName { font-size: 11px; }
+  .subtotalRow td, .bonusRow td { height: 26px; }
+  .totalRow td { height: 40px; font-size: 14px; }
+  .totalCell { font-size: 18px !important; }
+}
+
+@media (max-height: 500px) and (orientation: landscape) {
+  .categoryHeader { width: 70px; }
+  .table th, .table td { font-size: 11px; }
+  .categoryName { font-size: 10px; padding-left: 6px !important; }
+  .scoreCell { font-size: 11px; height: auto; padding: 3px 0; }
+  .sectionRow td { padding: 2px 6px !important; font-size: 9px; height: auto; }
+  .playerHeader { height: auto; padding: 4px 2px; }
+  .playerName { font-size: 10px; }
+  .subtotalRow td, .bonusRow td { height: auto; padding: 2px 0; }
+  .totalRow td { height: auto; padding: 5px 6px !important; font-size: 12px; }
+  .totalCell { font-size: 14px !important; }
+}
+
+@media (min-width: 1200px) {
+  .categoryHeader { width: 120px; }
+  .categoryName { font-size: 14px; }
+  .scoreCell { font-size: 15px; height: 40px; }
+  .playerHeader { height: 50px; font-size: 13px; }
+  .totalRow td { height: 54px; }
+  .totalCell { font-size: 22px !important; }
+}
