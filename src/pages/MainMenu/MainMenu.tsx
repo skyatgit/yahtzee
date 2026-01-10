@@ -68,7 +68,7 @@ export function MainMenu({ onLocalGame, onOnlineGame, onSettings }: MainMenuProp
         </div>
         
         <div className={styles.footer}>
-          Yahtzee • 2~4 Players
+          {t('menu.footerText')}
         </div>
       </motion.div>
     </div>

@@ -63,7 +63,7 @@ export function GameOver({ onPlayAgain, onBackToMenu }: GameOverProps) {
             <div className={styles.winner}>
               <span className={styles.winnerLabel}>{t('game.winner')}</span>
               <span className={styles.winnerName}>{winner.name}</span>
-              <span className={styles.winnerScore}>{winner.totalScore} 分</span>
+              <span className={styles.winnerScore}>{winner.totalScore} {t('common.points')}</span>
             </div>
           )}
         </div>

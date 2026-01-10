@@ -9,7 +9,8 @@
     "settings": "設定",
     "back": "戻る",
     "start": "ゲーム開始",
-    "waiting": "待機中..."
+    "waiting": "待機中...",
+    "footerText": "ヤッツィー • 2~4人"
   },
   "setup": {
     "playerCount": "プレイヤー数",
@@ -39,7 +40,9 @@
     "allPlayersLeft": "他のプレイヤーが全員退出しました",
     "waitingForOpponent": "相手の操作を待っています...",
     "connectionFailed": "接続に失敗しました",
-    "roomNotFound": "部屋が見つかりません"
+    "roomNotFound": "部屋が見つかりません",
+    "host": "ホスト",
+    "joinedRoom": "部屋 {roomId} に参加しました"
   },
   "game": {
     "round": "ラウンド",
@@ -101,12 +104,22 @@
     "music": "音楽",
     "theme": "テーマ",
     "darkMode": "ダークモード",
-    "lightMode": "ライトモード"
+    "lightMode": "ライトモード",
+    "rulesTitle": "ゲームルール",
+    "rule1": "各ターンでサイコロを最大3回振れます",
+    "rule2": "サイコロをクリックして保持/解除",
+    "rule3": "毎ターン必ずスコア項目を選択",
+    "rule4": "上段合計≥63点で35点ボーナス",
+    "rule5": "ヤッツィー(5つ同じ)は50点、追加で+100点",
+    "rule6": "全13ラウンド、最高得点者が勝利"
   },
   "common": {
     "confirm": "確認",
     "cancel": "キャンセル",
     "ok": "OK",
-    "loading": "読み込み中..."
+    "loading": "読み込み中...",
+    "or": "または",
+    "points": "点",
+    "you": "あなた"
   }
 }

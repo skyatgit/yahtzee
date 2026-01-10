@@ -114,7 +114,7 @@ export function ScoreBoard() {
               >
                 <span className={styles.playerName}>
                   {player.name}
-                  {isLocalPlayer(player) && mode === 'online' && ' (你)'}
+                  {isLocalPlayer(player) && mode === 'online' && ` (${t('common.you')})`}
                 </span>
                 {mode === 'local' && player.type === 'ai' && <span className={styles.aiTag}>AI</span>}
               </th>

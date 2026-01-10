@@ -92,14 +92,14 @@ export function Settings({ onBack }: SettingsProps) {
         
         {/* 游戏规则简介 */}
         <div className={styles.rulesCard}>
-          <h3 className={styles.rulesTitle}>📖 游戏规则</h3>
+          <h3 className={styles.rulesTitle}>📖 {t('settings.rulesTitle')}</h3>
           <ul className={styles.rulesList}>
-            <li>每回合可以摇3次骰子</li>
-            <li>点击骰子可以锁定/解锁</li>
-            <li>每回合必须选择一个记分项</li>
-            <li>上半区达到63分可获得35分奖励</li>
-            <li>快艇(5个相同)得50分，额外快艇每次+100分</li>
-            <li>游戏共13回合，总分最高者获胜</li>
+            <li>{t('settings.rule1')}</li>
+            <li>{t('settings.rule2')}</li>
+            <li>{t('settings.rule3')}</li>
+            <li>{t('settings.rule4')}</li>
+            <li>{t('settings.rule5')}</li>
+            <li>{t('settings.rule6')}</li>
           </ul>
         </div>
       </motion.div>

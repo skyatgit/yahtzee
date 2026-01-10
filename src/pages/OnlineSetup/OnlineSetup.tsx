@@ -309,7 +309,7 @@ export function OnlineSetup({ onBack, onStart }: OnlineSetupProps) {
               </motion.button>
               
               <div className={styles.divider}>
-                <span>或</span>
+                <span>{t('common.or')}</span>
               </div>
               
               <div className={styles.joinSection}>
@@ -370,7 +370,7 @@ export function OnlineSetup({ onBack, onStart }: OnlineSetupProps) {
                   >
                     <span className={styles.playerIcon}>👤</span>
                     <span className={styles.playerName}>{player.name}</span>
-                    {index === 0 && <span className={styles.hostBadge}>房主</span>}
+                    {index === 0 && <span className={styles.hostBadge}>{t('online.host')}</span>}
                   </motion.div>
                 ))}
               </div>
@@ -401,7 +401,7 @@ export function OnlineSetup({ onBack, onStart }: OnlineSetupProps) {
           <div className={styles.card}>
             {/* 已加入提示 */}
             <div className={styles.joinedInfo}>
-              <span>✅ 已加入房间 {roomId}</span>
+              <span>✅ {t('online.joinedRoom', { roomId })}</span>
             </div>
             
             {/* 玩家列表 */}
@@ -417,7 +417,7 @@ export function OnlineSetup({ onBack, onStart }: OnlineSetupProps) {
                   >
                     <span className={styles.playerIcon}>👤</span>
                     <span className={styles.playerName}>{player.name}</span>
-                    {index === 0 && <span className={styles.hostBadge}>房主</span>}
+                    {index === 0 && <span className={styles.hostBadge}>{t('online.host')}</span>}
                   </motion.div>
                 ))}
               </div>

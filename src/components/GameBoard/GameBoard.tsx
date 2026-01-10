@@ -101,7 +101,7 @@ export function GameBoard({ onBackToMenu }: GameBoardProps) {
               isMyTurn ? (
                 <span>🎯 {t('game.yourTurn')}</span>
               ) : (
-                <span>⏳ {currentPlayer.name} 的回合</span>
+                <span>⏳ {t('game.aiTurn', { name: currentPlayer.name })}</span>
               )
             )}
           </motion.div>

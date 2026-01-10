@@ -9,7 +9,8 @@
     "settings": "Settings",
     "back": "Back",
     "start": "Start Game",
-    "waiting": "Waiting..."
+    "waiting": "Waiting...",
+    "footerText": "Yahtzee • 2~4 Players"
   },
   "setup": {
     "playerCount": "Player Count",
@@ -39,7 +40,9 @@
     "allPlayersLeft": "All other players have left the game",
     "waitingForOpponent": "Waiting for opponent...",
     "connectionFailed": "Connection failed",
-    "roomNotFound": "Room not found"
+    "roomNotFound": "Room not found",
+    "host": "Host",
+    "joinedRoom": "Joined room {roomId}"
   },
   "game": {
     "round": "Round",
@@ -101,12 +104,22 @@
     "music": "Music",
     "theme": "Theme",
     "darkMode": "Dark Mode",
-    "lightMode": "Light Mode"
+    "lightMode": "Light Mode",
+    "rulesTitle": "Game Rules",
+    "rule1": "You can roll the dice up to 3 times per turn",
+    "rule2": "Click on dice to hold/release them",
+    "rule3": "You must select a score category each turn",
+    "rule4": "Score 35 bonus points if upper section total ≥ 63",
+    "rule5": "Yahtzee (5 of a kind) scores 50; extra Yahtzees +100 each",
+    "rule6": "The game lasts 13 rounds, highest total score wins"
   },
   "common": {
     "confirm": "Confirm",
     "cancel": "Cancel",
     "ok": "OK",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "or": "or",
+    "points": "pts",
+    "you": "You"
   }
 }

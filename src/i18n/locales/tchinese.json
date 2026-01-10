@@ -9,7 +9,8 @@
     "settings": "設定",
     "back": "返回",
     "start": "開始遊戲",
-    "waiting": "等待中..."
+    "waiting": "等待中...",
+    "footerText": "快艇骰子 • 2~4人"
   },
   "setup": {
     "playerCount": "玩家數量",
@@ -39,7 +40,9 @@
     "allPlayersLeft": "其他玩家已退出遊戲",
     "waitingForOpponent": "等待對方操作...",
     "connectionFailed": "連線失敗",
-    "roomNotFound": "房間不存在"
+    "roomNotFound": "房間不存在",
+    "host": "房主",
+    "joinedRoom": "已加入房間 {roomId}"
   },
   "game": {
     "round": "回合",
@@ -101,12 +104,22 @@
     "music": "音樂",
     "theme": "主題",
     "darkMode": "深色模式",
-    "lightMode": "淺色模式"
+    "lightMode": "淺色模式",
+    "rulesTitle": "遊戲規則",
+    "rule1": "每回合可以擲3次骰子",
+    "rule2": "點擊骰子可以鎖定/解鎖",
+    "rule3": "每回合必須選擇一個記分項",
+    "rule4": "上半區達到63分可獲得35分獎勵",
+    "rule5": "快艇(5個相同)得50分，額外快艇每次+100分",
+    "rule6": "遊戲共13回合，總分最高者獲勝"
   },
   "common": {
     "confirm": "確定",
     "cancel": "取消",
     "ok": "好的",
-    "loading": "載入中..."
+    "loading": "載入中...",
+    "or": "或",
+    "points": "分",
+    "you": "你"
   }
 }

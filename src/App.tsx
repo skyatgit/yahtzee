@@ -24,9 +24,9 @@ function App() {
   const [currentPage, setCurrentPage] = useState<AppPage>('menu');
   const { phase, resetGame, players, startGame, initLocalGame } = useGameStore();
   
-  // 初始化主题
+  // 初始化主题（默认深色模式）
   useEffect(() => {
-    const savedTheme = localStorage.getItem('theme') || 'light';
+    const savedTheme = localStorage.getItem('theme') || 'dark';
     document.documentElement.setAttribute('data-theme', savedTheme);
   }, []);
   
