@@ -35,9 +35,9 @@
     "disconnected": "Disconnected",
     "waitingForHost": "Waiting for host to start",
     "waitingForPlayers": "Waiting for other players",
-    "playerJoined": "{name} joined the game",
-    "playerLeft": "{name} left the game",
-    "playerDisconnected": "{name} disconnected",
+    "playerJoined": "{{name}} joined the game",
+    "playerLeft": "{{name}} left the game",
+    "playerDisconnected": "{{name}} disconnected",
     "allPlayersLeft": "All other players have left the game",
     "waitingForOpponent": "Waiting for opponent...",
     "connectionFailed": "Connection failed",
@@ -48,14 +48,14 @@
     "kicked": "You have been kicked by the host",
     "kick": "Kick",
     "host": "Host",
-    "joinedRoom": "Joined room {roomId}"
+    "joinedRoom": "Joined room {{roomId}}"
   },
   "game": {
     "round": "Round",
     "rollsLeft": "Rolls Left",
     "roll": "Roll Dice",
     "yourTurn": "Your Turn",
-    "aiTurn": "{name}'s Turn",
+    "aiTurn": "{{name}}'s Turn",
     "selectScore": "Select a score",
     "gameOver": "Game Over",
     "winner": "Winner",
@@ -127,12 +127,11 @@
     "darkMode": "Dark Mode",
     "lightMode": "Light Mode",
     "rulesTitle": "Game Rules",
-    "rule1": "You can roll the dice up to 3 times per turn",
-    "rule2": "Click on dice to hold/release them",
-    "rule3": "You must select a score category each turn",
-    "rule4": "Score 35 bonus points if upper section total ≥ 63",
-    "rule5": "Yahtzee (5 of a kind) scores 50; extra Yahtzees +100 each",
-    "rule6": "The game lasts 12 rounds, highest total score wins"
+    "rule1": "Roll up to 3 times per turn, click dice to hold",
+    "rule2": "Upper section: Sum of each number (1-6)",
+    "rule3": "Score 63+ in upper section for 35 bonus points",
+    "rule4": "Lower: Chance, Four of a Kind, Full House, Straights, Yahtzee",
+    "rule5": "12 rounds total, highest score wins"
   },
   "common": {
     "confirm": "Confirm",

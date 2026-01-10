@@ -35,9 +35,9 @@
     "disconnected": "已断开",
     "waitingForHost": "等待房主开始游戏",
     "waitingForPlayers": "等待其他玩家加入",
-    "playerJoined": "{name} 加入了游戏",
-    "playerLeft": "{name} 离开了游戏",
-    "playerDisconnected": "{name} 断开了连接",
+    "playerJoined": "{{name}} 加入了游戏",
+    "playerLeft": "{{name}} 离开了游戏",
+    "playerDisconnected": "{{name}} 断开了连接",
     "allPlayersLeft": "其他玩家已退出游戏",
     "waitingForOpponent": "等待对方操作...",
     "connectionFailed": "连接失败",
@@ -48,14 +48,14 @@
     "kicked": "你已被房主踢出房间",
     "kick": "踢出",
     "host": "房主",
-    "joinedRoom": "已加入房间 {roomId}"
+    "joinedRoom": "已加入房间 {{roomId}}"
   },
   "game": {
     "round": "回合",
     "rollsLeft": "剩余次数",
     "roll": "摇骰子",
     "yourTurn": "你的回合",
-    "aiTurn": "{name}的回合",
+    "aiTurn": "{{name}}的回合",
     "selectScore": "选择记分项",
     "gameOver": "游戏结束",
     "winner": "获胜者",
@@ -127,12 +127,11 @@
     "darkMode": "深色模式",
     "lightMode": "浅色模式",
     "rulesTitle": "游戏规则",
-    "rule1": "每回合可以摇3次骰子",
-    "rule2": "点击骰子可以锁定/解锁",
-    "rule3": "每回合必须选择一个记分项",
-    "rule4": "上半区达到63分可获得35分奖励",
-    "rule5": "快艇(5个相同)得50分，额外快艇每次+100分",
-    "rule6": "游戏共12回合，总分最高者获胜"
+    "rule1": "每回合可以摇3次骰子，点击骰子可锁定",
+    "rule2": "上半区：1~6点各自计算对应点数总和",
+    "rule3": "上半区达到63分可获得35分奖励",
+    "rule4": "下半区：全选、四骰同花、葫芦、小顺、大顺、快艇",
+    "rule5": "游戏共12回合，总分最高者获胜"
   },
   "common": {
     "confirm": "确定",

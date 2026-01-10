@@ -99,7 +99,6 @@ export function Settings({ onBack }: SettingsProps) {
             <li>{t('settings.rule3')}</li>
             <li>{t('settings.rule4')}</li>
             <li>{t('settings.rule5')}</li>
-            <li>{t('settings.rule6')}</li>
           </ul>
         </div>
       </motion.div>

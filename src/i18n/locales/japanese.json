@@ -35,9 +35,9 @@
     "disconnected": "切断済み",
     "waitingForHost": "ホストの開始を待っています",
     "waitingForPlayers": "他のプレイヤーを待っています",
-    "playerJoined": "{name}がゲームに参加しました",
-    "playerLeft": "{name}がゲームを離れました",
-    "playerDisconnected": "{name}が切断しました",
+    "playerJoined": "{{name}}がゲームに参加しました",
+    "playerLeft": "{{name}}がゲームを離れました",
+    "playerDisconnected": "{{name}}が切断しました",
     "allPlayersLeft": "他のプレイヤーが全員退出しました",
     "waitingForOpponent": "相手の操作を待っています...",
     "connectionFailed": "接続に失敗しました",
@@ -48,14 +48,14 @@
     "kicked": "ホストにキックされました",
     "kick": "キック",
     "host": "ホスト",
-    "joinedRoom": "部屋 {roomId} に参加しました"
+    "joinedRoom": "部屋 {{roomId}} に参加しました"
   },
   "game": {
     "round": "ラウンド",
     "rollsLeft": "残り回数",
     "roll": "サイコロを振る",
     "yourTurn": "あなたの番",
-    "aiTurn": "{name}の番",
+    "aiTurn": "{{name}}の番",
     "selectScore": "スコアを選択",
     "gameOver": "ゲーム終了",
     "winner": "勝者",
@@ -127,12 +127,11 @@
     "darkMode": "ダークモード",
     "lightMode": "ライトモード",
     "rulesTitle": "ゲームルール",
-    "rule1": "各ターンでサイコロを最大3回振れます",
-    "rule2": "サイコロをクリックして保持/解除",
-    "rule3": "毎ターン必ずスコア項目を選択",
-    "rule4": "上段合計≥63点で35点ボーナス",
-    "rule5": "ヤッツィー(5つ同じ)は50点、追加で+100点",
-    "rule6": "全12ラウンド、最高得点者が勝利"
+    "rule1": "各ターン3回まで振れる、クリックで保持",
+    "rule2": "上段：1~6の目それぞれの合計",
+    "rule3": "上段63点以上で35点ボーナス",
+    "rule4": "下段：チャンス、フォーカード、フルハウス、ストレート、ヤッツィー",
+    "rule5": "全12ラウンド、最高得点者が勝利"
   },
   "common": {
     "confirm": "確認",

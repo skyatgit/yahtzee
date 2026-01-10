@@ -3,29 +3,35 @@
  */
 
 .container {
-  min-height: 100dvh;
+  width: 100vw;
+  height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: clamp(12px, 3vw, 20px);
+  padding: clamp(8px, 2vw, 16px);
   background: var(--bg);
-  overflow: auto;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .content {
-  max-width: 400px;
+  max-width: min(400px, 90vw);
   width: 100%;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .header {
   display: flex;
   align-items: center;
-  gap: clamp(10px, 3vw, 14px);
-  margin-bottom: clamp(14px, 3vh, 20px);
+  gap: clamp(8px, 2vw, 12px);
+  margin-bottom: clamp(8px, 1.5vh, 14px);
+  flex-shrink: 0;
 }
 
 .title {
-  font-size: clamp(16px, 4.5vw, 20px);
+  font-size: clamp(14px, 4vw, 18px);
   font-weight: 600;
   color: var(--text);
 }
@@ -34,12 +40,13 @@
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: clamp(14px, 3.5vw, 20px);
-  margin-bottom: clamp(10px, 2vh, 14px);
+  padding: clamp(10px, 2vh, 16px);
+  margin-bottom: clamp(6px, 1.2vh, 10px);
+  flex-shrink: 0;
 }
 
 .section {
-  margin-bottom: clamp(12px, 2.5vh, 18px);
+  margin-bottom: clamp(8px, 1.5vh, 14px);
 }
 
 .section:last-child {
@@ -50,19 +57,19 @@
   display: block;
   font-weight: 600;
   color: var(--text);
-  margin-bottom: clamp(8px, 1.5vh, 10px);
-  font-size: clamp(12px, 3.5vw, 14px);
+  margin-bottom: clamp(4px, 1vh, 8px);
+  font-size: clamp(11px, 2.5vw, 13px);
 }
 
 .languageGrid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: clamp(6px, 1.5vw, 8px);
+  gap: clamp(4px, 1vw, 6px);
 }
 
 .languageButton {
-  padding: clamp(10px, 2.5vh, 12px);
-  font-size: clamp(11px, 3vw, 13px);
+  padding: clamp(6px, 1.5vh, 10px);
+  font-size: clamp(10px, 2.5vw, 12px);
   font-weight: 500;
   background: var(--bg-muted);
   border: 1px solid var(--border);
@@ -85,15 +92,15 @@
 .themeToggle {
   display: flex;
   align-items: center;
-  gap: clamp(8px, 2.5vw, 12px);
+  gap: clamp(6px, 2vw, 10px);
   width: 100%;
-  padding: clamp(10px, 2.5vh, 12px);
+  padding: clamp(6px, 1.5vh, 10px);
   background: var(--bg-muted);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   color: var(--text);
   font-weight: 500;
-  font-size: clamp(12px, 3.5vw, 14px);
+  font-size: clamp(11px, 2.5vw, 13px);
   cursor: pointer;
   transition: all 0.15s;
 }
@@ -103,13 +110,13 @@
 }
 
 .themeIcon {
-  font-size: clamp(16px, 4.5vw, 20px);
+  font-size: clamp(14px, 3.5vw, 18px);
 }
 
 .themeSwitch {
   margin-left: auto;
-  width: clamp(36px, 10vw, 44px);
-  height: clamp(20px, 5vw, 24px);
+  width: clamp(32px, 8vw, 40px);
+  height: clamp(18px, 4vw, 22px);
   background: var(--bg-hover);
   border-radius: 12px;
   position: relative;
@@ -125,42 +132,46 @@
   position: absolute;
   top: 2px;
   left: 2px;
-  width: clamp(16px, 4vw, 20px);
-  height: clamp(16px, 4vw, 20px);
+  width: clamp(14px, 3.5vw, 18px);
+  height: clamp(14px, 3.5vw, 18px);
   background: var(--text);
   border-radius: 50%;
   transition: transform 0.15s;
 }
 
 .themeSwitch.dark .themeSwitchKnob {
-  transform: translateX(clamp(16px, 4vw, 20px));
+  transform: translateX(clamp(14px, 3.5vw, 18px));
 }
 
 .rulesCard {
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: clamp(14px, 3.5vw, 20px);
+  padding: clamp(8px, 1.5vh, 14px);
+  flex-shrink: 1;
+  min-height: 0;
 }
 
 .rulesTitle {
-  font-size: clamp(14px, 4vw, 16px);
+  font-size: clamp(12px, 3vw, 14px);
   font-weight: 600;
   color: var(--text);
-  margin-bottom: clamp(8px, 2vh, 12px);
+  margin-bottom: clamp(4px, 1vh, 8px);
 }
 
 .rulesList {
   list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
 .rulesList li {
-  padding: clamp(3px, 0.8vh, 5px) 0;
-  padding-left: clamp(14px, 4vw, 18px);
+  padding: clamp(2px, 0.5vh, 4px) 0;
+  padding-left: clamp(12px, 3vw, 16px);
   position: relative;
   color: var(--text-secondary);
-  font-size: clamp(11px, 3vw, 13px);
-  line-height: 1.5;
+  font-size: clamp(10px, 2.2vw, 12px);
+  line-height: 1.4;
 }
 
 .rulesList li::before {
@@ -170,58 +181,58 @@
   color: var(--text-muted);
 }
 
-/* ===== 横屏超扁平模式 ===== */
-@media (max-height: 420px) and (orientation: landscape) {
-  .container {
-    padding: 10px 16px;
-    align-items: flex-start;
-  }
-
+/* ===== 横屏模式 ===== */
+@media (orientation: landscape) {
   .content {
-    max-width: 500px;
-  }
-
-  .header {
-    margin-bottom: 10px;
-  }
-
-  .card {
-    padding: 10px 14px;
-    margin-bottom: 8px;
-  }
-
-  .section {
-    margin-bottom: 8px;
+    max-width: min(550px, 70vw);
   }
 
   .languageGrid {
     grid-template-columns: repeat(4, 1fr);
-    gap: 6px;
+  }
+}
+
+/* ===== 横屏超扁平模式 ===== */
+@media (max-height: 400px) and (orientation: landscape) {
+  .container {
+    padding: 6px 12px;
+  }
+
+  .header {
+    margin-bottom: 6px;
+  }
+
+  .card {
+    padding: 6px 10px;
+    margin-bottom: 6px;
+  }
+
+  .section {
+    margin-bottom: 6px;
   }
 
   .languageButton {
-    padding: 8px 6px;
-    font-size: 11px;
+    padding: 4px;
+    font-size: 10px;
   }
 
   .themeToggle {
-    padding: 8px 10px;
-    font-size: 12px;
+    padding: 4px 8px;
+    font-size: 10px;
   }
 
   .rulesCard {
-    padding: 10px 14px;
+    padding: 6px 10px;
   }
 
-  .rulesList {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0 12px;
+  .rulesTitle {
+    font-size: 11px;
+    margin-bottom: 4px;
   }
 
   .rulesList li {
-    padding: 2px 0 2px 14px;
-    font-size: 10px;
+    padding: 1px 0 1px 12px;
+    font-size: 9px;
   }
 }
 
@@ -232,11 +243,11 @@
   }
 
   .languageGrid {
-    gap: 4px;
+    gap: 3px;
   }
 
   .languageButton {
-    padding: 8px 4px;
-    font-size: 10px;
+    padding: 6px 2px;
+    font-size: 9px;
   }
 }
