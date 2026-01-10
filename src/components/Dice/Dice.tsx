@@ -3,7 +3,7 @@
  * 显示单个骰子，支持滚动动画和锁定状态
  */
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import type { Dice as DiceType, DiceValue } from '../../types/game';
 import styles from './Dice.module.css';
@@ -29,31 +29,40 @@ const dotPatterns: Record<number, number[][]> = {
 const randomValue = (): DiceValue => (Math.floor(Math.random() * 6) + 1) as DiceValue;
 
 export function Dice({ dice, isRolling, onClick, disabled }: DiceProps) {
-  // 显示的点数（动画过程中随机变化）
-  const [displayValue, setDisplayValue] = useState<DiceValue>(dice.value);
+  // 动画显示的点数（仅在滚动时随机变化）
+  const [animationValue, setAnimationValue] = useState<DiceValue>(dice.value);
   const intervalRef = useRef<number | null>(null);
   
+  // 判断是否处于滚动状态（未锁定且正在滚动）
+  const isActuallyRolling = isRolling && !dice.isHeld;
+  
+  // 计算实际显示的值：滚动时显示动画值，否则显示实际值
+  const displayValue = useMemo(() => {
+    return isActuallyRolling ? animationValue : dice.value;
+  }, [isActuallyRolling, animationValue, dice.value]);
+  
+  // 处理滚动动画
   useEffect(() => {
-    if (isRolling && !dice.isHeld) {
+    if (isActuallyRolling) {
       // 开始滚动：快速随机变化点数
       intervalRef.current = window.setInterval(() => {
-        setDisplayValue(randomValue());
+        setAnimationValue(randomValue());
       }, 80); // 每80ms换一次点数
       
       return () => {
         if (intervalRef.current) {
           clearInterval(intervalRef.current);
+          intervalRef.current = null;
         }
       };
     } else {
-      // 停止滚动：显示最终点数
+      // 停止滚动：清除定时器
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
       }
-      setDisplayValue(dice.value);
     }
-  }, [isRolling, dice.isHeld, dice.value]);
+  }, [isActuallyRolling]);
   
   const dots = dotPatterns[displayValue] || [];
   

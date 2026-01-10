@@ -19,16 +19,25 @@ interface LocalSetupProps {
   onStart: () => void;
 }
 
+// 生成默认玩家名称
+const getDefaultName = (index: number, type: PlayerType, t: (key: string) => string): string => {
+  if (type === 'human') {
+    return `${t('setup.human')}${index + 1}`;
+  } else {
+    return `${t('setup.ai')}${index + 1}`;
+  }
+};
+
 export function LocalSetup({ onBack, onStart }: LocalSetupProps) {
   const { t } = useTranslation();
   const { initLocalGame, startGame } = useGameStore();
-  
+
   const [playerCount, setPlayerCount] = useState(2);
   const [players, setPlayers] = useState<PlayerConfig[]>([
-    { name: '玩家1', type: 'human' },
-    { name: '电脑', type: 'ai' }
+    { name: getDefaultName(0, 'human', t), type: 'human' },
+    { name: getDefaultName(1, 'ai', t), type: 'ai' }
   ]);
-  
+
   // 更新玩家数量
   const handlePlayerCountChange = (count: number) => {
     setPlayerCount(count);
@@ -37,29 +46,34 @@ export function LocalSetup({ onBack, onStart }: LocalSetupProps) {
       if (i < players.length) {
         newPlayers.push(players[i]);
       } else {
+        // 新增的玩家默认为电脑
         newPlayers.push({
-          name: i === 0 ? '玩家1' : `电脑${i}`,
-          type: i === 0 ? 'human' : 'ai'
+          name: getDefaultName(i, 'ai', t),
+          type: 'ai'
         });
       }
     }
     setPlayers(newPlayers);
   };
-  
+
   // 更新玩家名称
   const updatePlayerName = (index: number, name: string) => {
     const newPlayers = [...players];
     newPlayers[index] = { ...newPlayers[index], name };
     setPlayers(newPlayers);
   };
-  
+
   // 切换玩家类型
   const togglePlayerType = (index: number) => {
     const newPlayers = [...players];
     const currentType = newPlayers[index].type;
+    const newType: PlayerType = currentType === 'human' ? 'ai' : 'human';
+
+    // 自动更新名称为对应类型的默认名称
     newPlayers[index] = {
       ...newPlayers[index],
-      type: currentType === 'human' ? 'ai' : 'human'
+      type: newType,
+      name: getDefaultName(index, newType, t)
     };
     setPlayers(newPlayers);
   };

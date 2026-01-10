@@ -9,19 +9,8 @@
 import { useEffect, useRef } from 'react';
 import { useGameStore } from '../../store/gameStore';
 import { peerService } from '../../services/peerService';
+import { triggerAllPlayersLeft } from './onlineSyncEvents';
 import type { GameMessage, Dice, ScoreCategory, GamePhase, Player } from '../../types/game';
-
-// 当所有其他玩家退出时的回调
-type AllPlayersLeftCallback = () => void;
-let allPlayersLeftCallback: AllPlayersLeftCallback | null = null;
-
-// 注册回调函数
-export function onAllPlayersLeft(callback: AllPlayersLeftCallback) {
-  allPlayersLeftCallback = callback;
-  return () => {
-    allPlayersLeftCallback = null;
-  };
-}
 
 export function OnlineSync() {
   // 只取mode，其他通过getState获取避免不必要的重渲染
@@ -62,9 +51,9 @@ export function OnlineSync() {
       // 只有在游戏进行中才检查
       if (state.phase !== 'rolling' && state.phase !== 'finished') return;
       // 只剩一个玩家时触发回调
-      if (state.players.length <= 1 && allPlayersLeftCallback) {
+      if (state.players.length <= 1) {
         console.log('[OnlineSync] 只剩最后一个玩家，触发退出');
-        allPlayersLeftCallback();
+        triggerAllPlayersLeft();
       }
     };
 
@@ -94,23 +83,54 @@ export function OnlineSync() {
           break;
         }
 
-        case 'action-roll': {
-          // 玩家摇骰子请求（房主处理）
-          if (!state.isHost) return;
-          const { diceResult } = message.payload as { diceResult: Dice[] };
-          console.log('[房主] 处理摇骰子', diceResult);
+        case 'roll-start':
+          // 开始摇骰子动画（客户端接收）
+          if (state.isHost) break;
+          console.log('[客户端] 开始摇骰子动画');
+          useGameStore.setState({ isRolling: true });
+          break;
+
+        case 'roll-end': {
+          // 摇骰子结束，更新结果（客户端接收）
+          if (state.isHost) break;
+          const { diceResult, rollsLeft } = message.payload as { diceResult: Dice[]; rollsLeft: number };
+          console.log('[客户端] 摇骰子结束', diceResult);
           useGameStore.setState({
             dice: diceResult,
-            rollsLeft: state.rollsLeft - 1,
+            rollsLeft: rollsLeft,
             isRolling: false,
           });
-          broadcastState();
+          break;
+        }
+
+        case 'action-roll': {
+          // 玩家摇骰子请求（房主处理）
+          if (!state.isHost) break;
+          const { diceResult } = message.payload as { diceResult: Dice[] };
+          console.log('[房主] 处理摇骰子', diceResult);
+          
+          // 先广播开始动画
+          peerService.broadcast('roll-start', {});
+          useGameStore.setState({ isRolling: true });
+          
+          // 800ms后广播结果
+          setTimeout(() => {
+            const currentState = useGameStore.getState();
+            const newRollsLeft = currentState.rollsLeft - 1;
+            useGameStore.setState({
+              dice: diceResult,
+              rollsLeft: newRollsLeft,
+              isRolling: false,
+            });
+            // 广播结束状态
+            peerService.broadcast('roll-end', { diceResult, rollsLeft: newRollsLeft });
+          }, 800);
           break;
         }
 
         case 'action-hold': {
           // 玩家锁定骰子请求（房主处理）
-          if (!state.isHost) return;
+          if (!state.isHost) break;
           const { diceId } = message.payload as { diceId: number };
           console.log('[房主] 处理锁定', diceId);
           const newDice = state.dice.map(d =>
@@ -123,7 +143,7 @@ export function OnlineSync() {
 
         case 'action-score': {
           // 玩家记分请求（房主处理）
-          if (!state.isHost) return;
+          if (!state.isHost) break;
           const { category } = message.payload as { category: ScoreCategory };
           console.log('[房主] 处理记分', category);
           // selectScore内部会处理记分和回合切换
@@ -160,13 +180,16 @@ export function OnlineSync() {
       }
     };
     
-    // 房主：监听状态变化并广播
+    // 房主：监听状态变化并广播（排除isRolling变化，因为有单独的roll-start/roll-end）
     let lastStateHash = '';
     const unsubscribeStore = useGameStore.subscribe((state) => {
       if (!state.isHost || state.mode !== 'online') return;
       
       // 只在游戏进行中同步
       if (state.phase !== 'rolling' && state.phase !== 'finished') return;
+      
+      // 正在摇骰子时不自动广播，由roll-start/roll-end处理
+      if (state.isRolling) return;
       
       // 计算状态哈希，避免重复广播
       const hash = JSON.stringify({

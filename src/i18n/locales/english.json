@@ -1,9 +1,7 @@
 {
-  "game": {
-    "title": "Yahtzee",
-    "subtitle": "Dice Game"
-  },
   "menu": {
+    "title": "Yahtzee",
+    "subtitle": "Classic Dice Game",
     "localGame": "Local Game",
     "onlineGame": "Online Game",
     "createRoom": "Create Room",
@@ -39,6 +37,7 @@
     "playerJoined": "{name} joined the game",
     "playerLeft": "{name} left the game",
     "allPlayersLeft": "All other players have left the game",
+    "waitingForOpponent": "Waiting for opponent...",
     "connectionFailed": "Connection failed",
     "roomNotFound": "Room not found"
   },

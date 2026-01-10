@@ -1,9 +1,7 @@
 {
-  "game": {
-    "title": "快艇骰子",
-    "subtitle": "Yahtzee"
-  },
   "menu": {
+    "title": "快艇骰子",
+    "subtitle": "經典骰子遊戲",
     "localGame": "本地遊戲",
     "onlineGame": "線上遊戲",
     "createRoom": "建立房間",
@@ -39,6 +37,7 @@
     "playerJoined": "{name} 加入了遊戲",
     "playerLeft": "{name} 離開了遊戲",
     "allPlayersLeft": "其他玩家已退出遊戲",
+    "waitingForOpponent": "等待對方操作...",
     "connectionFailed": "連線失敗",
     "roomNotFound": "房間不存在"
   },

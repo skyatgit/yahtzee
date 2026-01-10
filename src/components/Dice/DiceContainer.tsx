@@ -69,7 +69,7 @@ export function DiceContainer() {
         {/* 联机模式显示等待提示 */}
         {mode === 'online' && !isMyTurn && (
           <div className={styles.waitingHint}>
-            等待对方操作...
+            {t('online.waitingForOpponent')}
           </div>
         )}
       </div>

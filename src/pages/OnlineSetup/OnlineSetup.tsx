@@ -19,6 +19,36 @@ interface OnlineSetupProps {
 
 type OnlineMode = 'select' | 'create' | 'join';
 
+// localStorage key for player name
+const PLAYER_NAME_KEY = 'yahtzee_player_name';
+
+// 生成随机后缀
+const generateRandomSuffix = (): string => {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let result = '';
+  for (let i = 0; i < 4; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+};
+
+// 获取保存的玩家名或生成新的
+const getSavedPlayerName = (t: (key: string) => string): string => {
+  const saved = localStorage.getItem(PLAYER_NAME_KEY);
+  if (saved) {
+    return saved;
+  }
+  // 第一次使用，生成随机名称
+  const newName = `${t('setup.human')}${generateRandomSuffix()}`;
+  localStorage.setItem(PLAYER_NAME_KEY, newName);
+  return newName;
+};
+
+// 保存玩家名
+const savePlayerName = (name: string) => {
+  localStorage.setItem(PLAYER_NAME_KEY, name);
+};
+
 export function OnlineSetup({ onBack, onStart }: OnlineSetupProps) {
   const { t } = useTranslation();
   const { 
@@ -30,15 +60,22 @@ export function OnlineSetup({ onBack, onStart }: OnlineSetupProps) {
   } = useGameStore();
   
   const [mode, setMode] = useState<OnlineMode>('select');
-  const [playerName, setPlayerName] = useState('玩家');
+  const [playerName, setPlayerName] = useState(() => getSavedPlayerName(t));
   const [roomId, setRoomId] = useState('');
   const [inputRoomId, setInputRoomId] = useState('');
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   
+  // 玩家名修改时自动保存
+  const handlePlayerNameChange = (name: string) => {
+    setPlayerName(name);
+    savePlayerName(name);
+  };
+  
   // 处理收到的消息
   const handleMessage = useCallback((message: GameMessage) => {
+    // ...existing code...
     console.log('[OnlineSetup] 收到消息:', message.type, message.payload);
     const state = useGameStore.getState();
     
@@ -254,7 +291,7 @@ export function OnlineSetup({ onBack, onStart }: OnlineSetupProps) {
                 type="text"
                 className="input"
                 value={playerName}
-                onChange={(e) => setPlayerName(e.target.value)}
+                onChange={(e) => handlePlayerNameChange(e.target.value)}
                 maxLength={10}
               />
             </div>

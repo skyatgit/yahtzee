@@ -162,29 +162,43 @@ export const useGameStore = create<GameStore>()(
       if (state.rollsLeft <= 0 || state.isRolling || state.phase !== 'rolling') return;
       if (!get().isLocalPlayerTurn()) return;
       
-      // 生成新骰子
+      // 生成新骰子结果（但先不应用）
       const newDice = state.dice.map(dice => ({
         ...dice,
         value: dice.isHeld ? dice.value : rollSingleDice()
       }));
       
+      if (state.mode === 'online' && !state.isHost) {
+        // 非房主：只发送请求给房主，等待房主广播动画开始
+        // 不自己播放动画，由房主统一控制
+        console.log('[客户端] 发送摇骰子请求');
+        peerService.broadcast('action-roll', { diceResult: newDice });
+        return; // 直接返回，等待房主广播
+      }
+      
+      // 本地模式或房主：自己控制动画
       set({ isRolling: true });
+      
+      // 联机房主：广播动画开始给所有客户端
+      if (state.mode === 'online' && state.isHost) {
+        peerService.broadcast('roll-start', {});
+      }
       
       setTimeout(() => {
         const currentState = get();
-        
-        if (currentState.mode === 'online' && !currentState.isHost) {
-          // 非房主：发送请求给房主
-          console.log('[客户端] 发送摇骰子请求');
-          peerService.broadcast('action-roll', { diceResult: newDice });
-        }
+        const newRollsLeft = currentState.rollsLeft - 1;
         
         // 更新本地状态
         set({
           dice: newDice,
-          rollsLeft: currentState.rollsLeft - 1,
+          rollsLeft: newRollsLeft,
           isRolling: false,
         });
+        
+        // 联机房主：广播结果给客户端
+        if (currentState.mode === 'online' && currentState.isHost) {
+          peerService.broadcast('roll-end', { diceResult: newDice, rollsLeft: newRollsLeft });
+        }
       }, 800);
     },
     

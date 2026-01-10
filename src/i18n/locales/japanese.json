@@ -1,9 +1,7 @@
 {
-  "game": {
-    "title": "ヤッツィー",
-    "subtitle": "Yahtzee"
-  },
   "menu": {
+    "title": "ヤッツィー",
+    "subtitle": "クラシックダイスゲーム",
     "localGame": "ローカルゲーム",
     "onlineGame": "オンラインゲーム",
     "createRoom": "部屋を作成",
@@ -39,6 +37,7 @@
     "playerJoined": "{name}がゲームに参加しました",
     "playerLeft": "{name}がゲームを離れました",
     "allPlayersLeft": "他のプレイヤーが全員退出しました",
+    "waitingForOpponent": "相手の操作を待っています...",
     "connectionFailed": "接続に失敗しました",
     "roomNotFound": "部屋が見つかりません"
   },

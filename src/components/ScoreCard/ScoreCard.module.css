@@ -15,6 +15,7 @@
   height: 100%;
   border-collapse: collapse;
   table-layout: fixed;
+  border: 2px solid var(--border);
 }
 
 .table th,
@@ -23,7 +24,7 @@
   text-align: center;
   vertical-align: middle;
   font-size: 13px;
-  border-bottom: 1px solid var(--border);
+  border: 2px solid var(--border);
   color: var(--text);
 }
 
@@ -32,7 +33,7 @@
   font-weight: 600;
   font-size: 12px;
   height: 44px;
-  border-bottom: 2px solid var(--border) !important;
+  border-bottom: 3px solid var(--border) !important;
 }
 
 .playerHeader.activePlayer {
@@ -137,7 +138,8 @@
   font-size: 12px;
   font-weight: 600;
   height: 32px;
-  border-top: 1px solid var(--border);
+  border-top: 3px solid var(--border) !important;
+  border-bottom: 3px solid var(--border) !important;
   color: var(--text-secondary);
 }
 
@@ -178,7 +180,7 @@
   font-weight: 700;
   font-size: 15px;
   height: 48px;
-  border: none;
+  border-top: 3px solid var(--border) !important;
 }
 
 .totalRow td:first-child {

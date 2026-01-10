@@ -1,1 +1,2 @@
-export { OnlineSync, onAllPlayersLeft } from './OnlineSync';
+export { OnlineSync } from './OnlineSync';
+export { onAllPlayersLeft } from './onlineSyncEvents';

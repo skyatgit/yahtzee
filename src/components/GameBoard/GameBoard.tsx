@@ -13,7 +13,11 @@ import { useGameStore } from '../../store/gameStore';
 import { peerService } from '../../services/peerService';
 import styles from './GameBoard.module.css';
 
-export function GameBoard() {
+interface GameBoardProps {
+  onBackToMenu?: () => void;
+}
+
+export function GameBoard({ onBackToMenu }: GameBoardProps) {
   const { t } = useTranslation();
   const {
     players,
@@ -34,11 +38,9 @@ export function GameBoard() {
   useEffect(() => {
     if (mode !== 'online') return;
 
-    const unsubscribe = onAllPlayersLeft(() => {
+    return onAllPlayersLeft(() => {
       setShowAllLeftAlert(true);
     });
-
-    return unsubscribe;
   }, [mode]);
 
   // 处理退出游戏
@@ -46,6 +48,10 @@ export function GameBoard() {
     setShowAllLeftAlert(false);
     peerService.disconnect();
     resetGame();
+    // 通知父组件返回主菜单
+    if (onBackToMenu) {
+      onBackToMenu();
+    }
   };
 
   return (

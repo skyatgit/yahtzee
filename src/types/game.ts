@@ -107,7 +107,9 @@ export type MessageType =
   | 'player-left'    // 玩家离开
   | 'action-roll'    // 请求摇骰子
   | 'action-hold'    // 请求锁定骰子
-  | 'action-score';  // 请求记分
+  | 'action-score'   // 请求记分
+  | 'roll-start'     // 摇骰子动画开始
+  | 'roll-end';      // 摇骰子动画结束
 
 // 联机消息
 export interface GameMessage {

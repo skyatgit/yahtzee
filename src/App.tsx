@@ -85,7 +85,7 @@ function App() {
       case 'game':
         return (
           <>
-            <GameBoard />
+            <GameBoard onBackToMenu={handleBackToMenu} />
             {phase === 'finished' && (
               <GameOver
                 onPlayAgain={handlePlayAgain}

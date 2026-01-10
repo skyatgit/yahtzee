@@ -346,11 +346,9 @@ function shouldKeepRolling(
   }
   
   // 只剩1次机会，当前得分还可以，不冒险
-  if (bestScore >= 20) {
-    return false;
-  }
+  return bestScore < 20;
   
-  return true;
+
 }
 
 /**
@@ -359,8 +357,7 @@ function shouldKeepRolling(
 export function makeAIDecision(
   dice: Dice[],
   scoreCard: ScoreCard,
-  rollsLeft: number,
-  _difficulty?: string // 保留参数兼容性，但不使用
+  rollsLeft: number
 ): AIDecision {
   const available = getAvailableCategories(scoreCard);
   
