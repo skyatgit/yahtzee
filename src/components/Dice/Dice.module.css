@@ -1,6 +1,6 @@
 /**
  * 骰子 - 自适应布局
- * 使用 clamp() 和 min() 实现平滑过渡
+ * 根据可用空间自动缩放
  */
 
 .diceWrapper {
@@ -10,7 +10,7 @@
 }
 
 .diceWrapper:hover:not(.disabled) {
-  transform: translateY(-3px);
+  transform: translateY(-2px);
 }
 
 .diceWrapper:active:not(.disabled) {
@@ -24,17 +24,17 @@
 .diceWrapper.held .dice {
   background: rgba(212, 168, 80, 0.2);
   border-color: var(--accent);
-  box-shadow: 0 0 10px rgba(212, 168, 80, 0.3);
+  box-shadow: 0 0 8px rgba(212, 168, 80, 0.3);
 }
 
 /* 骰子大小：根据视口自动缩放 */
 .dice {
-  --dice-size: clamp(28px, min(10vw, 10vh), 80px);
+  --dice-size: clamp(20px, min(8vw, 10vh), 70px);
   width: var(--dice-size);
   height: var(--dice-size);
   background: var(--bg-card);
-  border: 2px solid var(--border-light);
-  border-radius: clamp(4px, 1vw, 12px);
+  border: clamp(1px, min(0.15vw, 0.2vh), 2px) solid var(--border-light);
+  border-radius: clamp(3px, min(0.6vw, 0.8vh), 10px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -62,17 +62,17 @@
 
 .holdIndicator {
   position: absolute;
-  bottom: clamp(-18px, -2vh, -12px);
+  bottom: clamp(-12px, min(-1.2vh, -1.2vw), -16px);
   left: 50%;
   transform: translateX(-50%);
-  font-size: clamp(7px, 1.2vh, 11px);
+  font-size: clamp(6px, min(0.9vh, 0.9vw), 10px);
   font-weight: 600;
   color: var(--accent);
   white-space: nowrap;
 }
 
 /* 小屏幕隐藏锁定指示器 */
-@media (max-height: 500px), (max-width: 400px) {
+@media (max-height: 400px), (max-width: 360px) {
   .holdIndicator {
     display: none;
   }

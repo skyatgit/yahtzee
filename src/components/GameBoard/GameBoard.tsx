@@ -96,17 +96,18 @@ export function GameBoard({ onBackToMenu }: GameBoardProps) {
           width: '100%',
           minHeight: 0,
           overflow: 'auto',
-          borderBottom: '1px solid var(--border)',
+          border: '1px solid var(--border)',
+          borderRadius: 'clamp(4px, 0.8vw, 8px)',
+          boxSizing: 'border-box' as const,
         },
         dice: {
           flex: 'none',
           width: '100%',
-          maxHeight: '35vh',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: 'clamp(4px, 1.5vw, 12px)',
-          paddingBottom: 'max(48px, env(safe-area-inset-bottom, 48px))',
+          marginTop: 'clamp(6px, 1vh, 12px)',
+          paddingBottom: 'env(safe-area-inset-bottom, 0px)',
         },
       };
     } else {
@@ -119,19 +120,21 @@ export function GameBoard({ onBackToMenu }: GameBoardProps) {
           height: '100%',
         },
         score: {
-          flex: 'none',
-          width: 'clamp(240px, 35vw, 420px)',
+          flex: 1,
+          minWidth: 0,
           height: '100%',
           overflow: 'auto',
-          borderRight: '1px solid var(--border)',
+          border: '1px solid var(--border)',
+          borderRadius: 'clamp(4px, 0.8vw, 8px)',
+          boxSizing: 'border-box' as const,
         },
         dice: {
-          flex: 1,
+          flex: 'none',
           height: '100%',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: 'clamp(8px, 2vw, 24px)',
+          marginLeft: 'clamp(6px, 1vw, 12px)',
         },
       };
     }
@@ -145,9 +148,11 @@ export function GameBoard({ onBackToMenu }: GameBoardProps) {
         top: 0,
         left: 0,
         width: '100vw',
-        height: '100vh',
+        height: '100dvh',
         overflow: 'hidden',
         background: 'var(--bg)',
+        padding: 'clamp(12px, min(2.5vw, 3.5vh), 32px)',
+        boxSizing: 'border-box',
       }}
     >
       {/* 联机同步组件 - 始终渲染 */}

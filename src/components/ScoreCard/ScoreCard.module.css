@@ -1,6 +1,6 @@
 /**
  * 计分板 - 自适应布局
- * 使用 clamp() 实现平滑过渡，避免断点跳变
+ * 完全填满容器，无额外边距
  */
 
 .board {
@@ -9,15 +9,17 @@
   display: flex;
   flex-direction: column;
   background: var(--bg-card);
-  overflow: hidden;
-  padding: clamp(8px, 2vw, 24px);
+  overflow: auto;
+  padding: clamp(10px, min(2vw, 3vh), 24px);
 }
 
 .table {
   width: 100%;
-  height: 100%;
+  flex: 1;
   border-collapse: collapse;
   table-layout: fixed;
+  /* 确保表格外边框完整显示 */
+  border: clamp(2px, min(0.35vw, 0.5vh), 4px) solid var(--border-light);
 }
 
 /* 统一所有单元格的边框样式 */
@@ -26,8 +28,8 @@
   padding: 0;
   text-align: center;
   vertical-align: middle;
-  font-size: clamp(9px, min(1.4vw, 1.8vh), 14px);
-  border: clamp(2px, 0.4vw, 4px) solid var(--border-light);
+  font-size: clamp(8px, min(1.3vw, 2vh), 14px);
+  border: clamp(2px, min(0.35vw, 0.5vh), 4px) solid var(--border-light);
   color: var(--text);
 }
 
@@ -35,8 +37,8 @@
 .playerHeader {
   background: var(--bg-muted);
   font-weight: 600;
-  font-size: clamp(9px, min(1.3vw, 1.6vh), 13px);
-  height: clamp(28px, 5vh, 50px);
+  font-size: clamp(8px, min(1.2vw, 2vh), 13px);
+  height: clamp(24px, min(5vw, 8vh), 50px);
 }
 
 .playerHeader.activePlayer {
@@ -55,13 +57,13 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   padding: 0 clamp(2px, 0.5vw, 6px);
-  font-size: clamp(8px, min(1.2vw, 1.5vh), 12px);
+  font-size: clamp(7px, min(1.1vw, 1.8vh), 12px);
 }
 
 .aiTag {
   display: inline-block;
-  font-size: clamp(7px, min(0.9vw, 1.2vh), 10px);
-  padding: 1px 4px;
+  font-size: clamp(6px, min(0.8vw, 1.2vh), 10px);
+  padding: 1px 3px;
   background: var(--accent);
   color: #000;
   border-radius: 3px;
@@ -69,7 +71,7 @@
 }
 
 .categoryHeader {
-  width: clamp(50px, 15vw, 120px);
+  width: clamp(45px, min(14vw, 20vh), 120px);
   text-align: center !important;
   vertical-align: middle;
   background: var(--bg-muted);
@@ -82,17 +84,17 @@
   align-items: center;
   justify-content: center;
   height: 100%;
-  gap: 2px;
+  gap: 1px;
 }
 
 .roundLabel {
-  font-size: clamp(9px, min(1.2vw, 1.5vh), 12px);
+  font-size: clamp(7px, min(1vw, 1.5vh), 12px);
   font-weight: 500;
   color: var(--text-secondary);
 }
 
 .roundNumber {
-  font-size: clamp(12px, min(1.8vw, 2.2vh), 18px);
+  font-size: clamp(10px, min(1.5vw, 2.5vh), 18px);
   font-weight: 700;
   color: var(--accent);
 }
@@ -101,20 +103,19 @@
 .sectionRow td {
   background: var(--bg-muted);
   font-weight: 600;
-  font-size: clamp(8px, min(1.1vw, 1.4vh), 11px);
+  font-size: clamp(7px, min(1vw, 1.5vh), 11px);
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   text-align: left !important;
-  padding: clamp(2px, 0.5vh, 6px) clamp(4px, 1vw, 12px) !important;
-  height: clamp(16px, 3vh, 28px);
+  padding: clamp(1px, 0.3vh, 6px) clamp(3px, 0.8vw, 12px) !important;
 }
 
 /* === 记分项名称 === */
 .categoryName {
   text-align: left !important;
-  padding-left: clamp(4px, 1vw, 12px) !important;
-  font-size: clamp(9px, min(1.3vw, 1.6vh), 14px);
+  padding-left: clamp(3px, 0.8vw, 12px) !important;
+  font-size: clamp(8px, min(1.2vw, 2vh), 14px);
   color: var(--text-secondary);
   background: var(--bg-card);
 }
@@ -122,10 +123,9 @@
 /* === 分数单元格 === */
 .scoreCell {
   font-weight: 600;
-  font-size: clamp(10px, min(1.5vw, 1.8vh), 15px);
+  font-size: clamp(9px, min(1.4vw, 2.2vh), 15px);
   cursor: default;
   transition: background 0.15s;
-  height: clamp(22px, 4vh, 40px);
 }
 
 .scoreCell.currentPlayer {
@@ -165,37 +165,35 @@
 /* === 小计行 === */
 .subtotalRow td {
   background: var(--bg-muted);
-  font-size: clamp(9px, min(1.2vw, 1.5vh), 12px);
+  font-size: clamp(8px, min(1.1vw, 1.8vh), 12px);
   font-weight: 600;
-  height: clamp(18px, 3.5vh, 34px);
   color: var(--text-secondary);
 }
 
 .subtotalRow td:first-child {
   text-align: left !important;
-  padding-left: clamp(4px, 1vw, 12px) !important;
+  padding-left: clamp(3px, 0.8vw, 12px) !important;
 }
 
 .subtotalCell {
-  font-size: clamp(9px, min(1.3vw, 1.6vh), 13px) !important;
+  font-size: clamp(8px, min(1.2vw, 1.8vh), 13px) !important;
 }
 
 /* === 奖励分行 === */
 .bonusRow td {
   background: var(--bg-muted);
-  font-size: clamp(9px, min(1.2vw, 1.5vh), 12px);
+  font-size: clamp(8px, min(1.1vw, 1.8vh), 12px);
   font-weight: 600;
-  height: clamp(18px, 3.5vh, 34px);
   color: var(--text-secondary);
 }
 
 .bonusRow td:first-child {
   text-align: left !important;
-  padding-left: clamp(4px, 1vw, 12px) !important;
+  padding-left: clamp(3px, 0.8vw, 12px) !important;
 }
 
 .bonusCell {
-  font-size: clamp(9px, min(1.3vw, 1.6vh), 13px) !important;
+  font-size: clamp(8px, min(1.2vw, 1.8vh), 13px) !important;
 }
 
 .bonusEarned {
@@ -206,11 +204,10 @@
 /* === 奖励提示行 === */
 .hintRow td {
   background: var(--bg-card);
-  font-size: clamp(8px, min(1vw, 1.3vh), 11px);
+  font-size: clamp(7px, min(0.9vw, 1.4vh), 11px);
   color: var(--text-muted);
   text-align: left !important;
-  padding: clamp(2px, 0.5vh, 4px) clamp(4px, 1vw, 12px) !important;
-  height: clamp(16px, 3vh, 26px);
+  padding: clamp(1px, 0.3vh, 4px) clamp(3px, 0.8vw, 12px) !important;
 }
 
 /* === 总分行 === */
@@ -218,23 +215,29 @@
   background: var(--bg-muted);
   color: var(--text);
   font-weight: 700;
-  font-size: clamp(11px, min(1.6vw, 2vh), 15px);
-  height: clamp(28px, 5vh, 54px);
+  font-size: clamp(10px, min(1.4vw, 2.2vh), 15px);
 }
 
 .totalRow td:first-child {
   text-align: left !important;
-  padding-left: clamp(4px, 1vw, 12px) !important;
+  padding-left: clamp(3px, 0.8vw, 12px) !important;
 }
 
 .totalCell {
-  font-size: clamp(13px, min(2vw, 2.5vh), 22px) !important;
+  font-size: clamp(11px, min(1.8vw, 3vh), 22px) !important;
   color: var(--accent);
 }
 
 /* 小屏幕隐藏AI标签 */
-@media (max-width: 400px), (max-height: 500px) {
+@media (max-width: 360px), (max-height: 400px) {
   .aiTag {
+    display: none;
+  }
+}
+
+/* 超扁平横屏（手机横屏）：隐藏提示行节省空间 */
+@media (orientation: landscape) and (max-height: 400px) {
+  .hintRow {
     display: none;
   }
 }
