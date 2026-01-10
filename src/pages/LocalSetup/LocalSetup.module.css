@@ -1,6 +1,5 @@
 /**
- * 本地设置 - 完全自适应布局
- * 内容自适应窗口高度，不会显示不全
+ * 本地设置页面 - 按需自适应
  */
 
 .container {
@@ -9,31 +8,33 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: clamp(8px, 2vw, 20px);
+  padding: 16px;
   background: var(--bg);
   box-sizing: border-box;
   overflow: hidden;
 }
 
 .content {
-  max-width: 400px;
+  max-width: min(400px, 90vw);
   width: 100%;
-  max-height: 100%;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+}
+
+/* 宽屏时允许更宽的内容区 */
+@media (min-width: 500px) {
+  .content {
+    max-width: min(500px, 90vw);
+  }
 }
 
 .header {
   display: flex;
   align-items: center;
-  gap: clamp(8px, 2vw, 14px);
-  margin-bottom: clamp(8px, 1.5vh, 16px);
-  flex-shrink: 0;
+  gap: 12px;
+  margin-bottom: clamp(10px, 2vh, 18px);
 }
 
 .title {
-  font-size: clamp(14px, min(4vw, 3vh), 20px);
+  font-size: clamp(16px, 3vh, 22px);
   font-weight: 600;
   color: var(--text);
 }
@@ -42,15 +43,12 @@
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: clamp(10px, min(2.5vw, 2vh), 20px);
-  margin-bottom: clamp(8px, 1.5vh, 14px);
-  flex: 1;
-  overflow: auto;
-  min-height: 0;
+  padding: clamp(12px, 2.5vh, 20px);
+  margin-bottom: clamp(10px, 2vh, 16px);
 }
 
 .section {
-  margin-bottom: clamp(8px, 1.5vh, 16px);
+  margin-bottom: clamp(10px, 2vh, 16px);
 }
 
 .section:last-child {
@@ -61,19 +59,19 @@
   display: block;
   font-weight: 600;
   color: var(--text);
-  margin-bottom: clamp(6px, 1vh, 10px);
-  font-size: clamp(11px, min(3vw, 2vh), 14px);
+  margin-bottom: clamp(6px, 1.2vh, 10px);
+  font-size: clamp(12px, 2vh, 14px);
 }
 
 .countSelector {
   display: flex;
-  gap: clamp(4px, 1.5vw, 10px);
+  gap: 8px;
 }
 
 .countButton {
   flex: 1;
-  padding: clamp(6px, min(1.5vh, 2vw), 14px);
-  font-size: clamp(14px, min(4vw, 3vh), 20px);
+  padding: clamp(8px, 1.8vh, 14px);
+  font-size: clamp(16px, 3vh, 22px);
   font-weight: 600;
   background: var(--bg-muted);
   border: 1px solid var(--border);
@@ -96,28 +94,29 @@
 .playerList {
   display: flex;
   flex-direction: column;
-  gap: clamp(4px, 1vh, 10px);
+  gap: clamp(6px, 1.2vh, 10px);
 }
 
 .playerCard {
   display: flex;
   align-items: center;
-  gap: clamp(4px, 1.5vw, 10px);
-  padding: clamp(6px, min(1.5vw, 1.2vh), 10px);
+  gap: clamp(4px, 1vw, 8px);
+  padding: clamp(4px, 1.2vh, 10px);
   background: var(--bg-muted);
   border-radius: var(--radius);
+  min-width: 0;
 }
 
 .playerNumber {
-  width: clamp(20px, min(5vw, 4vh), 28px);
-  height: clamp(20px, min(5vw, 4vh), 28px);
+  width: clamp(18px, 3vh, 28px);
+  height: clamp(18px, 3vh, 28px);
   display: flex;
   align-items: center;
   justify-content: center;
   background: var(--primary);
   color: #fff;
   font-weight: 600;
-  font-size: clamp(10px, min(2.5vw, 2vh), 14px);
+  font-size: clamp(10px, 1.8vh, 13px);
   border-radius: 50%;
   flex-shrink: 0;
 }
@@ -125,8 +124,8 @@
 .playerInput {
   flex: 1;
   min-width: 0;
-  padding: clamp(6px, min(1.5vw, 1.2vh), 10px);
-  font-size: clamp(11px, min(3vw, 2vh), 14px);
+  padding: clamp(6px, 1.5vh, 12px);
+  font-size: clamp(12px, 2vh, 14px);
   color: var(--text);
   background: var(--bg-card);
   border: 1px solid var(--border);
@@ -142,14 +141,15 @@
   display: flex;
   align-items: center;
   gap: 3px;
-  padding: clamp(6px, min(1.5vw, 1.2vh), 10px) clamp(6px, min(2vw, 1.5vh), 12px);
-  font-size: clamp(10px, min(2.5vw, 1.8vh), 13px);
+  padding: clamp(4px, 1.2vh, 10px) clamp(6px, 1.5vh, 12px);
+  font-size: clamp(10px, 1.6vh, 13px);
   font-weight: 500;
   border: none;
   border-radius: var(--radius);
   cursor: pointer;
   transition: all 0.15s;
-  flex-shrink: 0;
+  flex-shrink: 1;
+  min-width: 0;
 }
 
 .typeButton.human {
@@ -166,16 +166,83 @@
   transform: scale(0.96);
 }
 
-/* 横屏模式：使用更紧凑布局 */
-@media (orientation: landscape) {
+/* 横屏且宽度足够时才使用双列 */
+@media (min-aspect-ratio: 4/3) and (min-width: 700px) {
   .content {
-    max-width: 500px;
+    max-width: min(550px, 70vw);
   }
 
   .playerList {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: clamp(4px, 1vh, 8px);
+    gap: clamp(5px, 1vh, 8px);
+  }
+
+  .playerCard {
+    gap: 6px;
+  }
+
+  .typeButton span:last-child {
+    display: none;
+  }
+}
+
+/* 极小高度：隐藏类型文字 */
+@media (max-height: 400px) {
+  .typeButton span:last-child {
+    display: none;
+  }
+
+  .container {
+    padding: 8px;
+  }
+
+  .header {
+    margin-bottom: 6px;
+  }
+
+  .card {
+    padding: 8px;
+    margin-bottom: 6px;
+  }
+
+  .section {
+    margin-bottom: 6px;
+  }
+
+  .label {
+    margin-bottom: 4px;
+    font-size: 10px;
+  }
+
+  .countButton {
+    padding: 4px;
+    font-size: 14px;
+  }
+
+  .playerList {
+    gap: 4px;
+  }
+
+  .playerCard {
+    padding: 4px;
+    gap: 4px;
+  }
+
+  .playerNumber {
+    width: 16px;
+    height: 16px;
+    font-size: 9px;
+  }
+
+  .playerInput {
+    padding: 4px;
+    font-size: 10px;
+  }
+
+  .typeButton {
+    padding: 4px 6px;
+    font-size: 9px;
   }
 }
 
@@ -183,11 +250,6 @@
 @media (max-width: 320px) {
   .content {
     max-width: 100%;
-  }
-
-  .playerCard {
-    gap: 4px;
-    padding: 5px;
   }
 
   .typeButton span:last-child {
