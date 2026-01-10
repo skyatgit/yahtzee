@@ -58,27 +58,28 @@
     "backToMenu": "返回主選單"
   },
   "score": {
-    "upperSection": "上半區",
+    "upperSection": "排列組合名",
     "lowerSection": "下半區",
-    "ones": "1點",
-    "twos": "2點",
-    "threes": "3點",
-    "fours": "4點",
-    "fives": "5點",
-    "sixes": "6點",
-    "upperTotal": "上半區小計",
-    "upperBonus": "獎勵分 (≥63分)",
+    "ones": "⚀ 一點",
+    "twos": "⚁ 二點",
+    "threes": "⚂ 三點",
+    "fours": "⚃ 四點",
+    "fives": "⚄ 五點",
+    "sixes": "⚅ 六點",
+    "upperTotal": "小計",
+    "upperBonus": "獎勵分+35",
+    "bonusHint": "⚀~⚅總計超過63即可獲得獎勵分",
     "upperFinal": "上半區總計",
     "threeOfAKind": "三條",
-    "fourOfAKind": "四骰同花",
-    "fullHouse": "葫蘆",
-    "smallStraight": "小順",
-    "largeStraight": "大順",
-    "yahtzee": "快艇",
-    "chance": "全選",
+    "fourOfAKind": "⚃⚃ 四骰同花",
+    "fullHouse": "⚂⚁ 葫蘆",
+    "smallStraight": "⚀⚁⚂⚃ 小順",
+    "largeStraight": "⚁⚂⚃⚄ 大順",
+    "yahtzee": "⚅⚅ 快艇",
+    "chance": "⚀⚅ 全選",
     "yahtzeeBonus": "快艇獎勵",
     "lowerTotal": "下半區總計",
-    "grandTotal": "總分"
+    "grandTotal": "總計點數"
   },
   "tooltip": {
     "ones": "所有1點的總和",
@@ -111,7 +112,7 @@
     "rule3": "每回合必須選擇一個記分項",
     "rule4": "上半區達到63分可獲得35分獎勵",
     "rule5": "快艇(5個相同)得50分，額外快艇每次+100分",
-    "rule6": "遊戲共13回合，總分最高者獲勝"
+    "rule6": "遊戲共12回合，總分最高者獲勝"
   },
   "common": {
     "confirm": "確定",

@@ -1,49 +1,113 @@
 /**
- * 游戏板 - 自适应布局（无顶部标题栏）
+ * 游戏板 - 使用 CSS Grid 布局
  */
 
 .container {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
   height: 100dvh;
-  overflow: hidden;
   background: var(--bg);
+  overflow: hidden;
 }
 
-/* 主游戏区域 - 默认横屏布局，占满全屏 */
+/* ========== 横屏模式（默认）- 使用 Grid 左右布局 ========== */
 .mainArea {
-  flex: 1;
-  display: flex;
-  min-height: 0;
-  overflow: hidden;
+  display: grid;
+  grid-template-columns: clamp(260px, 35vw, 400px) 1fr;
+  grid-template-rows: 100%;
+  width: 100%;
   height: 100%;
 }
 
-/* 计分板区域 - 自适应宽度 */
 .scoreSection {
-  flex-shrink: 0;
-  width: clamp(260px, 35vw, 400px);
-  max-width: 45%;
+  grid-column: 1;
+  grid-row: 1;
   background: var(--bg-card);
   border-right: 1px solid var(--border);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
-/* 骰子区域 */
 .diceSection {
-  flex: 1;
+  grid-column: 2;
+  grid-row: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   background: var(--bg);
-  min-width: 0;
-  padding: 8px;
+  padding: 16px;
+  overflow: hidden;
 }
 
-/* 提示弹窗样式 */
+/* ========== 竖屏模式 - 使用 Grid 上下布局 ========== */
+@media (orientation: portrait) {
+  .mainArea {
+    grid-template-columns: 100%;
+    grid-template-rows: 1fr auto;
+  }
+
+  .scoreSection {
+    grid-column: 1;
+    grid-row: 1;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    min-height: 0;
+  }
+
+  .diceSection {
+    grid-column: 1;
+    grid-row: 2;
+    max-height: 35vh;
+    padding: 8px;
+  }
+}
+
+@media (orientation: portrait) and (max-height: 700px) {
+  .diceSection {
+    max-height: 30vh;
+    padding: 6px;
+  }
+}
+
+@media (orientation: portrait) and (max-height: 600px) {
+  .diceSection {
+    max-height: 28vh;
+    padding: 4px;
+  }
+}
+
+/* ========== 横屏扁平模式 ========== */
+@media (orientation: landscape) and (max-height: 420px) {
+  .mainArea {
+    grid-template-columns: clamp(200px, 30vw, 300px) 1fr;
+  }
+
+  .diceSection {
+    padding: 8px;
+  }
+}
+
+/* ========== 大屏幕 ========== */
+@media (min-width: 1200px) and (min-height: 700px) {
+  .mainArea {
+    grid-template-columns: clamp(360px, 30vw, 480px) 1fr;
+  }
+
+  .diceSection {
+    padding: 24px;
+  }
+}
+
+/* ========== 超宽屏 ========== */
+@media (min-aspect-ratio: 2/1) {
+  .mainArea {
+    grid-template-columns: clamp(280px, 25vw, 380px) 1fr;
+  }
+}
+
+/* ========== 弹窗样式 ========== */
 .alertOverlay {
   position: fixed;
   inset: 0;
@@ -65,7 +129,7 @@
   border: 1px solid var(--border);
   border-radius: 12px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-  max-width: 90dvw;
+  max-width: 90vw;
 }
 
 .alertText {
@@ -94,65 +158,4 @@
 
 .alertButton:active {
   transform: scale(0.98);
-}
-
-/* ===== 竖屏模式（宽度小于高度或非常窄的屏幕）===== */
-@media (max-aspect-ratio: 1/1), (max-width: 600px) {
-  .mainArea {
-    flex-direction: column;
-  }
-
-  .scoreSection {
-    order: 1;
-    width: 100%;
-    max-width: 100%;
-    flex: 1;
-    min-height: 0;
-    border-right: none;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .diceSection {
-    order: 2;
-    flex: none;
-    padding: 12px 8px;
-    min-height: auto;
-  }
-}
-
-/* ===== 超小屏幕（手机竖屏）===== */
-@media (max-width: 360px) {
-  .diceSection {
-    padding: 8px 4px;
-  }
-}
-
-/* ===== 横屏超扁平模式（如手机横屏）===== */
-@media (max-height: 420px) and (orientation: landscape) {
-  .scoreSection {
-    width: clamp(200px, 30vw, 320px);
-  }
-
-  .diceSection {
-    padding: 4px;
-  }
-}
-
-/* ===== 大屏幕 ===== */
-@media (min-width: 1200px) and (min-height: 700px) {
-  .scoreSection {
-    width: clamp(360px, 30vw, 480px);
-  }
-
-  .diceSection {
-    padding: 20px;
-  }
-}
-
-/* ===== 超宽屏（21:9等）===== */
-@media (min-aspect-ratio: 2/1) {
-  .scoreSection {
-    width: clamp(280px, 25vw, 400px);
-    max-width: 30%;
-  }
 }

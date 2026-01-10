@@ -1,5 +1,6 @@
 /**
  * 骰子 - 自适应布局
+ * 使用 clamp() 和 min() 实现平滑过渡
  */
 
 .diceWrapper {
@@ -9,11 +10,11 @@
 }
 
 .diceWrapper:hover:not(.disabled) {
-  transform: translateY(-4px);
+  transform: translateY(-3px);
 }
 
 .diceWrapper:active:not(.disabled) {
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 
 .diceWrapper.disabled {
@@ -23,17 +24,17 @@
 .diceWrapper.held .dice {
   background: rgba(212, 168, 80, 0.2);
   border-color: var(--accent);
-  box-shadow: 0 0 12px rgba(212, 168, 80, 0.3);
+  box-shadow: 0 0 10px rgba(212, 168, 80, 0.3);
 }
 
+/* 骰子大小：根据视口自动缩放 */
 .dice {
-  /* 响应式尺寸：基于视口的较小维度 */
-  --dice-size: clamp(44px, min(10vw, 10vh), 76px);
+  --dice-size: clamp(28px, min(10vw, 10vh), 80px);
   width: var(--dice-size);
   height: var(--dice-size);
   background: var(--bg-card);
   border: 2px solid var(--border-light);
-  border-radius: clamp(6px, 1.5vw, 12px);
+  border-radius: clamp(4px, 1vw, 12px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -50,7 +51,7 @@
 }
 
 .dot {
-  --dot-size: calc(var(--dice-size) * 0.17);
+  --dot-size: calc(var(--dice-size) * 0.16);
   width: var(--dot-size);
   height: var(--dot-size);
   background: var(--text);
@@ -61,78 +62,18 @@
 
 .holdIndicator {
   position: absolute;
-  bottom: clamp(-16px, -2vh, -20px);
+  bottom: clamp(-18px, -2vh, -12px);
   left: 50%;
   transform: translateX(-50%);
-  font-size: clamp(9px, 1.4vh, 11px);
+  font-size: clamp(7px, 1.2vh, 11px);
   font-weight: 600;
   color: var(--accent);
   white-space: nowrap;
 }
 
-/* ===== 竖屏模式 ===== */
-@media (max-aspect-ratio: 1/1), (max-width: 600px) {
-  .dice {
-    --dice-size: clamp(40px, 14vw, 60px);
-    border-radius: clamp(6px, 2vw, 10px);
-  }
-
-  .holdIndicator {
-    bottom: -14px;
-    font-size: clamp(8px, 2.5vw, 10px);
-  }
-
-  .diceWrapper:hover:not(.disabled) {
-    transform: translateY(-2px);
-  }
-}
-
-/* ===== 超小屏幕 ===== */
-@media (max-width: 360px) {
-  .dice {
-    --dice-size: clamp(36px, 15vw, 48px);
-    border-width: 1px;
-    border-radius: 6px;
-  }
-
+/* 小屏幕隐藏锁定指示器 */
+@media (max-height: 500px), (max-width: 400px) {
   .holdIndicator {
     display: none;
-  }
-}
-
-/* ===== 横屏超扁平模式 ===== */
-@media (max-height: 420px) and (orientation: landscape) {
-  .dice {
-    --dice-size: clamp(36px, 14vh, 52px);
-    border-radius: 6px;
-    border-width: 1px;
-  }
-
-  .holdIndicator {
-    display: none;
-  }
-
-  .diceWrapper:hover:not(.disabled) {
-    transform: translateY(-2px);
-  }
-}
-
-/* ===== 大屏幕 ===== */
-@media (min-width: 1200px) and (min-height: 700px) {
-  .dice {
-    --dice-size: 88px;
-    border-radius: 14px;
-  }
-
-  .holdIndicator {
-    bottom: -22px;
-    font-size: 12px;
-  }
-}
-
-/* ===== 超宽屏 ===== */
-@media (min-aspect-ratio: 2/1) {
-  .dice {
-    --dice-size: clamp(48px, 12vh, 72px);
   }
 }

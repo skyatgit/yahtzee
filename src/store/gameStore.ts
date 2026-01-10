@@ -15,12 +15,13 @@ import type {
 } from '../types/game';
 import {
   createEmptyScoreCard,
-  calculateScore,
-  isYahtzee,
-  getDiceValues
+  calculateScore
 } from '../utils/scoring';
 import { makeAIDecision } from '../utils/ai';
 import { peerService } from '../services/peerService';
+
+// 总回合数（等于记分项数量）
+const TOTAL_ROUNDS = 12;
 
 // 生成随机骰子值
 const rollSingleDice = (): DiceValue => {
@@ -235,20 +236,12 @@ export const useGameStore = create<GameStore>()(
       // 计算得分
       const score = calculateScore(category, state.dice, currentPlayer.scoreCard);
       
-      // 快艇奖励
-      const values = getDiceValues(state.dice);
-      const isYahtzeeRoll = isYahtzee(values);
-      let yahtzeeBonus = currentPlayer.scoreCard.yahtzeeBonus;
-      if (isYahtzeeRoll && currentPlayer.scoreCard.yahtzee !== null && currentPlayer.scoreCard.yahtzee > 0) {
-        yahtzeeBonus += 1;
-      }
-      
       // 更新记分卡
       const updatedPlayers = state.players.map((player, index) => {
         if (index === state.currentPlayerIndex) {
           return {
             ...player,
-            scoreCard: { ...player.scoreCard, [category]: score, yahtzeeBonus }
+            scoreCard: { ...player.scoreCard, [category]: score }
           };
         }
         return player;
@@ -271,7 +264,7 @@ export const useGameStore = create<GameStore>()(
       const isRoundComplete = nextPlayerIndex === 0;
       const newRound = isRoundComplete ? state.currentRound + 1 : state.currentRound;
       
-      if (newRound > 13) {
+      if (newRound > TOTAL_ROUNDS) {
         set({ phase: 'finished' });
         return;
       }

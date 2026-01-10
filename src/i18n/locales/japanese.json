@@ -58,27 +58,28 @@
     "backToMenu": "メニューに戻る"
   },
   "score": {
-    "upperSection": "上段",
+    "upperSection": "組み合わせ名",
     "lowerSection": "下段",
-    "ones": "1の目",
-    "twos": "2の目",
-    "threes": "3の目",
-    "fours": "4の目",
-    "fives": "5の目",
-    "sixes": "6の目",
-    "upperTotal": "上段小計",
-    "upperBonus": "ボーナス (≥63)",
+    "ones": "⚀ 1の目",
+    "twos": "⚁ 2の目",
+    "threes": "⚂ 3の目",
+    "fours": "⚃ 4の目",
+    "fives": "⚄ 5の目",
+    "sixes": "⚅ 6の目",
+    "upperTotal": "小計",
+    "upperBonus": "ボーナス+35",
+    "bonusHint": "⚀~⚅合計63以上でボーナス獲得",
     "upperFinal": "上段合計",
     "threeOfAKind": "スリーカード",
-    "fourOfAKind": "フォーカード",
-    "fullHouse": "フルハウス",
-    "smallStraight": "スモールストレート",
-    "largeStraight": "ラージストレート",
-    "yahtzee": "ヤッツィー",
-    "chance": "チャンス",
+    "fourOfAKind": "⚃⚃ フォーカード",
+    "fullHouse": "⚂⚁ フルハウス",
+    "smallStraight": "⚀⚁⚂⚃ スモールストレート",
+    "largeStraight": "⚁⚂⚃⚄ ラージストレート",
+    "yahtzee": "⚅⚅ ヤッツィー",
+    "chance": "⚀⚅ チャンス",
     "yahtzeeBonus": "ヤッツィーボーナス",
     "lowerTotal": "下段合計",
-    "grandTotal": "総得点"
+    "grandTotal": "合計点数"
   },
   "tooltip": {
     "ones": "1の目の合計",
@@ -111,7 +112,7 @@
     "rule3": "毎ターン必ずスコア項目を選択",
     "rule4": "上段合計≥63点で35点ボーナス",
     "rule5": "ヤッツィー(5つ同じ)は50点、追加で+100点",
-    "rule6": "全13ラウンド、最高得点者が勝利"
+    "rule6": "全12ラウンド、最高得点者が勝利"
   },
   "common": {
     "confirm": "確認",

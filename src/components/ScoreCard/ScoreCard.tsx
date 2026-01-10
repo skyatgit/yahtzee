@@ -1,6 +1,7 @@
 /**
  * 统一记分板组件
  * 在一个表格中显示所有玩家（2~4人）的分数
+ * 布局参考 Switch 版快艇骰子
  */
 
 import { useTranslation } from 'react-i18next';
@@ -15,15 +16,14 @@ import {
 } from '../../utils/scoring';
 import styles from './ScoreCard.module.css';
 
-// 上半区类别
+// 上半区类别（1~6点）
 const upperCategories: ScoreCategory[] = [
   'ones', 'twos', 'threes', 'fours', 'fives', 'sixes'
 ];
 
-// 下半区类别（全选放最前面，去掉三条）
-const lowerCategories: ScoreCategory[] = [
-  'chance', 'fourOfAKind', 'fullHouse',
-  'smallStraight', 'largeStraight', 'yahtzee'
+// 下半区类别（不含全选）
+const lowerCategoriesWithoutChance: ScoreCategory[] = [
+  'fourOfAKind', 'fullHouse', 'smallStraight', 'largeStraight', 'yahtzee'
 ];
 
 export function ScoreBoard() {
@@ -106,7 +106,8 @@ export function ScoreBoard() {
             {/* 左上角显示回合进度 */}
             <th className={styles.categoryHeader}>
               <div className={styles.roundInfo}>
-                <span className={styles.roundNumber}>{currentRound}/13</span>
+                <span className={styles.roundLabel}>{t('game.round')}</span>
+                <span className={styles.roundNumber}>{currentRound}/12</span>
               </div>
             </th>
             {players.map((player, index) => (
@@ -127,14 +128,13 @@ export function ScoreBoard() {
             ))}
           </tr>
         </thead>
-        {/* ...existing code... */}
         <tbody>
           {/* 上半区标题 */}
           <tr className={styles.sectionRow}>
             <td colSpan={players.length + 1}>{t('score.upperSection')}</td>
           </tr>
           
-          {/* 上半区分数 */}
+          {/* 上半区分数（1~6点） */}
           {upperCategories.map(category => (
             <tr key={category} className={styles.scoreRow}>
               <td className={styles.categoryName}>{t(`score.${category}`)}</td>
@@ -144,27 +144,45 @@ export function ScoreBoard() {
           
           {/* 上半区小计 */}
           <tr className={styles.subtotalRow}>
-            <td>{t('score.upperBonus')}</td>
+            <td>{t('score.upperTotal')}</td>
             {players.map(player => {
               const upperTotal = calculateUpperTotal(player.scoreCard);
-              const bonus = calculateUpperBonus(player.scoreCard);
               return (
                 <td key={player.id} className={styles.subtotalCell}>
-                  <span className={bonus > 0 ? styles.bonusEarned : ''}>
-                    {upperTotal}/{UPPER_BONUS_THRESHOLD} {bonus > 0 ? `+${bonus}` : ''}
-                  </span>
+                  {upperTotal}/{UPPER_BONUS_THRESHOLD}
                 </td>
               );
             })}
           </tr>
           
-          {/* 下半区标题 */}
-          <tr className={styles.sectionRow}>
-            <td colSpan={players.length + 1}>{t('score.lowerSection')}</td>
+          {/* 上半区奖励分 */}
+          <tr className={styles.bonusRow}>
+            <td>{t('score.upperBonus')}</td>
+            {players.map(player => {
+              const bonus = calculateUpperBonus(player.scoreCard);
+              return (
+                <td key={player.id} className={styles.bonusCell}>
+                  {bonus > 0 ? (
+                    <span className={styles.bonusEarned}>+{bonus}</span>
+                  ) : '-'}
+                </td>
+              );
+            })}
           </tr>
           
-          {/* 下半区分数 */}
-          {lowerCategories.map(category => (
+          {/* 奖励分提示 */}
+          <tr className={styles.hintRow}>
+            <td colSpan={players.length + 1}>{t('score.bonusHint')}</td>
+          </tr>
+          
+          {/* 全选（单独一行） */}
+          <tr className={styles.scoreRow}>
+            <td className={styles.categoryName}>{t('score.chance')}</td>
+            {players.map((player, index) => renderScoreCell('chance', player, index))}
+          </tr>
+          
+          {/* 下半区其他项目 */}
+          {lowerCategoriesWithoutChance.map(category => (
             <tr key={category} className={styles.scoreRow}>
               <td className={styles.categoryName}>{t(`score.${category}`)}</td>
               {players.map((player, index) => renderScoreCell(category, player, index))}

@@ -1,26 +1,26 @@
 /**
  * 骰子区 - 自适应布局
+ * 使用 clamp() 实现平滑过渡，避免断点跳变
  */
 
 .container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: clamp(12px, 3vh, 28px);
-  width: 100%;
-  max-width: 100%;
+  justify-content: center;
+  gap: clamp(6px, 2vh, 24px);
 }
 
 .diceArea {
-  padding: clamp(12px, 2.5vh, 28px) clamp(16px, 3vw, 36px);
+  padding: clamp(6px, 2vh, 24px) clamp(10px, 2.5vw, 32px);
   background: var(--bg-card);
-  border-radius: clamp(8px, 1.5vw, 16px);
+  border-radius: clamp(6px, 1.2vw, 14px);
   border: 1px solid var(--border);
 }
 
 .diceGrid {
   display: flex;
-  gap: clamp(8px, 2vw, 16px);
+  gap: clamp(5px, 1.5vw, 14px);
   flex-wrap: nowrap;
 }
 
@@ -28,7 +28,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: clamp(8px, 1.5vh, 14px);
+  gap: clamp(4px, 1vh, 12px);
 }
 
 .rollButton {
@@ -36,15 +36,15 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: clamp(10px, 2vh, 16px) clamp(28px, 6vw, 48px);
-  min-width: clamp(140px, 30vw, 180px);
-  height: clamp(44px, 7vh, 56px);
-  font-size: clamp(14px, 2.2vh, 18px);
+  padding: clamp(6px, 1.5vh, 14px) clamp(16px, 4vw, 40px);
+  min-width: clamp(100px, 20vw, 160px);
+  height: clamp(32px, 5vh, 52px);
+  font-size: clamp(12px, 1.8vh, 16px);
   font-weight: 600;
   background: var(--primary);
   color: #fff;
   border: none;
-  border-radius: 30px;
+  border-radius: clamp(16px, 2vh, 26px);
   cursor: pointer;
   transition: background 0.15s;
 }
@@ -64,16 +64,16 @@
 }
 
 .rollIcon {
-  font-size: clamp(16px, 2.5vh, 22px);
-  width: clamp(18px, 3vh, 24px);
-  height: clamp(18px, 3vh, 24px);
+  font-size: clamp(14px, 2vh, 18px);
+  width: clamp(16px, 2.5vh, 20px);
+  height: clamp(16px, 2.5vh, 20px);
   line-height: 1;
 }
 
 .rollingIcon {
-  font-size: clamp(16px, 2.5vh, 22px);
-  width: clamp(18px, 3vh, 24px);
-  height: clamp(18px, 3vh, 24px);
+  font-size: clamp(14px, 2vh, 18px);
+  width: clamp(16px, 2.5vh, 20px);
+  height: clamp(16px, 2.5vh, 20px);
   line-height: 1;
   animation: shake 0.1s infinite;
 }
@@ -89,12 +89,12 @@
 
 .rollsIndicator {
   display: flex;
-  gap: clamp(6px, 1.2vw, 10px);
+  gap: clamp(4px, 0.8vw, 8px);
 }
 
 .rollDot {
-  width: clamp(8px, 1.5vh, 12px);
-  height: clamp(8px, 1.5vh, 12px);
+  width: clamp(5px, 1vh, 10px);
+  height: clamp(5px, 1vh, 10px);
   background: var(--bg-muted);
   border-radius: 50%;
   transition: all 0.2s;
@@ -106,122 +106,14 @@
 
 .waitingHint {
   color: var(--text-muted);
-  font-size: clamp(11px, 1.8vh, 14px);
+  font-size: clamp(10px, 1.4vh, 13px);
   text-align: center;
 }
 
-/* ===== 竖屏模式 ===== */
-@media (max-aspect-ratio: 1/1), (max-width: 600px) {
-  .container {
-    flex-direction: column;
-    gap: clamp(10px, 2vh, 16px);
-    padding: 4px 0;
-  }
-
-  .diceArea {
-    padding: clamp(10px, 2vh, 16px) clamp(12px, 3vw, 20px);
-    border-radius: 10px;
-  }
-
-  .diceGrid {
-    gap: clamp(6px, 2vw, 12px);
-  }
-
-  .rollButton {
-    padding: clamp(8px, 1.8vh, 12px) clamp(20px, 8vw, 36px);
-    min-width: clamp(120px, 40vw, 160px);
-    height: clamp(40px, 6vh, 48px);
-    font-size: clamp(13px, 3.5vw, 16px);
-    border-radius: 24px;
-  }
-}
-
-/* ===== 超小屏幕 ===== */
-@media (max-width: 360px) {
-  .container {
-    gap: 8px;
-  }
-
-  .diceArea {
-    padding: 8px 10px;
-  }
-
-  .diceGrid {
-    gap: 5px;
-  }
-
-  .rollButton {
-    padding: 8px 16px;
-    min-width: 110px;
-    height: 38px;
-    font-size: 12px;
-  }
-
-  .rollDot {
-    width: 7px;
-    height: 7px;
-  }
-}
-
-/* ===== 横屏超扁平模式 ===== */
-@media (max-height: 420px) and (orientation: landscape) {
+/* 横屏扁平模式：骰子和控制区水平排列 */
+@media (orientation: landscape) and (max-height: 480px) {
   .container {
     flex-direction: row;
-    gap: clamp(12px, 3vw, 24px);
-    justify-content: center;
-  }
-
-  .diceArea {
-    padding: clamp(8px, 2vh, 14px) clamp(10px, 2vw, 20px);
-    border-radius: 8px;
-  }
-
-  .diceGrid {
-    gap: clamp(6px, 1.5vw, 10px);
-  }
-
-  .controlArea {
-    gap: clamp(6px, 1.5vh, 10px);
-  }
-
-  .rollButton {
-    padding: clamp(8px, 2vh, 12px) clamp(16px, 3vw, 28px);
-    min-width: clamp(100px, 15vw, 140px);
-    height: clamp(36px, 10vh, 44px);
-    font-size: clamp(12px, 3vh, 15px);
-    border-radius: 20px;
-  }
-
-  .rollDot {
-    width: clamp(7px, 2vh, 10px);
-    height: clamp(7px, 2vh, 10px);
-  }
-}
-
-/* ===== 大屏幕 ===== */
-@media (min-width: 1200px) and (min-height: 700px) {
-  .container {
-    gap: 28px;
-  }
-
-  .diceArea {
-    padding: 28px 36px;
-    border-radius: 16px;
-  }
-
-  .diceGrid {
-    gap: 16px;
-  }
-
-  .rollButton {
-    padding: 16px 48px;
-    min-width: 180px;
-    height: 56px;
-    font-size: 18px;
-  }
-
-  .rollDot {
-    width: 12px;
-    height: 12px;
+    gap: clamp(10px, 3vw, 24px);
   }
 }

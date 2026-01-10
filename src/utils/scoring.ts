@@ -9,8 +9,6 @@ import type { DiceValue, ScoreCategory, ScoreCard, Dice } from '../types/game';
 export const UPPER_BONUS_THRESHOLD = 63;
 // 上半区奖励分数值
 export const UPPER_BONUS_SCORE = 35;
-// 快艇额外奖励分数
-export const YAHTZEE_BONUS_SCORE = 100;
 
 /**
  * 获取骰子值数组
@@ -106,13 +104,10 @@ export function isYahtzee(values: DiceValue[]): boolean {
 export function calculateScore(
   category: ScoreCategory,
   dice: Dice[],
-  scoreCard: ScoreCard
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _scoreCard?: ScoreCard
 ): number {
   const values = getDiceValues(dice);
-  
-  // 检查快艇奖励规则 (Joker Rule)
-  const hasYahtzee = isYahtzee(values);
-  const yahtzeeScored = scoreCard.yahtzee !== null && scoreCard.yahtzee > 0;
   
   switch (category) {
     // 上半区
@@ -130,37 +125,26 @@ export function calculateScore(
       return sumOfNumber(values, 6);
     
     // 下半区
-    case 'threeOfAKind':
-      // 如果是快艇且快艇已得分，也可以作为三条
-      if (hasNOfAKind(values, 3) || (hasYahtzee && yahtzeeScored)) {
-        return sumDice(values);
-      }
-      return 0;
-      
     case 'fourOfAKind':
-      // 如果是快艇且快艇已得分，也可以作为四骰同花
-      if (hasNOfAKind(values, 4) || (hasYahtzee && yahtzeeScored)) {
+      if (hasNOfAKind(values, 4)) {
         return sumDice(values);
       }
       return 0;
       
     case 'fullHouse':
-      // 如果是快艇且快艇已得分，可以作为葫芦得25分
-      if (isFullHouse(values) || (hasYahtzee && yahtzeeScored)) {
+      if (isFullHouse(values)) {
         return 25;
       }
       return 0;
       
     case 'smallStraight':
-      // 如果是快艇且快艇已得分，可以作为小顺得30分
-      if (isSmallStraight(values) || (hasYahtzee && yahtzeeScored)) {
+      if (isSmallStraight(values)) {
         return 30;
       }
       return 0;
       
     case 'largeStraight':
-      // 如果是快艇且快艇已得分，可以作为大顺得40分
-      if (isLargeStraight(values) || (hasYahtzee && yahtzeeScored)) {
+      if (isLargeStraight(values)) {
         return 40;
       }
       return 0;
@@ -205,18 +189,13 @@ export function calculateUpperBonus(scoreCard: ScoreCard): number {
  */
 export function calculateLowerTotal(scoreCard: ScoreCard): number {
   const lowerCategories: (keyof ScoreCard)[] = [
-    'threeOfAKind', 'fourOfAKind', 'fullHouse',
+    'fourOfAKind', 'fullHouse',
     'smallStraight', 'largeStraight', 'yahtzee', 'chance'
   ];
-  let total = lowerCategories.reduce((sum, cat) => {
+  return lowerCategories.reduce((sum, cat) => {
     const score = scoreCard[cat];
     return sum + (typeof score === 'number' ? score : 0);
   }, 0);
-  
-  // 添加快艇额外奖励
-  total += scoreCard.yahtzeeBonus * YAHTZEE_BONUS_SCORE;
-  
-  return total;
 }
 
 /**
@@ -234,7 +213,7 @@ export function calculateTotalScore(scoreCard: ScoreCard): number {
 export function isScoreCardComplete(scoreCard: ScoreCard): boolean {
   const categories: (keyof ScoreCard)[] = [
     'ones', 'twos', 'threes', 'fours', 'fives', 'sixes',
-    'threeOfAKind', 'fourOfAKind', 'fullHouse',
+    'fourOfAKind', 'fullHouse',
     'smallStraight', 'largeStraight', 'yahtzee', 'chance'
   ];
   return categories.every(cat => scoreCard[cat] !== null);
@@ -246,7 +225,7 @@ export function isScoreCardComplete(scoreCard: ScoreCard): boolean {
 export function getAvailableCategories(scoreCard: ScoreCard): ScoreCategory[] {
   const allCategories: ScoreCategory[] = [
     'ones', 'twos', 'threes', 'fours', 'fives', 'sixes',
-    'threeOfAKind', 'fourOfAKind', 'fullHouse',
+    'fourOfAKind', 'fullHouse',
     'smallStraight', 'largeStraight', 'yahtzee', 'chance'
   ];
   return allCategories.filter(cat => scoreCard[cat] === null);
@@ -263,13 +242,11 @@ export function createEmptyScoreCard(): ScoreCard {
     fours: null,
     fives: null,
     sixes: null,
-    threeOfAKind: null,
     fourOfAKind: null,
     fullHouse: null,
     smallStraight: null,
     largeStraight: null,
     yahtzee: null,
-    chance: null,
-    yahtzeeBonus: 0
+    chance: null
   };
 }

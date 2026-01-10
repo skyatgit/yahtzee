@@ -22,7 +22,6 @@ export type ScoreCategory =
   | 'fives'
   | 'sixes'
   // 下半区
-  | 'threeOfAKind'   // 三条
   | 'fourOfAKind'    // 四骰同花
   | 'fullHouse'      // 葫芦
   | 'smallStraight'  // 小顺
@@ -38,15 +37,12 @@ export interface ScoreCard {
   fours: number | null;
   fives: number | null;
   sixes: number | null;
-  threeOfAKind: number | null;
   fourOfAKind: number | null;
   fullHouse: number | null;
   smallStraight: number | null;
   largeStraight: number | null;
   yahtzee: number | null;
   chance: number | null;
-  // 额外快艇奖励次数
-  yahtzeeBonus: number;
 }
 
 // 玩家类型

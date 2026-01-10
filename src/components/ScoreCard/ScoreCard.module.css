@@ -1,15 +1,16 @@
 /**
  * 计分板 - 自适应布局
+ * 使用 clamp() 实现平滑过渡，避免断点跳变
  */
 
 .board {
+  width: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
   background: var(--bg-card);
   overflow: hidden;
-  /* 内边距让表格不贴边 */
-  padding: clamp(6px, 1.5vw, 12px);
+  padding: clamp(8px, 2vw, 24px);
 }
 
 .table {
@@ -17,27 +18,25 @@
   height: 100%;
   border-collapse: collapse;
   table-layout: fixed;
-  /* 加粗外边框 */
-  border: 3px solid var(--border-light);
 }
 
+/* 统一所有单元格的边框样式 */
 .table th,
 .table td {
   padding: 0;
   text-align: center;
   vertical-align: middle;
-  font-size: clamp(10px, 1.5vw, 13px);
-  /* 加粗单元格边框 */
-  border: 2px solid var(--border-light);
+  font-size: clamp(9px, min(1.4vw, 1.8vh), 14px);
+  border: clamp(2px, 0.4vw, 4px) solid var(--border-light);
   color: var(--text);
 }
 
+/* === 表头行 === */
 .playerHeader {
   background: var(--bg-muted);
   font-weight: 600;
-  font-size: clamp(10px, 1.4vw, 12px);
-  height: clamp(32px, 5vh, 44px);
-  border-bottom: 4px solid var(--border-light) !important;
+  font-size: clamp(9px, min(1.3vw, 1.6vh), 13px);
+  height: clamp(28px, 5vh, 50px);
 }
 
 .playerHeader.activePlayer {
@@ -55,13 +54,13 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  padding: 0 4px;
-  font-size: clamp(9px, 1.3vw, 12px);
+  padding: 0 clamp(2px, 0.5vw, 6px);
+  font-size: clamp(8px, min(1.2vw, 1.5vh), 12px);
 }
 
 .aiTag {
   display: inline-block;
-  font-size: clamp(8px, 1vw, 10px);
+  font-size: clamp(7px, min(0.9vw, 1.2vh), 10px);
   padding: 1px 4px;
   background: var(--accent);
   color: #000;
@@ -70,55 +69,63 @@
 }
 
 .categoryHeader {
-  width: clamp(60px, 15vw, 100px);
+  width: clamp(50px, 15vw, 120px);
   text-align: center !important;
   vertical-align: middle;
   background: var(--bg-muted);
-  border-bottom: 4px solid var(--border-light) !important;
 }
 
-/* 回合信息 - 显示在左上角 */
+/* 回合信息 */
 .roundInfo {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   height: 100%;
+  gap: 2px;
+}
+
+.roundLabel {
+  font-size: clamp(9px, min(1.2vw, 1.5vh), 12px);
+  font-weight: 500;
+  color: var(--text-secondary);
 }
 
 .roundNumber {
-  font-size: clamp(12px, 1.8vw, 16px);
+  font-size: clamp(12px, min(1.8vw, 2.2vh), 18px);
   font-weight: 700;
   color: var(--accent);
 }
 
+/* === 分区标题行 === */
 .sectionRow td {
   background: var(--bg-muted);
   font-weight: 600;
-  font-size: clamp(9px, 1.2vw, 11px);
+  font-size: clamp(8px, min(1.1vw, 1.4vh), 11px);
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   text-align: left !important;
-  padding: 4px 6px !important;
-  height: clamp(18px, 3vh, 28px);
-  border-top: 3px solid var(--border-light) !important;
-  border-bottom: 3px solid var(--border-light) !important;
+  padding: clamp(2px, 0.5vh, 6px) clamp(4px, 1vw, 12px) !important;
+  height: clamp(16px, 3vh, 28px);
 }
 
+/* === 记分项名称 === */
 .categoryName {
   text-align: left !important;
-  padding-left: 6px !important;
-  font-size: clamp(10px, 1.4vw, 13px);
+  padding-left: clamp(4px, 1vw, 12px) !important;
+  font-size: clamp(9px, min(1.3vw, 1.6vh), 14px);
   color: var(--text-secondary);
   background: var(--bg-card);
 }
 
+/* === 分数单元格 === */
 .scoreCell {
   font-weight: 600;
-  font-size: clamp(11px, 1.6vw, 14px);
+  font-size: clamp(10px, min(1.5vw, 1.8vh), 15px);
   cursor: default;
   transition: background 0.15s;
-  height: clamp(24px, 4vh, 34px);
+  height: clamp(22px, 4vh, 40px);
 }
 
 .scoreCell.currentPlayer {
@@ -155,23 +162,40 @@
   color: var(--text-muted);
 }
 
+/* === 小计行 === */
 .subtotalRow td {
   background: var(--bg-muted);
-  font-size: clamp(10px, 1.3vw, 12px);
+  font-size: clamp(9px, min(1.2vw, 1.5vh), 12px);
   font-weight: 600;
-  height: clamp(22px, 3.5vh, 32px);
-  border-top: 4px solid var(--border-light) !important;
-  border-bottom: 4px solid var(--border-light) !important;
+  height: clamp(18px, 3.5vh, 34px);
   color: var(--text-secondary);
 }
 
 .subtotalRow td:first-child {
   text-align: left !important;
-  padding-left: 6px !important;
+  padding-left: clamp(4px, 1vw, 12px) !important;
 }
 
 .subtotalCell {
-  font-size: clamp(10px, 1.4vw, 13px) !important;
+  font-size: clamp(9px, min(1.3vw, 1.6vh), 13px) !important;
+}
+
+/* === 奖励分行 === */
+.bonusRow td {
+  background: var(--bg-muted);
+  font-size: clamp(9px, min(1.2vw, 1.5vh), 12px);
+  font-weight: 600;
+  height: clamp(18px, 3.5vh, 34px);
+  color: var(--text-secondary);
+}
+
+.bonusRow td:first-child {
+  text-align: left !important;
+  padding-left: clamp(4px, 1vw, 12px) !important;
+}
+
+.bonusCell {
+  font-size: clamp(9px, min(1.3vw, 1.6vh), 13px) !important;
 }
 
 .bonusEarned {
@@ -179,259 +203,38 @@
   font-weight: 700;
 }
 
+/* === 奖励提示行 === */
+.hintRow td {
+  background: var(--bg-card);
+  font-size: clamp(8px, min(1vw, 1.3vh), 11px);
+  color: var(--text-muted);
+  text-align: left !important;
+  padding: clamp(2px, 0.5vh, 4px) clamp(4px, 1vw, 12px) !important;
+  height: clamp(16px, 3vh, 26px);
+}
+
+/* === 总分行 === */
 .totalRow td {
   background: var(--bg-muted);
   color: var(--text);
   font-weight: 700;
-  font-size: clamp(12px, 1.8vw, 15px);
-  height: clamp(32px, 5vh, 48px);
-  border-top: 4px solid var(--border-light) !important;
+  font-size: clamp(11px, min(1.6vw, 2vh), 15px);
+  height: clamp(28px, 5vh, 54px);
 }
 
 .totalRow td:first-child {
   text-align: left !important;
-  padding-left: 6px !important;
+  padding-left: clamp(4px, 1vw, 12px) !important;
 }
 
 .totalCell {
-  font-size: clamp(14px, 2.2vw, 20px) !important;
+  font-size: clamp(13px, min(2vw, 2.5vh), 22px) !important;
   color: var(--accent);
 }
 
-/* ===== 竖屏模式 ===== */
-@media (max-aspect-ratio: 1/1), (max-width: 600px) {
-  .board {
-    padding: clamp(4px, 1.5vw, 8px);
-  }
-
-  .table {
-    border-width: 2px;
-  }
-
-  .categoryHeader {
-    width: clamp(55px, 18vw, 80px);
-    padding-left: 4px !important;
-  }
-
-  .table th,
-  .table td {
-    font-size: clamp(9px, 2.5vw, 12px);
-    border-width: 2px;
-  }
-
-  .playerHeader {
-    height: clamp(28px, 6vh, 38px);
-    font-size: clamp(9px, 2.2vw, 11px);
-    border-bottom-width: 3px !important;
-  }
-
-  .playerName {
-    font-size: clamp(8px, 2vw, 11px);
-    padding: 0 2px;
-  }
-
-  .sectionRow td {
-    padding: 2px 4px !important;
-    font-size: clamp(8px, 1.8vw, 10px);
-    height: clamp(16px, 3vh, 22px);
-    border-top-width: 2px !important;
-    border-bottom-width: 2px !important;
-  }
-
-  .categoryName {
-    font-size: clamp(9px, 2.2vw, 11px);
-    padding-left: 4px !important;
-  }
-
-  .scoreCell {
-    font-size: clamp(10px, 2.8vw, 13px);
-    height: clamp(22px, 4.5vh, 30px);
-  }
-
-  .subtotalRow td {
-    height: clamp(18px, 3vh, 26px);
-    font-size: clamp(9px, 2vw, 11px);
-    border-top-width: 3px !important;
-    border-bottom-width: 3px !important;
-  }
-
-  .totalRow td {
-    height: clamp(28px, 5vh, 40px);
-    font-size: clamp(11px, 2.5vw, 14px);
-    border-top-width: 3px !important;
-  }
-
-  .totalCell {
-    font-size: clamp(13px, 3.5vw, 18px) !important;
-  }
-}
-
-/* ===== 超小屏幕 ===== */
-@media (max-width: 360px) {
-  .board {
-    padding: 3px;
-  }
-
-  .table {
-    border-width: 2px;
-  }
-
-  .table th,
-  .table td {
-    border-width: 1px;
-  }
-
-  .categoryHeader {
-    width: 50px;
-    border-bottom-width: 2px !important;
-  }
-
+/* 小屏幕隐藏AI标签 */
+@media (max-width: 400px), (max-height: 500px) {
   .aiTag {
     display: none;
-  }
-}
-
-/* ===== 横屏超扁平模式 ===== */
-@media (max-height: 420px) and (orientation: landscape) {
-  .board {
-    padding: clamp(4px, 1vh, 8px);
-  }
-
-  .table {
-    border-width: 2px;
-  }
-
-  .table th,
-  .table td {
-    font-size: clamp(9px, 1.8vh, 11px);
-    border-width: 2px;
-  }
-
-  .categoryHeader {
-    width: clamp(50px, 12vw, 70px);
-    padding-left: 4px !important;
-    border-bottom-width: 3px !important;
-  }
-
-  .playerHeader {
-    height: auto;
-    padding: 3px 2px;
-    font-size: clamp(8px, 1.6vh, 10px);
-    border-bottom-width: 3px !important;
-  }
-
-  .playerName {
-    font-size: clamp(8px, 1.5vh, 10px);
-  }
-
-  .sectionRow td {
-    padding: 2px 4px !important;
-    font-size: clamp(7px, 1.4vh, 9px);
-    height: auto;
-    border-top-width: 2px !important;
-    border-bottom-width: 2px !important;
-  }
-
-  .categoryName {
-    font-size: clamp(8px, 1.6vh, 10px);
-    padding-left: 4px !important;
-  }
-
-  .scoreCell {
-    font-size: clamp(9px, 1.8vh, 11px);
-    height: auto;
-    padding: 2px 0;
-  }
-
-  .subtotalRow td {
-    height: auto;
-    padding: 2px 0;
-    font-size: clamp(8px, 1.5vh, 10px);
-    border-top-width: 2px !important;
-    border-bottom-width: 2px !important;
-  }
-
-  .totalRow td {
-    height: auto;
-    padding: 4px 4px !important;
-    font-size: clamp(9px, 1.8vh, 12px);
-    border-top-width: 3px !important;
-  }
-
-  .totalCell {
-    font-size: clamp(11px, 2.2vh, 14px) !important;
-  }
-
-  .aiTag {
-    display: none;
-  }
-}
-
-/* ===== 大屏幕 ===== */
-@media (min-width: 1200px) and (min-height: 700px) {
-  .board {
-    padding: 16px;
-  }
-
-  .table {
-    border-width: 4px;
-  }
-
-  .table th,
-  .table td {
-    font-size: 13px;
-    border-width: 3px;
-  }
-
-  .categoryHeader {
-    width: 120px;
-    padding-left: 12px !important;
-    border-bottom-width: 4px !important;
-  }
-
-  .playerHeader {
-    height: 50px;
-    font-size: 13px;
-    border-bottom-width: 4px !important;
-  }
-
-  .playerName {
-    font-size: 12px;
-    padding: 0 6px;
-  }
-
-  .sectionRow td {
-    padding: 6px 12px !important;
-    font-size: 11px;
-    height: 28px;
-    border-top-width: 3px !important;
-    border-bottom-width: 3px !important;
-  }
-
-  .categoryName {
-    font-size: 14px;
-    padding-left: 12px !important;
-  }
-
-  .scoreCell {
-    font-size: 15px;
-    height: 40px;
-  }
-
-  .subtotalRow td {
-    height: 34px;
-    font-size: 12px;
-    border-top-width: 4px !important;
-    border-bottom-width: 4px !important;
-  }
-
-  .totalRow td {
-    height: 54px;
-    font-size: 15px;
-    border-top-width: 4px !important;
-  }
-
-  .totalCell {
-    font-size: 22px !important;
   }
 }

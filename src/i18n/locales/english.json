@@ -58,27 +58,28 @@
     "backToMenu": "Back to Menu"
   },
   "score": {
-    "upperSection": "Upper Section",
+    "upperSection": "Combinations",
     "lowerSection": "Lower Section",
-    "ones": "Ones",
-    "twos": "Twos",
-    "threes": "Threes",
-    "fours": "Fours",
-    "fives": "Fives",
-    "sixes": "Sixes",
-    "upperTotal": "Upper Subtotal",
-    "upperBonus": "Bonus (≥63)",
+    "ones": "⚀ Ones",
+    "twos": "⚁ Twos",
+    "threes": "⚂ Threes",
+    "fours": "⚃ Fours",
+    "fives": "⚄ Fives",
+    "sixes": "⚅ Sixes",
+    "upperTotal": "Subtotal",
+    "upperBonus": "Bonus +35",
+    "bonusHint": "⚀~⚅ total ≥63 to earn bonus",
     "upperFinal": "Upper Total",
     "threeOfAKind": "Three of a Kind",
-    "fourOfAKind": "Four of a Kind",
-    "fullHouse": "Full House",
-    "smallStraight": "Small Straight",
-    "largeStraight": "Large Straight",
-    "yahtzee": "Yahtzee",
-    "chance": "Chance",
+    "fourOfAKind": "⚃⚃ Four of a Kind",
+    "fullHouse": "⚂⚁ Full House",
+    "smallStraight": "⚀⚁⚂⚃ Small Straight",
+    "largeStraight": "⚁⚂⚃⚄ Large Straight",
+    "yahtzee": "⚅⚅ Yahtzee",
+    "chance": "⚀⚅ Chance",
     "yahtzeeBonus": "Yahtzee Bonus",
     "lowerTotal": "Lower Total",
-    "grandTotal": "Grand Total"
+    "grandTotal": "Total Score"
   },
   "tooltip": {
     "ones": "Sum of all ones",
@@ -111,7 +112,7 @@
     "rule3": "You must select a score category each turn",
     "rule4": "Score 35 bonus points if upper section total ≥ 63",
     "rule5": "Yahtzee (5 of a kind) scores 50; extra Yahtzees +100 each",
-    "rule6": "The game lasts 13 rounds, highest total score wins"
+    "rule6": "The game lasts 12 rounds, highest total score wins"
   },
   "common": {
     "confirm": "Confirm",
