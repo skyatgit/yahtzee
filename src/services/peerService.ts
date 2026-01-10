@@ -64,8 +64,26 @@ class PeerService {
    */
   async joinRoom(roomId: string): Promise<void> {
     return new Promise((resolve, reject) => {
+      let settled = false; // 防止重复 resolve/reject
+      
+      // 清理函数
+      const cleanup = () => {
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+        }
+      };
+      
       // 创建一个随机的 Peer ID
       this.peer = new Peer(PEER_CONFIG);
+      
+      // 设置超时（5秒）
+      const timeoutId = window.setTimeout(() => {
+        if (settled) return;
+        settled = true;
+        console.error('连接超时');
+        this.disconnect();
+        reject(new Error('连接超时，房间可能不存在'));
+      }, 5000);
       
       this.peer.on('open', (id) => {
         console.log('我的 Peer ID:', id);
@@ -78,6 +96,9 @@ class PeerService {
         });
         
         conn.on('open', () => {
+          if (settled) return;
+          settled = true;
+          cleanup();
           console.log('已连接到房主');
           this.connections.set(hostPeerId, conn);
           this.setupConnectionHandlers(conn);
@@ -85,8 +106,12 @@ class PeerService {
         });
         
         conn.on('error', (err) => {
+          if (settled) return;
+          settled = true;
+          cleanup();
           console.error('连接错误:', err);
-          reject(err);
+          this.disconnect();
+          reject(new Error('房间不存在或无法连接'));
         });
       });
       
@@ -95,16 +120,13 @@ class PeerService {
       });
       
       this.peer.on('error', (err) => {
+        if (settled) return;
+        settled = true;
+        cleanup();
         console.error('Peer 错误:', err);
+        this.disconnect();
         reject(err);
       });
-      
-      // 设置超时
-      setTimeout(() => {
-        if (this.connections.size === 0) {
-          reject(new Error('连接超时'));
-        }
-      }, 10000);
     });
   }
   

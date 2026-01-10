@@ -65,6 +65,15 @@ export function OnlineSync() {
       console.log(`${tag} 收到消息: ${message.type}`, message.payload);
 
       switch (message.type) {
+        case 'join': {
+          // 游戏中有人尝试加入（房主处理）
+          if (!state.isHost) break;
+          const newPlayer = message.payload as Player;
+          console.log('[房主] 游戏进行中，拒绝加入');
+          peerService.sendTo(newPlayer.id, 'game-started', {});
+          break;
+        }
+        
         case 'sync': {
           // 同步状态
           const data = message.payload as {
@@ -161,6 +170,15 @@ export function OnlineSync() {
           setTimeout(checkLastPlayer, 100);
           break;
         }
+        
+        case 'room-closed': {
+          // 房主关闭房间（客户端接收）
+          if (state.isHost) break;
+          console.log('[客户端] 房主关闭了房间');
+          peerService.disconnect();
+          triggerAllPlayersLeft();
+          break;
+        }
       }
     };
 
@@ -168,6 +186,17 @@ export function OnlineSync() {
     const handleDisconnect = (peerId: string) => {
       const state = useGameStore.getState();
       console.log('[OnlineSync] 玩家断开:', peerId);
+      
+      // 非房主：检测是否是房主断开（与房主的连接断开意味着房间解散）
+      if (!state.isHost) {
+        // 房主的 peerId 格式是 yahtzee-ROOMID
+        if (peerId.startsWith('yahtzee-')) {
+          console.log('[客户端] 房主断开连接，房间解散');
+          peerService.disconnect();
+          triggerAllPlayersLeft();
+          return;
+        }
+      }
 
       const player = state.players.find(p => p.id === peerId);
       if (player) {

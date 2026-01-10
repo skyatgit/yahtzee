@@ -309,15 +309,36 @@ export const useGameStore = create<GameStore>()(
     
     removeRemotePlayer: (playerId) => {
       set(state => {
-        const newPlayers = state.players.filter(p => p.id !== playerId);
-        let newCurrentIndex = state.currentPlayerIndex;
         const removedIndex = state.players.findIndex(p => p.id === playerId);
-        if (removedIndex !== -1 && removedIndex <= state.currentPlayerIndex) {
-          newCurrentIndex = Math.max(0, state.currentPlayerIndex - 1);
+        if (removedIndex === -1) return state;
+        
+        const newPlayers = state.players.filter(p => p.id !== playerId);
+        if (newPlayers.length === 0) return { players: newPlayers, currentPlayerIndex: 0 };
+        
+        let newCurrentIndex = state.currentPlayerIndex;
+        
+        // 如果移除的玩家在当前玩家之前，当前索引需要减1
+        if (removedIndex < state.currentPlayerIndex) {
+          newCurrentIndex = state.currentPlayerIndex - 1;
         }
+        // 如果移除的正好是当前玩家，索引保持不变（下一个玩家顶上来）
+        // 但如果索引超出范围了，需要回到0
+        else if (removedIndex === state.currentPlayerIndex) {
+          // 索引不变，但要检查是否超出范围
+          if (newCurrentIndex >= newPlayers.length) {
+            newCurrentIndex = 0;
+          }
+        }
+        // 如果移除的玩家在当前玩家之后，索引不需要变化
+        
+        // 确保索引在有效范围内
         if (newCurrentIndex >= newPlayers.length) {
           newCurrentIndex = 0;
         }
+        if (newCurrentIndex < 0) {
+          newCurrentIndex = 0;
+        }
+        
         return { players: newPlayers, currentPlayerIndex: newCurrentIndex };
       });
     },

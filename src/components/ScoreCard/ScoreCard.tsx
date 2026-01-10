@@ -101,6 +101,13 @@ export function ScoreBoard() {
   return (
     <div className={styles.board}>
       <table className={styles.table}>
+        {/* 定义列宽：第一列自适应，玩家列均分剩余空间 */}
+        <colgroup>
+          <col className={styles.categoryCol} />
+          {players.map(player => (
+            <col key={player.id} className={styles.playerCol} />
+          ))}
+        </colgroup>
         <thead>
           <tr>
             {/* 左上角显示回合进度 */}

@@ -193,6 +193,26 @@
   border-radius: 10px;
 }
 
+.kickButton {
+  width: clamp(20px, 3vh, 28px);
+  height: clamp(20px, 3vh, 28px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--danger, #c55);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  font-size: clamp(10px, 1.6vh, 14px);
+  cursor: pointer;
+  transition: opacity 0.15s;
+  flex-shrink: 0;
+}
+
+.kickButton:hover {
+  opacity: 0.8;
+}
+
 .waiting {
   display: flex;
   align-items: center;

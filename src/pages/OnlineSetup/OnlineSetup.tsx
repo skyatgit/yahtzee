@@ -75,7 +75,6 @@ export function OnlineSetup({ onBack, onStart }: OnlineSetupProps) {
   
   // 处理收到的消息
   const handleMessage = useCallback((message: GameMessage) => {
-    // ...existing code...
     console.log('[OnlineSetup] 收到消息:', message.type, message.payload);
     const state = useGameStore.getState();
     
@@ -87,6 +86,20 @@ export function OnlineSetup({ onBack, onStart }: OnlineSetupProps) {
         const newPlayer = message.payload as Player;
         // 检查玩家是否已存在
         if (state.players.some(p => p.id === newPlayer.id)) return;
+        
+        // 检查游戏是否已经开始
+        if (state.phase !== 'waiting') {
+          console.log('[房主] 游戏已开始，拒绝加入');
+          peerService.sendTo(newPlayer.id, 'game-started', {});
+          return;
+        }
+        
+        // 检查房间是否已满（最多4人）
+        if (state.players.length >= 4) {
+          console.log('[房主] 房间已满，拒绝加入');
+          peerService.sendTo(newPlayer.id, 'room-full', {});
+          return;
+        }
         
         console.log('[房主] 添加新玩家:', newPlayer.name);
         addRemotePlayer(newPlayer);
@@ -135,30 +148,116 @@ export function OnlineSetup({ onBack, onStart }: OnlineSetupProps) {
       }
       
       case 'player-left': {
-        const { playerId } = message.payload as { playerId: string };
+        const { playerId, playerName: leftPlayerName } = message.payload as { playerId: string; playerName?: string };
         console.log('[OnlineSetup] 玩家离开:', playerId);
         removeRemotePlayer(playerId);
+        // 显示通知
+        if (leftPlayerName) {
+          setError(t('online.playerLeft', { name: leftPlayerName }));
+          setTimeout(() => setError(null), 3000);
+        }
+        break;
+      }
+      
+      case 'kicked': {
+        // 被房主踢出（非房主收到）
+        console.log('[客户端] 被踢出房间');
+        peerService.disconnect();
+        setError(t('online.kicked'));
+        setMode('select');
+        break;
+      }
+      
+      case 'room-full': {
+        // 房间已满（加入者收到）
+        console.log('[客户端] 房间已满');
+        peerService.disconnect();
+        setError(t('online.roomFull'));
+        setMode('select');
+        break;
+      }
+      
+      case 'game-started': {
+        // 游戏已开始（加入者收到）
+        console.log('[客户端] 游戏已开始，无法加入');
+        peerService.disconnect();
+        setError(t('online.gameAlreadyStarted'));
+        setMode('select');
+        break;
+      }
+      
+      case 'room-closed': {
+        // 房主关闭房间（客户端收到）
+        console.log('[客户端] 房主关闭了房间');
+        peerService.disconnect();
+        setError(t('online.hostLeft'));
+        setMode('select');
         break;
       }
     }
-  }, [addRemotePlayer, removeRemotePlayer, syncGameState, onStart]);
+  }, [addRemotePlayer, removeRemotePlayer, syncGameState, onStart, t]);
   
   // 处理玩家断开连接
   const handleDisconnection = useCallback((peerId: string) => {
     console.log('[OnlineSetup] 玩家断开连接:', peerId);
     const state = useGameStore.getState();
     
+    // 非房主：检测是否是房主断开（房间解散）
+    if (!state.isHost) {
+      if (peerId.startsWith('yahtzee-')) {
+        console.log('[客户端] 房主断开连接，房间解散');
+        peerService.disconnect();
+        setError(t('online.hostLeft'));
+        setMode('select');
+        return;
+      }
+    }
+    
     // 查找断开的玩家
     const disconnectedPlayer = state.players.find(p => p.id === peerId);
     if (disconnectedPlayer) {
       removeRemotePlayer(peerId);
       
-      // 房主广播玩家离开
+      // 房主广播玩家离开（带玩家名）
       if (state.isHost) {
-        peerService.broadcast('player-left', { playerId: peerId });
+        peerService.broadcast('player-left', { 
+          playerId: peerId,
+          playerName: disconnectedPlayer.name 
+        });
       }
+      
+      // 显示断开连接通知
+      setError(t('online.playerDisconnected', { name: disconnectedPlayer.name }));
+      setTimeout(() => setError(null), 3000);
     }
-  }, [removeRemotePlayer]);
+  }, [removeRemotePlayer, t]);
+  
+  // 踢出玩家（房主）
+  const handleKickPlayer = (playerId: string) => {
+    const state = useGameStore.getState();
+    if (!state.isHost) return;
+    
+    const playerToKick = state.players.find(p => p.id === playerId);
+    if (!playerToKick) return;
+    
+    // 发送踢出消息给该玩家
+    peerService.sendTo(playerId, 'kicked', {});
+    
+    // 移除玩家
+    removeRemotePlayer(playerId);
+    
+    // 广播更新后的玩家列表
+    setTimeout(() => {
+      const updatedState = useGameStore.getState();
+      peerService.broadcast('sync', { 
+        players: updatedState.players 
+      });
+      peerService.broadcast('player-left', { 
+        playerId,
+        playerName: playerToKick.name 
+      });
+    }, 100);
+  };
   
   // 注册消息处理器
   useEffect(() => {
@@ -371,6 +470,15 @@ export function OnlineSetup({ onBack, onStart }: OnlineSetupProps) {
                     <span className={styles.playerIcon}>👤</span>
                     <span className={styles.playerName}>{player.name}</span>
                     {index === 0 && <span className={styles.hostBadge}>{t('online.host')}</span>}
+                    {index !== 0 && (
+                      <button 
+                        className={styles.kickButton}
+                        onClick={() => handleKickPlayer(player.id)}
+                        title={t('online.kick')}
+                      >
+                        ✕
+                      </button>
+                    )}
                   </motion.div>
                 ))}
               </div>

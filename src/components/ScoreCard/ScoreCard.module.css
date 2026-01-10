@@ -21,8 +21,17 @@
   width: 100%;
   height: 100%;
   border-collapse: collapse;
-  table-layout: auto;
+  table-layout: fixed;
   border: clamp(1px, min(0.2vw, 0.3vh), 3px) solid var(--border-light);
+}
+
+/* 列宽定义 */
+.categoryCol {
+  width: 30%;
+}
+
+.playerCol {
+  /* 玩家列均分剩余70%空间，由table-layout: fixed自动均分 */
 }
 
 /* 统一所有单元格 */
@@ -68,6 +77,8 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   padding: 0 clamp(1px, 0.2vw, 3px);
+  /* 字体大小自适应容器 */
+  font-size: clamp(6px, 3cqh, 14px);
 }
 
 .aiTag {
