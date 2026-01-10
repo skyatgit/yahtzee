@@ -77,8 +77,31 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   padding: 0 clamp(1px, 0.2vw, 3px);
-  /* 字体大小自适应容器 */
-  font-size: clamp(6px, 3cqh, 14px);
+}
+
+/* 玩家名容器 - 允许换行 */
+.playerNameWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 2px;
+}
+
+.playerNameText {
+  text-align: center;
+  font-weight: 600;
+  word-break: break-all;
+  line-height: 1.2;
+  font-size: clamp(10px, 2.5cqh, 14px);
+}
+
+/* 自适应字号的玩家名容器（保留备用） */
+.playerNameContainer {
+  display: block;
+  width: 100%;
+  overflow: hidden;
 }
 
 .aiTag {
@@ -96,6 +119,22 @@
   vertical-align: middle;
   background: var(--bg-muted);
   white-space: nowrap;
+}
+
+/* 回合信息单元格 */
+.roundCell {
+  text-align: center !important;
+  vertical-align: middle;
+  background: var(--bg-muted);
+}
+
+/* 排列组合名标题 */
+.sectionHeader {
+  text-align: left !important;
+  padding-left: clamp(2px, 0.4vw, 6px) !important;
+  background: var(--bg-muted);
+  font-weight: 700;
+  color: var(--text-secondary);
 }
 
 /* 回合信息 */

@@ -109,9 +109,9 @@ export function ScoreBoard() {
           ))}
         </colgroup>
         <thead>
+          {/* 第一行：回合 + 玩家名（玩家名rowspan=2） */}
           <tr>
-            {/* 左上角显示回合进度 */}
-            <th className={styles.categoryHeader}>
+            <th className={styles.roundCell}>
               <div className={styles.roundInfo}>
                 <span className={styles.roundLabel}>{t('game.round')}</span>
                 <span className={styles.roundNumber}>{currentRound}/12</span>
@@ -120,26 +120,30 @@ export function ScoreBoard() {
             {players.map((player, index) => (
               <th 
                 key={player.id} 
+                rowSpan={2}
                 className={`
                   ${styles.playerHeader} 
                   ${index === currentPlayerIndex ? styles.activePlayer : ''}
                   ${isLocalPlayer(player) ? styles.localPlayerHeader : ''}
                 `}
               >
-                <span className={styles.playerName}>
-                  {player.name}
-                  {isLocalPlayer(player) && mode === 'online' && ` (${t('common.you')})`}
-                </span>
-                {mode === 'local' && player.type === 'ai' && <span className={styles.aiTag}>AI</span>}
+                <div className={styles.playerNameWrapper}>
+                  <span className={styles.playerNameText}>
+                    {player.name}
+                    {isLocalPlayer(player) && mode === 'online' && <br />}
+                    {isLocalPlayer(player) && mode === 'online' && `(${t('common.you')})`}
+                  </span>
+                  {mode === 'local' && player.type === 'ai' && <span className={styles.aiTag}>AI</span>}
+                </div>
               </th>
             ))}
           </tr>
+          {/* 第二行：排列组合名（第一列），玩家列被rowspan占用 */}
+          <tr className={styles.sectionRow}>
+            <th className={styles.sectionHeader}>{t('score.upperSection')}</th>
+          </tr>
         </thead>
         <tbody>
-          {/* 上半区标题 */}
-          <tr className={styles.sectionRow}>
-            <td colSpan={players.length + 1}>{t('score.upperSection')}</td>
-          </tr>
           
           {/* 上半区分数（1~6点） */}
           {upperCategories.map(category => (
