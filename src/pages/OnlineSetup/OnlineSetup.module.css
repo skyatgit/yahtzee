@@ -1,31 +1,39 @@
 /**
- * 联机设置 - 自适应布局
+ * 联机设置 - 完全自适应布局
+ * 内容自适应窗口高度，不会显示不全
  */
 
 .container {
-  min-height: 100dvh;
+  width: 100vw;
+  height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: clamp(12px, 3vw, 20px);
+  padding: clamp(8px, 2vw, 20px);
   background: var(--bg);
-  overflow: auto;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .content {
   max-width: 400px;
   width: 100%;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .header {
   display: flex;
   align-items: center;
-  gap: clamp(10px, 3vw, 14px);
-  margin-bottom: clamp(14px, 3vh, 20px);
+  gap: clamp(8px, 2vw, 14px);
+  margin-bottom: clamp(8px, 1.5vh, 16px);
+  flex-shrink: 0;
 }
 
 .title {
-  font-size: clamp(16px, 4.5vw, 20px);
+  font-size: clamp(14px, min(4vw, 3vh), 20px);
   font-weight: 600;
   color: var(--text);
 }
@@ -34,33 +42,36 @@
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: clamp(14px, 3.5vw, 20px);
+  padding: clamp(10px, min(2.5vw, 2vh), 20px);
+  flex: 1;
+  overflow: auto;
+  min-height: 0;
 }
 
 .section {
-  margin-bottom: clamp(12px, 2.5vh, 18px);
+  margin-bottom: clamp(8px, 1.5vh, 16px);
 }
 
 .label {
   display: block;
   font-weight: 600;
   color: var(--text);
-  margin-bottom: clamp(8px, 1.5vh, 10px);
-  font-size: clamp(12px, 3.5vw, 14px);
+  margin-bottom: clamp(6px, 1vh, 10px);
+  font-size: clamp(11px, min(3vw, 2vh), 14px);
 }
 
 .modeButtons {
   display: flex;
   flex-direction: column;
-  gap: clamp(8px, 2vh, 12px);
+  gap: clamp(6px, 1.5vh, 12px);
 }
 
 .divider {
   display: flex;
   align-items: center;
-  gap: clamp(8px, 2vw, 12px);
+  gap: clamp(6px, 1.5vw, 12px);
   color: var(--text-muted);
-  font-size: clamp(11px, 3vw, 13px);
+  font-size: clamp(10px, min(2.5vw, 2vh), 13px);
 }
 
 .divider::before,
@@ -73,7 +84,7 @@
 
 .joinSection {
   display: flex;
-  gap: clamp(6px, 2vw, 10px);
+  gap: clamp(4px, 1.5vw, 10px);
 }
 
 .joinSection .input {
@@ -82,8 +93,8 @@
   font-weight: 600;
   letter-spacing: clamp(1px, 0.5vw, 3px);
   text-align: center;
-  font-size: clamp(14px, 4vw, 18px);
-  padding: clamp(8px, 2vh, 12px);
+  font-size: clamp(12px, min(3.5vw, 2.5vh), 18px);
+  padding: clamp(6px, min(1.5vh, 2vw), 12px);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--bg-card);
@@ -96,86 +107,86 @@
 }
 
 .error {
-  margin-top: clamp(8px, 2vh, 12px);
-  padding: clamp(8px, 2vh, 10px);
+  margin-top: clamp(6px, 1.5vh, 12px);
+  padding: clamp(6px, 1.5vh, 10px);
   background: rgba(204, 85, 85, 0.15);
   color: var(--danger);
-  font-size: clamp(11px, 3vw, 13px);
+  font-size: clamp(10px, min(2.5vw, 2vh), 13px);
   text-align: center;
   border-radius: var(--radius);
 }
 
 .joinedInfo {
-  padding: clamp(10px, 2vh, 12px);
+  padding: clamp(8px, 1.5vh, 12px);
   background: rgba(90, 154, 106, 0.15);
   color: var(--success);
   font-weight: 500;
   text-align: center;
-  margin-bottom: clamp(12px, 2.5vh, 18px);
+  margin-bottom: clamp(8px, 1.5vh, 16px);
   border-radius: var(--radius);
-  font-size: clamp(12px, 3.5vw, 14px);
+  font-size: clamp(11px, min(3vw, 2vh), 14px);
 }
 
 .roomInfo {
   text-align: center;
-  margin-bottom: clamp(12px, 2.5vh, 18px);
-  padding: clamp(12px, 3vh, 18px);
+  margin-bottom: clamp(8px, 1.5vh, 16px);
+  padding: clamp(8px, min(2vh, 2.5vw), 18px);
   background: var(--bg-muted);
   border-radius: var(--radius);
 }
 
 .roomLabel {
-  font-size: clamp(11px, 3vw, 13px);
+  font-size: clamp(10px, min(2.5vw, 2vh), 13px);
   color: var(--text-secondary);
-  margin-bottom: clamp(6px, 1.5vh, 10px);
+  margin-bottom: clamp(4px, 1vh, 10px);
 }
 
 .roomIdDisplay {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: clamp(8px, 2.5vw, 14px);
+  gap: clamp(6px, 2vw, 14px);
   flex-wrap: wrap;
 }
 
 .roomIdText {
-  font-size: clamp(22px, 7vw, 32px);
+  font-size: clamp(18px, min(6vw, 5vh), 32px);
   font-weight: 700;
-  letter-spacing: clamp(2px, 1vw, 5px);
+  letter-spacing: clamp(2px, 0.8vw, 5px);
   color: var(--text);
 }
 
 .playerList {
   display: flex;
   flex-direction: column;
-  gap: clamp(6px, 1.5vh, 8px);
+  gap: clamp(4px, 1vh, 8px);
 }
 
 .playerItem {
   display: flex;
   align-items: center;
-  gap: clamp(8px, 2.5vw, 12px);
-  padding: clamp(10px, 2.5vh, 12px);
+  gap: clamp(6px, 2vw, 12px);
+  padding: clamp(6px, min(1.5vh, 2vw), 12px);
   background: var(--bg-muted);
   border-radius: var(--radius);
 }
 
 .playerIcon {
-  font-size: clamp(16px, 4.5vw, 20px);
+  font-size: clamp(14px, min(4vw, 3vh), 20px);
 }
 
 .playerName {
   flex: 1;
   font-weight: 500;
   color: var(--text);
-  font-size: clamp(12px, 3.5vw, 14px);
+  font-size: clamp(11px, min(3vw, 2vh), 14px);
 }
 
 .hostBadge {
-  padding: 3px clamp(6px, 2vw, 10px);
+  padding: 2px clamp(5px, 1.5vw, 10px);
   background: var(--accent);
   color: #000;
-  font-size: clamp(9px, 2.5vw, 11px);
+  font-size: clamp(8px, min(2vw, 1.5vh), 11px);
   font-weight: 600;
   border-radius: 10px;
 }
@@ -184,11 +195,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: clamp(6px, 2vw, 10px);
-  padding: clamp(10px, 2vh, 12px);
+  gap: clamp(4px, 1.5vw, 10px);
+  padding: clamp(6px, 1.5vh, 12px);
   color: var(--text-secondary);
-  margin-bottom: clamp(10px, 2vh, 14px);
-  font-size: clamp(12px, 3.5vw, 14px);
+  margin-bottom: clamp(8px, 1.5vh, 14px);
+  font-size: clamp(11px, min(3vw, 2vh), 14px);
 }
 
 .waitingDots {
@@ -199,60 +210,32 @@
   50% { opacity: 0.3; }
 }
 
-/* ===== 横屏超扁平模式 ===== */
-@media (max-height: 420px) and (orientation: landscape) {
-  .container {
-    padding: 10px 16px;
+/* 横屏模式：使用更紧凑布局 */
+@media (orientation: landscape) {
+  .content {
+    max-width: 500px;
   }
 
-  .header {
-    margin-bottom: 10px;
-  }
-
-  .card {
-    padding: 12px;
-  }
-
-  .section {
-    margin-bottom: 10px;
-  }
-
-  .modeButtons {
-    gap: 8px;
-  }
-
-  .joinSection .input {
-    padding: 8px;
-    font-size: 14px;
-  }
-
-  .roomInfo {
-    padding: 10px;
-    margin-bottom: 10px;
-  }
-
-  .roomIdText {
-    font-size: 20px;
-  }
-
-  .playerItem {
-    padding: 8px;
+  .playerList {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: clamp(4px, 1vh, 8px);
   }
 }
 
-/* ===== 超小屏幕 ===== */
+/* 超小屏幕 */
 @media (max-width: 320px) {
   .content {
     max-width: 100%;
   }
 
   .roomIdText {
-    font-size: 20px;
+    font-size: 18px;
     letter-spacing: 2px;
   }
 
   .roomIdDisplay {
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
   }
 }
