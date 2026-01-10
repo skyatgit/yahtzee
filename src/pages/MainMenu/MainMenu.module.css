@@ -1,16 +1,15 @@
 /**
- * 主菜单 - 深色主题
+ * 主菜单 - 自适应布局
  */
 
 .container {
-  height: 100vh;
-  height: 100dvh;
+  min-height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px;
+  padding: clamp(16px, 4vw, 24px);
   background: var(--bg);
-  overflow: hidden;
+  overflow: auto;
 }
 
 .content {
@@ -20,16 +19,16 @@
 }
 
 .header {
-  margin-bottom: 36px;
+  margin-bottom: clamp(20px, 5vh, 36px);
 }
 
 .logo {
-  font-size: 72px;
-  margin-bottom: 16px;
+  font-size: clamp(48px, 12vw, 72px);
+  margin-bottom: clamp(10px, 2vh, 16px);
 }
 
 .title {
-  font-size: 28px;
+  font-size: clamp(22px, 6vw, 28px);
   font-weight: 700;
   color: var(--text);
   margin-bottom: 8px;
@@ -37,30 +36,30 @@
 
 .subtitle {
   color: var(--text-muted);
-  font-size: 14px;
+  font-size: clamp(12px, 3.5vw, 14px);
 }
 
 .diceDecoration {
   display: flex;
   justify-content: center;
-  gap: 10px;
-  margin-bottom: 36px;
-  font-size: 16px;
+  gap: clamp(6px, 2vw, 10px);
+  margin-bottom: clamp(20px, 5vh, 36px);
+  font-size: clamp(12px, 3.5vw, 16px);
   color: var(--text-muted);
 }
 
 .menuButtons {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: clamp(8px, 2vh, 12px);
 }
 
 .menuButton {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 16px 20px;
-  font-size: 15px;
+  gap: clamp(10px, 3vw, 14px);
+  padding: clamp(12px, 3vh, 16px) clamp(14px, 4vw, 20px);
+  font-size: clamp(13px, 3.5vw, 15px);
   font-weight: 500;
   background: var(--bg-card);
   color: var(--text);
@@ -81,24 +80,82 @@
 }
 
 .buttonIcon {
-  font-size: 22px;
-  width: 28px;
+  font-size: clamp(18px, 5vw, 22px);
+  width: clamp(22px, 6vw, 28px);
   flex-shrink: 0;
 }
 
 .footer {
-  margin-top: 36px;
+  margin-top: clamp(20px, 5vh, 36px);
   color: var(--text-muted);
-  font-size: 13px;
+  font-size: clamp(11px, 3vw, 13px);
 }
 
-@media (max-height: 500px) and (orientation: landscape) {
-  .header { margin-bottom: 20px; }
-  .logo { font-size: 48px; }
-  .title { font-size: 22px; }
-  .diceDecoration { margin-bottom: 20px; }
-  .menuButtons { flex-direction: row; justify-content: center; gap: 10px; }
-  .menuButton { padding: 12px 16px; font-size: 14px; }
-  .buttonIcon { font-size: 18px; width: 22px; }
-  .footer { margin-top: 20px; }
+/* ===== 横屏超扁平模式 ===== */
+@media (max-height: 420px) and (orientation: landscape) {
+  .container {
+    padding: 12px 20px;
+  }
+
+  .header {
+    margin-bottom: 12px;
+  }
+
+  .logo {
+    font-size: 36px;
+    margin-bottom: 6px;
+  }
+
+  .title {
+    font-size: 18px;
+    margin-bottom: 4px;
+  }
+
+  .subtitle {
+    font-size: 11px;
+  }
+
+  .diceDecoration {
+    margin-bottom: 12px;
+    font-size: 12px;
+  }
+
+  .menuButtons {
+    flex-direction: row;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .menuButton {
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+
+  .buttonIcon {
+    font-size: 16px;
+    width: 20px;
+  }
+
+  .footer {
+    margin-top: 12px;
+    font-size: 11px;
+  }
+}
+
+/* ===== 超小屏幕 ===== */
+@media (max-width: 320px) {
+  .content {
+    max-width: 100%;
+  }
+
+  .menuButton {
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+
+  .buttonIcon {
+    width: 20px;
+    font-size: 16px;
+  }
 }

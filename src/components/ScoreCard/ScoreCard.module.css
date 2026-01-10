@@ -1,5 +1,5 @@
 /**
- * 计分板 - 深色主题
+ * 计分板 - 自适应布局
  */
 
 .board {
@@ -8,6 +8,8 @@
   flex-direction: column;
   background: var(--bg-card);
   overflow: hidden;
+  /* 内边距让表格不贴边 */
+  padding: clamp(6px, 1.5vw, 12px);
 }
 
 .table {
@@ -15,7 +17,8 @@
   height: 100%;
   border-collapse: collapse;
   table-layout: fixed;
-  border: 2px solid var(--border);
+  /* 加粗外边框 */
+  border: 3px solid var(--border-light);
 }
 
 .table th,
@@ -23,17 +26,18 @@
   padding: 0;
   text-align: center;
   vertical-align: middle;
-  font-size: 13px;
-  border: 2px solid var(--border);
+  font-size: clamp(10px, 1.5vw, 13px);
+  /* 加粗单元格边框 */
+  border: 2px solid var(--border-light);
   color: var(--text);
 }
 
 .playerHeader {
   background: var(--bg-muted);
   font-weight: 600;
-  font-size: 12px;
-  height: 44px;
-  border-bottom: 3px solid var(--border) !important;
+  font-size: clamp(10px, 1.4vw, 12px);
+  height: clamp(32px, 5vh, 44px);
+  border-bottom: 4px solid var(--border-light) !important;
 }
 
 .playerHeader.activePlayer {
@@ -51,52 +55,70 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  padding: 0 6px;
+  padding: 0 4px;
+  font-size: clamp(9px, 1.3vw, 12px);
 }
 
 .aiTag {
   display: inline-block;
-  font-size: 10px;
-  padding: 2px 5px;
+  font-size: clamp(8px, 1vw, 10px);
+  padding: 1px 4px;
   background: var(--accent);
   color: #000;
   border-radius: 3px;
-  margin-left: 4px;
+  margin-left: 2px;
 }
 
 .categoryHeader {
-  width: 100px;
-  text-align: left !important;
-  padding-left: 12px !important;
-  background: var(--bg-card);
+  width: clamp(60px, 15vw, 100px);
+  text-align: center !important;
+  vertical-align: middle;
+  background: var(--bg-muted);
+  border-bottom: 4px solid var(--border-light) !important;
+}
+
+/* 回合信息 - 显示在左上角 */
+.roundInfo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.roundNumber {
+  font-size: clamp(12px, 1.8vw, 16px);
+  font-weight: 700;
+  color: var(--accent);
 }
 
 .sectionRow td {
   background: var(--bg-muted);
   font-weight: 600;
-  font-size: 11px;
+  font-size: clamp(9px, 1.2vw, 11px);
   color: var(--text-secondary);
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
   text-align: left !important;
-  padding: 6px 12px !important;
-  height: 28px;
+  padding: 4px 6px !important;
+  height: clamp(18px, 3vh, 28px);
+  border-top: 3px solid var(--border-light) !important;
+  border-bottom: 3px solid var(--border-light) !important;
 }
 
 .categoryName {
   text-align: left !important;
-  padding-left: 12px !important;
-  font-size: 13px;
+  padding-left: 6px !important;
+  font-size: clamp(10px, 1.4vw, 13px);
   color: var(--text-secondary);
   background: var(--bg-card);
 }
 
 .scoreCell {
   font-weight: 600;
-  font-size: 14px;
+  font-size: clamp(11px, 1.6vw, 14px);
   cursor: default;
   transition: background 0.15s;
-  height: 34px;
+  height: clamp(24px, 4vh, 34px);
 }
 
 .scoreCell.currentPlayer {
@@ -135,21 +157,21 @@
 
 .subtotalRow td {
   background: var(--bg-muted);
-  font-size: 12px;
+  font-size: clamp(10px, 1.3vw, 12px);
   font-weight: 600;
-  height: 32px;
-  border-top: 3px solid var(--border) !important;
-  border-bottom: 3px solid var(--border) !important;
+  height: clamp(22px, 3.5vh, 32px);
+  border-top: 4px solid var(--border-light) !important;
+  border-bottom: 4px solid var(--border-light) !important;
   color: var(--text-secondary);
 }
 
 .subtotalRow td:first-child {
   text-align: left !important;
-  padding-left: 12px !important;
+  padding-left: 6px !important;
 }
 
 .subtotalCell {
-  font-size: 13px !important;
+  font-size: clamp(10px, 1.4vw, 13px) !important;
 }
 
 .bonusEarned {
@@ -157,73 +179,259 @@
   font-weight: 700;
 }
 
-.bonusRow td {
-  background: rgba(212, 168, 80, 0.1);
-  font-size: 12px;
-  height: 30px;
-  color: var(--accent);
-}
-
-.bonusRow td:first-child {
-  text-align: left !important;
-  padding-left: 12px !important;
-}
-
-.bonusCell {
-  font-size: 13px !important;
-  font-weight: 600;
-}
-
 .totalRow td {
   background: var(--bg-muted);
   color: var(--text);
   font-weight: 700;
-  font-size: 15px;
-  height: 48px;
-  border-top: 3px solid var(--border) !important;
+  font-size: clamp(12px, 1.8vw, 15px);
+  height: clamp(32px, 5vh, 48px);
+  border-top: 4px solid var(--border-light) !important;
 }
 
 .totalRow td:first-child {
   text-align: left !important;
-  padding-left: 12px !important;
+  padding-left: 6px !important;
 }
 
 .totalCell {
-  font-size: 20px !important;
+  font-size: clamp(14px, 2.2vw, 20px) !important;
   color: var(--accent);
 }
 
-@media (max-width: 640px) {
-  .categoryHeader { width: 80px; }
-  .table th, .table td { font-size: 12px; }
-  .categoryName { font-size: 12px; padding-left: 8px !important; }
-  .scoreCell { font-size: 13px; height: 28px; }
-  .sectionRow td { padding: 4px 8px !important; font-size: 10px; height: 24px; }
-  .playerHeader { height: 38px; }
-  .playerName { font-size: 11px; }
-  .subtotalRow td, .bonusRow td { height: 26px; }
-  .totalRow td { height: 40px; font-size: 14px; }
-  .totalCell { font-size: 18px !important; }
+/* ===== 竖屏模式 ===== */
+@media (max-aspect-ratio: 1/1), (max-width: 600px) {
+  .board {
+    padding: clamp(4px, 1.5vw, 8px);
+  }
+
+  .table {
+    border-width: 2px;
+  }
+
+  .categoryHeader {
+    width: clamp(55px, 18vw, 80px);
+    padding-left: 4px !important;
+  }
+
+  .table th,
+  .table td {
+    font-size: clamp(9px, 2.5vw, 12px);
+    border-width: 2px;
+  }
+
+  .playerHeader {
+    height: clamp(28px, 6vh, 38px);
+    font-size: clamp(9px, 2.2vw, 11px);
+    border-bottom-width: 3px !important;
+  }
+
+  .playerName {
+    font-size: clamp(8px, 2vw, 11px);
+    padding: 0 2px;
+  }
+
+  .sectionRow td {
+    padding: 2px 4px !important;
+    font-size: clamp(8px, 1.8vw, 10px);
+    height: clamp(16px, 3vh, 22px);
+    border-top-width: 2px !important;
+    border-bottom-width: 2px !important;
+  }
+
+  .categoryName {
+    font-size: clamp(9px, 2.2vw, 11px);
+    padding-left: 4px !important;
+  }
+
+  .scoreCell {
+    font-size: clamp(10px, 2.8vw, 13px);
+    height: clamp(22px, 4.5vh, 30px);
+  }
+
+  .subtotalRow td {
+    height: clamp(18px, 3vh, 26px);
+    font-size: clamp(9px, 2vw, 11px);
+    border-top-width: 3px !important;
+    border-bottom-width: 3px !important;
+  }
+
+  .totalRow td {
+    height: clamp(28px, 5vh, 40px);
+    font-size: clamp(11px, 2.5vw, 14px);
+    border-top-width: 3px !important;
+  }
+
+  .totalCell {
+    font-size: clamp(13px, 3.5vw, 18px) !important;
+  }
 }
 
-@media (max-height: 500px) and (orientation: landscape) {
-  .categoryHeader { width: 70px; }
-  .table th, .table td { font-size: 11px; }
-  .categoryName { font-size: 10px; padding-left: 6px !important; }
-  .scoreCell { font-size: 11px; height: auto; padding: 3px 0; }
-  .sectionRow td { padding: 2px 6px !important; font-size: 9px; height: auto; }
-  .playerHeader { height: auto; padding: 4px 2px; }
-  .playerName { font-size: 10px; }
-  .subtotalRow td, .bonusRow td { height: auto; padding: 2px 0; }
-  .totalRow td { height: auto; padding: 5px 6px !important; font-size: 12px; }
-  .totalCell { font-size: 14px !important; }
+/* ===== 超小屏幕 ===== */
+@media (max-width: 360px) {
+  .board {
+    padding: 3px;
+  }
+
+  .table {
+    border-width: 2px;
+  }
+
+  .table th,
+  .table td {
+    border-width: 1px;
+  }
+
+  .categoryHeader {
+    width: 50px;
+    border-bottom-width: 2px !important;
+  }
+
+  .aiTag {
+    display: none;
+  }
 }
 
-@media (min-width: 1200px) {
-  .categoryHeader { width: 120px; }
-  .categoryName { font-size: 14px; }
-  .scoreCell { font-size: 15px; height: 40px; }
-  .playerHeader { height: 50px; font-size: 13px; }
-  .totalRow td { height: 54px; }
-  .totalCell { font-size: 22px !important; }
+/* ===== 横屏超扁平模式 ===== */
+@media (max-height: 420px) and (orientation: landscape) {
+  .board {
+    padding: clamp(4px, 1vh, 8px);
+  }
+
+  .table {
+    border-width: 2px;
+  }
+
+  .table th,
+  .table td {
+    font-size: clamp(9px, 1.8vh, 11px);
+    border-width: 2px;
+  }
+
+  .categoryHeader {
+    width: clamp(50px, 12vw, 70px);
+    padding-left: 4px !important;
+    border-bottom-width: 3px !important;
+  }
+
+  .playerHeader {
+    height: auto;
+    padding: 3px 2px;
+    font-size: clamp(8px, 1.6vh, 10px);
+    border-bottom-width: 3px !important;
+  }
+
+  .playerName {
+    font-size: clamp(8px, 1.5vh, 10px);
+  }
+
+  .sectionRow td {
+    padding: 2px 4px !important;
+    font-size: clamp(7px, 1.4vh, 9px);
+    height: auto;
+    border-top-width: 2px !important;
+    border-bottom-width: 2px !important;
+  }
+
+  .categoryName {
+    font-size: clamp(8px, 1.6vh, 10px);
+    padding-left: 4px !important;
+  }
+
+  .scoreCell {
+    font-size: clamp(9px, 1.8vh, 11px);
+    height: auto;
+    padding: 2px 0;
+  }
+
+  .subtotalRow td {
+    height: auto;
+    padding: 2px 0;
+    font-size: clamp(8px, 1.5vh, 10px);
+    border-top-width: 2px !important;
+    border-bottom-width: 2px !important;
+  }
+
+  .totalRow td {
+    height: auto;
+    padding: 4px 4px !important;
+    font-size: clamp(9px, 1.8vh, 12px);
+    border-top-width: 3px !important;
+  }
+
+  .totalCell {
+    font-size: clamp(11px, 2.2vh, 14px) !important;
+  }
+
+  .aiTag {
+    display: none;
+  }
+}
+
+/* ===== 大屏幕 ===== */
+@media (min-width: 1200px) and (min-height: 700px) {
+  .board {
+    padding: 16px;
+  }
+
+  .table {
+    border-width: 4px;
+  }
+
+  .table th,
+  .table td {
+    font-size: 13px;
+    border-width: 3px;
+  }
+
+  .categoryHeader {
+    width: 120px;
+    padding-left: 12px !important;
+    border-bottom-width: 4px !important;
+  }
+
+  .playerHeader {
+    height: 50px;
+    font-size: 13px;
+    border-bottom-width: 4px !important;
+  }
+
+  .playerName {
+    font-size: 12px;
+    padding: 0 6px;
+  }
+
+  .sectionRow td {
+    padding: 6px 12px !important;
+    font-size: 11px;
+    height: 28px;
+    border-top-width: 3px !important;
+    border-bottom-width: 3px !important;
+  }
+
+  .categoryName {
+    font-size: 14px;
+    padding-left: 12px !important;
+  }
+
+  .scoreCell {
+    font-size: 15px;
+    height: 40px;
+  }
+
+  .subtotalRow td {
+    height: 34px;
+    font-size: 12px;
+    border-top-width: 4px !important;
+    border-bottom-width: 4px !important;
+  }
+
+  .totalRow td {
+    height: 54px;
+    font-size: 15px;
+    border-top-width: 4px !important;
+  }
+
+  .totalCell {
+    font-size: 22px !important;
+  }
 }

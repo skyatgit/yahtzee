@@ -20,19 +20,12 @@ interface GameBoardProps {
 export function GameBoard({ onBackToMenu }: GameBoardProps) {
   const { t } = useTranslation();
   const {
-    players,
-    currentPlayerIndex,
-    currentRound,
     mode,
-    isLocalPlayerTurn,
     resetGame,
   } = useGameStore();
 
   // 其他玩家已退出的提示状态
   const [showAllLeftAlert, setShowAllLeftAlert] = useState(false);
-
-  const currentPlayer = players[currentPlayerIndex];
-  const isMyTurn = isLocalPlayerTurn();
 
   // 监听所有其他玩家退出事件
   useEffect(() => {
@@ -74,39 +67,6 @@ export function GameBoard({ onBackToMenu }: GameBoardProps) {
           </motion.div>
         </div>
       )}
-      
-      {/* 顶部信息栏 */}
-      <header className={styles.header}>
-        <div className={styles.roundInfo}>
-          <span className={styles.roundLabel}>{t('game.round')}</span>
-          <span className={styles.roundNumber}>{currentRound}/13</span>
-        </div>
-        
-        {currentPlayer && (
-          <motion.div 
-            className={`${styles.turnInfo} ${isMyTurn ? styles.myTurn : styles.otherTurn}`}
-            key={currentPlayerIndex}
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-          >
-            {mode === 'local' ? (
-              // 本地模式
-              currentPlayer.type === 'human' ? (
-                <span>🎯 {t('game.yourTurn')}</span>
-              ) : (
-                <span>🤖 {t('game.aiTurn', { name: currentPlayer.name })}</span>
-              )
-            ) : (
-              // 联机模式
-              isMyTurn ? (
-                <span>🎯 {t('game.yourTurn')}</span>
-              ) : (
-                <span>⏳ {t('game.aiTurn', { name: currentPlayer.name })}</span>
-              )
-            )}
-          </motion.div>
-        )}
-      </header>
       
       {/* 主游戏区域 - 计分板在左 */}
       <main className={styles.mainArea}>

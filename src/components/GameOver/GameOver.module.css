@@ -1,5 +1,5 @@
 /**
- * 游戏结束 - 深色主题
+ * 游戏结束 - 自适应布局
  */
 
 .overlay {
@@ -9,44 +9,45 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: clamp(12px, 3vw, 20px);
   z-index: 1000;
+  overflow: auto;
 }
 
 .modal {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 24px;
+  border-radius: clamp(12px, 3vw, 16px);
+  padding: clamp(16px, 4vw, 24px);
   max-width: 380px;
   width: 100%;
-  max-height: 85vh;
+  max-height: 90dvh;
   overflow-y: auto;
 }
 
 .header {
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: clamp(14px, 3vh, 20px);
 }
 
 .trophy {
-  font-size: 56px;
+  font-size: clamp(40px, 12vw, 56px);
 }
 
 .title {
-  font-size: 20px;
+  font-size: clamp(16px, 4.5vw, 20px);
   font-weight: 600;
   color: var(--text);
-  margin-top: 10px;
+  margin-top: clamp(6px, 1.5vh, 10px);
 }
 
 .result {
   text-align: center;
-  margin-bottom: 20px;
-  padding: 20px;
+  margin-bottom: clamp(14px, 3vh, 20px);
+  padding: clamp(14px, 3.5vw, 20px);
   background: var(--primary);
   color: #fff;
-  border-radius: 12px;
+  border-radius: clamp(8px, 2vw, 12px);
 }
 
 .winner {
@@ -56,17 +57,17 @@
 }
 
 .winnerLabel {
-  font-size: 13px;
+  font-size: clamp(11px, 3vw, 13px);
   opacity: 0.8;
 }
 
 .winnerName {
-  font-size: 20px;
+  font-size: clamp(16px, 4.5vw, 20px);
   font-weight: 600;
 }
 
 .winnerScore {
-  font-size: 32px;
+  font-size: clamp(24px, 7vw, 32px);
   font-weight: 700;
 }
 
@@ -77,25 +78,25 @@
 }
 
 .tieText {
-  font-size: 20px;
+  font-size: clamp(16px, 4.5vw, 20px);
   font-weight: 600;
 }
 
 .tieScore {
-  font-size: 14px;
+  font-size: clamp(12px, 3.5vw, 14px);
 }
 
 .rankings {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-bottom: 20px;
+  gap: clamp(6px, 1.5vh, 8px);
+  margin-bottom: clamp(14px, 3vh, 20px);
 }
 
 .rankItem {
   display: flex;
   align-items: center;
-  padding: 12px;
+  padding: clamp(10px, 2.5vw, 12px);
   background: var(--bg-muted);
   border-radius: 8px;
 }
@@ -106,8 +107,8 @@
 }
 
 .rank {
-  width: 32px;
-  font-size: 18px;
+  width: clamp(26px, 7vw, 32px);
+  font-size: clamp(14px, 4vw, 18px);
   font-weight: 600;
   color: var(--text);
 }
@@ -116,19 +117,86 @@
   flex: 1;
   font-weight: 500;
   color: var(--text);
+  font-size: clamp(12px, 3.5vw, 14px);
 }
 
 .playerScore {
   font-weight: 700;
-  font-size: 18px;
+  font-size: clamp(14px, 4vw, 18px);
   color: var(--accent);
 }
 
 .actions {
   display: flex;
-  gap: 10px;
+  gap: clamp(6px, 2vw, 10px);
+  flex-wrap: wrap;
 }
 
 .actions button {
   flex: 1;
+  min-width: 100px;
+}
+
+/* ===== 横屏超扁平模式 ===== */
+@media (max-height: 420px) and (orientation: landscape) {
+  .modal {
+    max-width: 500px;
+    padding: 14px 18px;
+    max-height: 95dvh;
+  }
+
+  .header {
+    margin-bottom: 10px;
+  }
+
+  .trophy {
+    font-size: 36px;
+  }
+
+  .title {
+    font-size: 16px;
+    margin-top: 6px;
+  }
+
+  .result {
+    margin-bottom: 10px;
+    padding: 12px;
+  }
+
+  .winnerScore {
+    font-size: 22px;
+  }
+
+  .rankings {
+    gap: 6px;
+    margin-bottom: 12px;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .rankItem {
+    flex: 1;
+    min-width: calc(50% - 3px);
+    padding: 8px 10px;
+  }
+
+  .actions button {
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+}
+
+/* ===== 超小屏幕 ===== */
+@media (max-width: 320px) {
+  .modal {
+    padding: 14px;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+
+  .actions button {
+    width: 100%;
+  }
 }

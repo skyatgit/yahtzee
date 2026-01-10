@@ -1,16 +1,15 @@
 /**
- * 本地设置 - 深色主题
+ * 本地设置 - 自适应布局
  */
 
 .container {
-  height: 100vh;
-  height: 100dvh;
+  min-height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: clamp(12px, 3vw, 20px);
   background: var(--bg);
-  overflow: hidden;
+  overflow: auto;
 }
 
 .content {
@@ -21,12 +20,12 @@
 .header {
   display: flex;
   align-items: center;
-  gap: 14px;
-  margin-bottom: 20px;
+  gap: clamp(10px, 3vw, 14px);
+  margin-bottom: clamp(14px, 3vh, 20px);
 }
 
 .title {
-  font-size: 20px;
+  font-size: clamp(16px, 4.5vw, 20px);
   font-weight: 600;
   color: var(--text);
 }
@@ -35,12 +34,12 @@
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 20px;
-  margin-bottom: 14px;
+  padding: clamp(14px, 3.5vw, 20px);
+  margin-bottom: clamp(10px, 2vh, 14px);
 }
 
 .section {
-  margin-bottom: 18px;
+  margin-bottom: clamp(12px, 2.5vh, 18px);
 }
 
 .section:last-child {
@@ -51,19 +50,19 @@
   display: block;
   font-weight: 600;
   color: var(--text);
-  margin-bottom: 10px;
-  font-size: 14px;
+  margin-bottom: clamp(8px, 1.5vh, 10px);
+  font-size: clamp(12px, 3.5vw, 14px);
 }
 
 .countSelector {
   display: flex;
-  gap: 10px;
+  gap: clamp(6px, 2vw, 10px);
 }
 
 .countButton {
   flex: 1;
-  padding: 14px;
-  font-size: 20px;
+  padding: clamp(10px, 2.5vh, 14px);
+  font-size: clamp(16px, 4.5vw, 20px);
   font-weight: 600;
   background: var(--bg-muted);
   border: 1px solid var(--border);
@@ -94,28 +93,28 @@
 .playerList {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: clamp(6px, 1.5vh, 10px);
 }
 
 .playerCard {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px;
+  gap: clamp(6px, 2vw, 10px);
+  padding: clamp(8px, 2vw, 10px);
   background: var(--bg-muted);
   border-radius: var(--radius);
 }
 
 .playerNumber {
-  width: 28px;
-  height: 28px;
+  width: clamp(22px, 6vw, 28px);
+  height: clamp(22px, 6vw, 28px);
   display: flex;
   align-items: center;
   justify-content: center;
   background: var(--primary);
   color: #fff;
   font-weight: 600;
-  font-size: 14px;
+  font-size: clamp(11px, 3vw, 14px);
   border-radius: 50%;
   flex-shrink: 0;
 }
@@ -123,8 +122,8 @@
 .playerInput {
   flex: 1;
   min-width: 0;
-  padding: 10px;
-  font-size: 14px;
+  padding: clamp(8px, 2vw, 10px);
+  font-size: clamp(12px, 3.5vw, 14px);
   color: var(--text);
   background: var(--bg-card);
   border: 1px solid var(--border);
@@ -140,8 +139,8 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 10px 12px;
-  font-size: 13px;
+  padding: clamp(8px, 2vw, 10px) clamp(8px, 2.5vw, 12px);
+  font-size: clamp(11px, 3vw, 13px);
   font-weight: 500;
   border: none;
   border-radius: var(--radius);
@@ -164,13 +163,73 @@
   transform: scale(0.96);
 }
 
-@media (max-height: 500px) and (orientation: landscape) {
-  .card { padding: 14px; }
-  .section { margin-bottom: 12px; }
-  .countButton { padding: 10px; font-size: 18px; }
-  .difficultyButton { padding: 8px 6px; }
-  .playerCard { padding: 6px; }
-  .playerNumber { width: 24px; height: 24px; font-size: 12px; }
-  .playerInput { padding: 6px 8px; }
-  .typeButton { padding: 6px 10px; }
+/* ===== 横屏超扁平模式 ===== */
+@media (max-height: 420px) and (orientation: landscape) {
+  .container {
+    padding: 10px 16px;
+  }
+
+  .header {
+    margin-bottom: 10px;
+  }
+
+  .card {
+    padding: 12px;
+    margin-bottom: 10px;
+  }
+
+  .section {
+    margin-bottom: 10px;
+  }
+
+  .countButton {
+    padding: 8px;
+    font-size: 16px;
+  }
+
+  .playerCard {
+    padding: 6px;
+  }
+
+  .playerNumber {
+    width: 22px;
+    height: 22px;
+    font-size: 11px;
+  }
+
+  .playerInput {
+    padding: 6px 8px;
+  }
+
+  .typeButton {
+    padding: 6px 8px;
+    font-size: 11px;
+  }
+}
+
+/* ===== 超小屏幕 ===== */
+@media (max-width: 320px) {
+  .content {
+    max-width: 100%;
+  }
+
+  .playerCard {
+    gap: 4px;
+    padding: 6px;
+  }
+
+  .playerNumber {
+    width: 20px;
+    height: 20px;
+    font-size: 10px;
+  }
+
+  .typeButton {
+    padding: 6px;
+    font-size: 10px;
+  }
+
+  .typeButton span:last-child {
+    display: none;
+  }
 }

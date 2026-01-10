@@ -20,10 +20,10 @@ const upperCategories: ScoreCategory[] = [
   'ones', 'twos', 'threes', 'fours', 'fives', 'sixes'
 ];
 
-// 下半区类别
+// 下半区类别（全选放最前面，去掉三条）
 const lowerCategories: ScoreCategory[] = [
-  'threeOfAKind', 'fourOfAKind', 'fullHouse',
-  'smallStraight', 'largeStraight', 'yahtzee', 'chance'
+  'chance', 'fourOfAKind', 'fullHouse',
+  'smallStraight', 'largeStraight', 'yahtzee'
 ];
 
 export function ScoreBoard() {
@@ -35,6 +35,7 @@ export function ScoreBoard() {
     phase, 
     players, 
     currentPlayerIndex,
+    currentRound,
     isLocalPlayerTurn,
     localPlayerId,
     mode,
@@ -102,7 +103,12 @@ export function ScoreBoard() {
       <table className={styles.table}>
         <thead>
           <tr>
-            <th className={styles.categoryHeader}></th>
+            {/* 左上角显示回合进度 */}
+            <th className={styles.categoryHeader}>
+              <div className={styles.roundInfo}>
+                <span className={styles.roundNumber}>{currentRound}/13</span>
+              </div>
+            </th>
             {players.map((player, index) => (
               <th 
                 key={player.id} 
@@ -121,6 +127,7 @@ export function ScoreBoard() {
             ))}
           </tr>
         </thead>
+        {/* ...existing code... */}
         <tbody>
           {/* 上半区标题 */}
           <tr className={styles.sectionRow}>
@@ -163,18 +170,6 @@ export function ScoreBoard() {
               {players.map((player, index) => renderScoreCell(category, player, index))}
             </tr>
           ))}
-          
-          {/* 快艇奖励 */}
-          <tr className={styles.bonusRow}>
-            <td>{t('score.yahtzeeBonus')}</td>
-            {players.map(player => (
-              <td key={player.id} className={styles.bonusCell}>
-                {player.scoreCard.yahtzeeBonus > 0 ? (
-                  <span className={styles.bonusEarned}>+{player.scoreCard.yahtzeeBonus * 100}</span>
-                ) : '-'}
-              </td>
-            ))}
-          </tr>
           
           {/* 总分 */}
           <tr className={styles.totalRow}>

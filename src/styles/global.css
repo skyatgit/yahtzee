@@ -1,5 +1,5 @@
 /**
- * 全局样式 - 深色主题默认
+ * 全局样式 - 自适应布局
  */
 
 @import './variables.css';
@@ -13,31 +13,45 @@
 html, body, #root {
   width: 100%;
   height: 100%;
-  font-family: var(--font);
-  font-size: 14px;
+  font-family: var(--font), system-ui, sans-serif;
+  font-size: clamp(12px, 2vw, 14px);
   color: var(--text);
   background: var(--bg);
   overflow: hidden;
+  /* 防止iOS橡皮筋效果 */
+  overscroll-behavior: none;
+  /* 防止双击缩放 */
+  touch-action: manipulation;
+}
+
+/* 安全区域适配 */
+.app {
+  width: 100%;
+  height: 100%;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
 
 button {
   font-family: inherit;
   cursor: pointer;
+  /* 移除移动端按钮点击高亮 */
+  -webkit-tap-highlight-color: transparent;
 }
 
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 10px 20px;
-  font-size: 14px;
+  gap: clamp(6px, 1.5vw, 8px);
+  padding: clamp(8px, 2vh, 10px) clamp(14px, 4vw, 20px);
+  font-size: clamp(12px, 3.5vw, 14px);
   font-weight: 500;
   background: var(--bg-card);
   color: var(--text);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   transition: all 0.15s;
+  white-space: nowrap;
 }
 
 .btn:hover:not(:disabled) {
@@ -65,9 +79,20 @@ button {
   border-color: var(--primary-hover);
 }
 
+.btn-success {
+  background: var(--success);
+  color: #fff;
+  border-color: var(--success);
+}
+
 .btn-large {
-  padding: 12px 28px;
-  font-size: 16px;
+  padding: clamp(10px, 2.5vh, 12px) clamp(20px, 5vw, 28px);
+  font-size: clamp(14px, 4vw, 16px);
+}
+
+.btn-small {
+  padding: clamp(6px, 1.5vh, 8px) clamp(10px, 2.5vw, 12px);
+  font-size: clamp(11px, 3vw, 12px);
 }
 
 .btn-full {
@@ -76,9 +101,9 @@ button {
 
 .input {
   width: 100%;
-  padding: 10px 12px;
+  padding: clamp(8px, 2vh, 10px) clamp(10px, 2.5vw, 12px);
   font-family: inherit;
-  font-size: 14px;
+  font-size: clamp(12px, 3.5vw, 14px);
   color: var(--text);
   background: var(--bg-card);
   border: 1px solid var(--border);
@@ -88,4 +113,35 @@ button {
 .input:focus {
   outline: none;
   border-color: var(--primary);
+}
+
+/* 横屏超扁平模式 */
+@media (max-height: 420px) and (orientation: landscape) {
+  .btn {
+    padding: clamp(6px, 1.8vh, 8px) clamp(12px, 3vw, 16px);
+    font-size: clamp(11px, 2.5vh, 13px);
+  }
+
+  .btn-large {
+    padding: clamp(8px, 2.2vh, 10px) clamp(16px, 4vw, 24px);
+    font-size: clamp(12px, 2.8vh, 14px);
+  }
+
+  .input {
+    padding: clamp(6px, 1.8vh, 8px) clamp(8px, 2vw, 10px);
+    font-size: clamp(11px, 2.5vh, 13px);
+  }
+}
+
+/* 超小屏幕 */
+@media (max-width: 320px) {
+  .btn {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+
+  .btn-large {
+    padding: 10px 16px;
+    font-size: 13px;
+  }
 }

@@ -1,5 +1,5 @@
 /**
- * 骰子 - 深色主题
+ * 骰子 - 自适应布局
  */
 
 .diceWrapper {
@@ -27,11 +27,13 @@
 }
 
 .dice {
-  width: 64px;
-  height: 64px;
+  /* 响应式尺寸：基于视口的较小维度 */
+  --dice-size: clamp(44px, min(10vw, 10vh), 76px);
+  width: var(--dice-size);
+  height: var(--dice-size);
   background: var(--bg-card);
   border: 2px solid var(--border-light);
-  border-radius: 12px;
+  border-radius: clamp(6px, 1.5vw, 12px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -39,16 +41,18 @@
 }
 
 .diceFace {
-  width: 46px;
-  height: 46px;
+  --face-size: calc(var(--dice-size) * 0.72);
+  width: var(--face-size);
+  height: var(--face-size);
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
 }
 
 .dot {
-  width: 11px;
-  height: 11px;
+  --dot-size: calc(var(--dice-size) * 0.17);
+  width: var(--dot-size);
+  height: var(--dot-size);
   background: var(--text);
   border-radius: 50%;
   justify-self: center;
@@ -57,29 +61,78 @@
 
 .holdIndicator {
   position: absolute;
-  bottom: -20px;
+  bottom: clamp(-16px, -2vh, -20px);
   left: 50%;
   transform: translateX(-50%);
-  font-size: 11px;
+  font-size: clamp(9px, 1.4vh, 11px);
   font-weight: 600;
   color: var(--accent);
+  white-space: nowrap;
 }
 
-@media (min-width: 768px) {
-  .dice { width: 76px; height: 76px; }
-  .diceFace { width: 54px; height: 54px; }
-  .dot { width: 13px; height: 13px; }
+/* ===== 竖屏模式 ===== */
+@media (max-aspect-ratio: 1/1), (max-width: 600px) {
+  .dice {
+    --dice-size: clamp(40px, 14vw, 60px);
+    border-radius: clamp(6px, 2vw, 10px);
+  }
+
+  .holdIndicator {
+    bottom: -14px;
+    font-size: clamp(8px, 2.5vw, 10px);
+  }
+
+  .diceWrapper:hover:not(.disabled) {
+    transform: translateY(-2px);
+  }
 }
 
-@media (min-width: 1200px) {
-  .dice { width: 88px; height: 88px; border-radius: 14px; }
-  .diceFace { width: 64px; height: 64px; }
-  .dot { width: 15px; height: 15px; }
+/* ===== 超小屏幕 ===== */
+@media (max-width: 360px) {
+  .dice {
+    --dice-size: clamp(36px, 15vw, 48px);
+    border-width: 1px;
+    border-radius: 6px;
+  }
+
+  .holdIndicator {
+    display: none;
+  }
 }
 
-@media (max-height: 500px) and (orientation: landscape) {
-  .dice { width: 52px; height: 52px; border-radius: 8px; }
-  .diceFace { width: 38px; height: 38px; }
-  .dot { width: 9px; height: 9px; }
-  .holdIndicator { display: none; }
+/* ===== 横屏超扁平模式 ===== */
+@media (max-height: 420px) and (orientation: landscape) {
+  .dice {
+    --dice-size: clamp(36px, 14vh, 52px);
+    border-radius: 6px;
+    border-width: 1px;
+  }
+
+  .holdIndicator {
+    display: none;
+  }
+
+  .diceWrapper:hover:not(.disabled) {
+    transform: translateY(-2px);
+  }
+}
+
+/* ===== 大屏幕 ===== */
+@media (min-width: 1200px) and (min-height: 700px) {
+  .dice {
+    --dice-size: 88px;
+    border-radius: 14px;
+  }
+
+  .holdIndicator {
+    bottom: -22px;
+    font-size: 12px;
+  }
+}
+
+/* ===== 超宽屏 ===== */
+@media (min-aspect-ratio: 2/1) {
+  .dice {
+    --dice-size: clamp(48px, 12vh, 72px);
+  }
 }

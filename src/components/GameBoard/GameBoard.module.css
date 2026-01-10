@@ -1,82 +1,46 @@
 /**
- * 游戏板 - 深色主题
+ * 游戏板 - 自适应布局（无顶部标题栏）
  */
 
 .container {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  width: 100%;
   height: 100dvh;
   overflow: hidden;
   background: var(--bg);
 }
 
-.header {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 20px;
-  background: var(--bg-card);
-  border-bottom: 1px solid var(--border);
-}
-
-.roundInfo {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--text);
-}
-
-.roundLabel {
-  font-size: 14px;
-  color: var(--text-secondary);
-}
-
-.roundNumber {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--text);
-}
-
-.turnInfo {
-  padding: 8px 16px;
-  font-size: 14px;
-  font-weight: 600;
-  border-radius: 20px;
-}
-
-.myTurn {
-  background: var(--primary);
-  color: #fff;
-}
-
-.otherTurn {
-  background: var(--bg-muted);
-  color: var(--text-secondary);
-}
-
+/* 主游戏区域 - 默认横屏布局，占满全屏 */
 .mainArea {
   flex: 1;
   display: flex;
   min-height: 0;
   overflow: hidden;
+  height: 100%;
 }
 
+/* 计分板区域 - 自适应宽度 */
 .scoreSection {
   flex-shrink: 0;
-  width: 360px;
+  width: clamp(260px, 35vw, 400px);
+  max-width: 45%;
   background: var(--bg-card);
   border-right: 1px solid var(--border);
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
+/* 骰子区域 */
 .diceSection {
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   background: var(--bg);
+  min-width: 0;
+  padding: 8px;
 }
 
 /* 提示弹窗样式 */
@@ -88,32 +52,33 @@
   justify-content: center;
   background: rgba(0, 0, 0, 0.6);
   z-index: 1000;
+  padding: 16px;
 }
 
 .alertBox {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 20px;
-  padding: 32px 40px;
+  gap: 16px;
+  padding: 24px 28px;
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 16px;
+  border-radius: 12px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-  max-width: 90vw;
+  max-width: 90dvw;
 }
 
 .alertText {
   margin: 0;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
   color: var(--text);
   text-align: center;
 }
 
 .alertButton {
-  padding: 12px 32px;
-  font-size: 16px;
+  padding: 10px 28px;
+  font-size: 14px;
   font-weight: 600;
   color: #fff;
   background: var(--primary);
@@ -125,37 +90,69 @@
 
 .alertButton:hover {
   background: var(--primary-hover);
-  transform: scale(1.02);
 }
 
 .alertButton:active {
   transform: scale(0.98);
 }
 
-@media (max-width: 640px) {
-  .mainArea { flex-direction: column; }
+/* ===== 竖屏模式（宽度小于高度或非常窄的屏幕）===== */
+@media (max-aspect-ratio: 1/1), (max-width: 600px) {
+  .mainArea {
+    flex-direction: column;
+  }
+
   .scoreSection {
     order: 1;
     width: 100%;
+    max-width: 100%;
     flex: 1;
+    min-height: 0;
     border-right: none;
     border-bottom: 1px solid var(--border);
   }
-  .diceSection { order: 2; flex: none; padding: 16px; }
 
-  .alertBox {
-    padding: 24px 28px;
-  }
-  .alertText {
-    font-size: 16px;
+  .diceSection {
+    order: 2;
+    flex: none;
+    padding: 12px 8px;
+    min-height: auto;
   }
 }
 
-@media (max-height: 500px) and (orientation: landscape) {
-  .header { padding: 8px 16px; }
-  .scoreSection { width: 300px; }
+/* ===== 超小屏幕（手机竖屏）===== */
+@media (max-width: 360px) {
+  .diceSection {
+    padding: 8px 4px;
+  }
 }
 
-@media (min-width: 1200px) {
-  .scoreSection { width: 440px; }
+/* ===== 横屏超扁平模式（如手机横屏）===== */
+@media (max-height: 420px) and (orientation: landscape) {
+  .scoreSection {
+    width: clamp(200px, 30vw, 320px);
+  }
+
+  .diceSection {
+    padding: 4px;
+  }
+}
+
+/* ===== 大屏幕 ===== */
+@media (min-width: 1200px) and (min-height: 700px) {
+  .scoreSection {
+    width: clamp(360px, 30vw, 480px);
+  }
+
+  .diceSection {
+    padding: 20px;
+  }
+}
+
+/* ===== 超宽屏（21:9等）===== */
+@media (min-aspect-ratio: 2/1) {
+  .scoreSection {
+    width: clamp(280px, 25vw, 400px);
+    max-width: 30%;
+  }
 }
