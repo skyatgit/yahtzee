@@ -27,6 +27,7 @@
   "online": {
     "roomId": "部屋番号",
     "copyRoomId": "部屋番号をコピー",
+    "copyInviteLink": "招待リンクをコピー",
     "copied": "コピーしました",
     "enterRoomId": "部屋番号を入力",
     "join": "参加",

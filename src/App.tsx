@@ -20,8 +20,34 @@ import './styles/global.css';
 // 应用页面类型
 type AppPage = 'menu' | 'local-setup' | 'online-setup' | 'settings' | 'game';
 
+// 从 URL 获取房间号
+const getRoomIdFromUrl = (): string | null => {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('room');
+};
+
+// 清除 URL 中的房间号参数
+const clearRoomIdFromUrl = () => {
+  const url = new URL(window.location.href);
+  url.searchParams.delete('room');
+  window.history.replaceState({}, '', url.pathname);
+};
+
+// 检查初始状态
+const getInitialState = (): { page: AppPage; roomId: string | null } => {
+  const roomId = getRoomIdFromUrl();
+  if (roomId) {
+    clearRoomIdFromUrl();
+    return { page: 'online-setup', roomId: roomId.toUpperCase() };
+  }
+  return { page: 'menu', roomId: null };
+};
+
+const initialState = getInitialState();
+
 function App() {
-  const [currentPage, setCurrentPage] = useState<AppPage>('menu');
+  const [currentPage, setCurrentPage] = useState<AppPage>(initialState.page);
+  const [inviteRoomId, setInviteRoomId] = useState<string | null>(initialState.roomId);
   const { phase, resetGame, players, startGame, initLocalGame } = useGameStore();
   
   // 初始化主题（默认深色模式）
@@ -47,6 +73,12 @@ function App() {
     setCurrentPage('menu');
   };
   
+  // 处理进入联机设置页面
+  const handleOnlineGame = () => {
+    setInviteRoomId(null); // 清除邀请房间号
+    setCurrentPage('online-setup');
+  };
+  
   // 根据当前页面渲染内容
   const renderPage = () => {
     switch (currentPage) {
@@ -54,7 +86,7 @@ function App() {
         return (
           <MainMenu
             onLocalGame={() => setCurrentPage('local-setup')}
-            onOnlineGame={() => setCurrentPage('online-setup')}
+            onOnlineGame={handleOnlineGame}
             onSettings={() => setCurrentPage('settings')}
           />
         );
@@ -70,8 +102,12 @@ function App() {
       case 'online-setup':
         return (
           <OnlineSetup
-            onBack={() => setCurrentPage('menu')}
+            onBack={() => {
+              setInviteRoomId(null);
+              setCurrentPage('menu');
+            }}
             onStart={() => setCurrentPage('game')}
+            inviteRoomId={inviteRoomId}
           />
         );
       

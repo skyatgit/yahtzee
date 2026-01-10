@@ -27,6 +27,7 @@
   "online": {
     "roomId": "Room ID",
     "copyRoomId": "Copy Room ID",
+    "copyInviteLink": "Copy Invite Link",
     "copied": "Copied",
     "enterRoomId": "Enter Room ID",
     "join": "Join",

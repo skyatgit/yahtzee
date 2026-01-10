@@ -27,6 +27,7 @@
   "online": {
     "roomId": "房间号",
     "copyRoomId": "复制房间号",
+    "copyInviteLink": "复制邀请链接",
     "copied": "已复制",
     "enterRoomId": "输入房间号",
     "join": "加入",

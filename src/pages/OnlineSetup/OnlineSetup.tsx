@@ -3,7 +3,7 @@
  * 创建房间或加入房间
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useGameStore } from '../../store/gameStore';
@@ -15,6 +15,7 @@ import styles from './OnlineSetup.module.css';
 interface OnlineSetupProps {
   onBack: () => void;
   onStart: () => void;
+  inviteRoomId?: string | null;
 }
 
 type OnlineMode = 'select' | 'create' | 'join';
@@ -49,7 +50,7 @@ const savePlayerName = (name: string) => {
   localStorage.setItem(PLAYER_NAME_KEY, name);
 };
 
-export function OnlineSetup({ onBack, onStart }: OnlineSetupProps) {
+export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps) {
   const { t } = useTranslation();
   const { 
     initOnlineGame, 
@@ -66,6 +67,46 @@ export function OnlineSetup({ onBack, onStart }: OnlineSetupProps) {
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
+  const autoJoinRef = useRef(false);
+  const messageHandlerRegistered = useRef(false);
+  
+  // 加入房间的核心逻辑
+  const joinRoomAsync = async (targetRoomId: string, name: string) => {
+    setIsConnecting(true);
+    setError(null);
+    
+    try {
+      await peerService.joinRoom(targetRoomId.toUpperCase());
+      const peerId = peerService.getMyPeerId()!;
+      
+      console.log('[客户端] 加入房间成功, peerId:', peerId);
+      
+      initOnlineGame(false, targetRoomId.toUpperCase(), name, peerId);
+      
+      // 发送加入消息给房主
+      const myPlayer: Player = {
+        id: peerId,
+        name: name,
+        type: 'remote',
+        scoreCard: createEmptyScoreCard(),
+        isConnected: true
+      };
+      
+      console.log('[客户端] 发送加入请求:', myPlayer);
+      peerService.broadcast('join', myPlayer);
+      
+      setRoomId(targetRoomId.toUpperCase());
+      setMode('join');
+      return true;
+    } catch (err) {
+      console.error('加入房间失败:', err);
+      setError(t('online.roomNotFound'));
+      return false;
+    } finally {
+      setIsConnecting(false);
+    }
+  };
   
   // 玩家名修改时自动保存
   const handlePlayerNameChange = (name: string) => {
@@ -232,6 +273,37 @@ export function OnlineSetup({ onBack, onStart }: OnlineSetupProps) {
     }
   }, [removeRemotePlayer, t]);
   
+  // 注册消息处理器
+  useEffect(() => {
+    const unsubMessage = peerService.onMessage(handleMessage);
+    const unsubDisconnect = peerService.onDisconnection(handleDisconnection);
+    messageHandlerRegistered.current = true;
+    
+    return () => {
+      unsubMessage();
+      unsubDisconnect();
+      messageHandlerRegistered.current = false;
+    };
+  }, [handleMessage, handleDisconnection]);
+  
+  // 如果有邀请房间号，自动加入（确保消息处理器已注册）
+  useEffect(() => {
+    if (inviteRoomId && !autoJoinRef.current && mode === 'select' && !isConnecting) {
+      // 等待消息处理器注册完成
+      const tryAutoJoin = () => {
+        if (autoJoinRef.current) return;
+        autoJoinRef.current = true;
+        setInputRoomId(inviteRoomId);
+        joinRoomAsync(inviteRoomId, playerName);
+      };
+      
+      // 稍微延迟确保消息处理器已注册
+      const timer = setTimeout(tryAutoJoin, 100);
+      return () => clearTimeout(timer);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [inviteRoomId, mode, isConnecting, playerName]);
+  
   // 踢出玩家（房主）
   const handleKickPlayer = (playerId: string) => {
     const state = useGameStore.getState();
@@ -259,17 +331,6 @@ export function OnlineSetup({ onBack, onStart }: OnlineSetupProps) {
     }, 100);
   };
   
-  // 注册消息处理器
-  useEffect(() => {
-    const unsubMessage = peerService.onMessage(handleMessage);
-    const unsubDisconnect = peerService.onDisconnection(handleDisconnection);
-    
-    return () => {
-      unsubMessage();
-      unsubDisconnect();
-    };
-  }, [handleMessage, handleDisconnection]);
-  
   // 创建房间
   const handleCreateRoom = async () => {
     setIsConnecting(true);
@@ -293,41 +354,10 @@ export function OnlineSetup({ onBack, onStart }: OnlineSetupProps) {
     }
   };
   
-  // 加入房间
+  // 手动加入房间
   const handleJoinRoom = async () => {
     if (!inputRoomId.trim()) return;
-    
-    setIsConnecting(true);
-    setError(null);
-    
-    try {
-      await peerService.joinRoom(inputRoomId.toUpperCase());
-      const peerId = peerService.getMyPeerId()!;
-      
-      console.log('[客户端] 加入房间成功, peerId:', peerId);
-      
-      initOnlineGame(false, inputRoomId.toUpperCase(), playerName, peerId);
-      
-      // 发送加入消息给房主
-      const myPlayer: Player = {
-        id: peerId,
-        name: playerName,
-        type: 'remote',
-        scoreCard: createEmptyScoreCard(),
-        isConnected: true
-      };
-      
-      console.log('[客户端] 发送加入请求:', myPlayer);
-      peerService.broadcast('join', myPlayer);
-      
-      setRoomId(inputRoomId.toUpperCase());
-      setMode('join');
-    } catch (err) {
-      console.error('加入房间失败:', err);
-      setError(t('online.roomNotFound'));
-    } finally {
-      setIsConnecting(false);
-    }
+    await joinRoomAsync(inputRoomId, playerName);
   };
   
   // 开始游戏（房主）
@@ -359,6 +389,20 @@ export function OnlineSetup({ onBack, onStart }: OnlineSetupProps) {
     navigator.clipboard.writeText(roomId);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+  
+  // 生成邀请链接
+  const getInviteLink = () => {
+    const url = new URL(window.location.href);
+    url.searchParams.set('room', roomId);
+    return url.toString();
+  };
+  
+  // 复制邀请链接
+  const copyInviteLink = () => {
+    navigator.clipboard.writeText(getInviteLink());
+    setCopiedLink(true);
+    setTimeout(() => setCopiedLink(false), 2000);
   };
   
   // 返回时断开连接
@@ -453,6 +497,17 @@ export function OnlineSetup({ onBack, onStart }: OnlineSetupProps) {
                   {copied ? t('online.copied') : t('online.copyRoomId')}
                 </motion.button>
               </div>
+            </div>
+            
+            {/* 邀请链接 */}
+            <div className={styles.inviteSection}>
+              <motion.button
+                className="btn btn-success btn-full"
+                onClick={copyInviteLink}
+                whileTap={{ scale: 0.98 }}
+              >
+                🔗 {copiedLink ? t('online.copied') : t('online.copyInviteLink')}
+              </motion.button>
             </div>
             
             {/* 玩家列表 */}

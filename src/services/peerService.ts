@@ -209,7 +209,8 @@ class PeerService {
     conn.on('open', () => {
       console.log('新玩家连接:', conn.peer);
       this.connections.set(conn.peer, conn);
-      this.lastHeartbeat.set(conn.peer, Date.now());
+      // 给足够的初始缓冲时间
+      this.lastHeartbeat.set(conn.peer, Date.now() + HEARTBEAT_TIMEOUT);
       this.setupConnectionHandlers(conn);
       
       // 通知连接处理器
@@ -221,8 +222,9 @@ class PeerService {
    * 设置连接的消息处理
    */
   private setupConnectionHandlers(conn: DataConnection) {
-    // 初始化心跳时间
-    this.lastHeartbeat.set(conn.peer, Date.now());
+    // 初始化心跳时间（给足够的初始缓冲时间）
+    const initialTime = Date.now() + HEARTBEAT_TIMEOUT; // 额外给一个超时周期的缓冲
+    this.lastHeartbeat.set(conn.peer, initialTime);
     
     conn.on('data', (data) => {
       // 处理心跳消息

@@ -158,6 +158,10 @@
   color: var(--text);
 }
 
+.inviteSection {
+  margin-bottom: clamp(10px, 2vh, 16px);
+}
+
 .playerList {
   display: flex;
   flex-direction: column;
