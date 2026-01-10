@@ -105,7 +105,11 @@ export type MessageType =
   | 'action-hold'    // 请求锁定骰子
   | 'action-score'   // 请求记分
   | 'roll-start'     // 摇骰子动画开始
-  | 'roll-end';      // 摇骰子动画结束
+  | 'roll-end'       // 摇骰子动画结束
+  | 'kicked'         // 被踢出房间
+  | 'room-full'      // 房间已满
+  | 'game-started'   // 游戏已开始（无法加入）
+  | 'room-closed';   // 房间已关闭
 
 // 联机消息
 export interface GameMessage {
