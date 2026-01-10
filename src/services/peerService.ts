@@ -22,6 +22,11 @@ const PEER_CONFIG = {
   debug: 1
 };
 
+// 心跳间隔（毫秒）
+const HEARTBEAT_INTERVAL = 2000;
+// 心跳超时（毫秒）- 超过这个时间没收到心跳就认为断开
+const HEARTBEAT_TIMEOUT = 6000;
+
 type MessageHandler = (message: GameMessage) => void;
 type ConnectionHandler = (peerId: string) => void;
 
@@ -32,6 +37,11 @@ class PeerService {
   private connectionHandlers: ConnectionHandler[] = [];
   private disconnectionHandlers: ConnectionHandler[] = [];
   private myPeerId: string | null = null;
+  
+  // 心跳相关
+  private heartbeatInterval: number | null = null;
+  private lastHeartbeat: Map<string, number> = new Map();
+  private heartbeatCheckInterval: number | null = null;
   
   /**
    * 初始化 Peer 连接（作为房主）
@@ -45,6 +55,8 @@ class PeerService {
       this.peer.on('open', (id) => {
         console.log('房间创建成功，Peer ID:', id);
         this.myPeerId = id;
+        this.startHeartbeat();
+        this.setupBeforeUnload();
         resolve(roomId);
       });
       
@@ -102,6 +114,8 @@ class PeerService {
           console.log('已连接到房主');
           this.connections.set(hostPeerId, conn);
           this.setupConnectionHandlers(conn);
+          this.startHeartbeat();
+          this.setupBeforeUnload();
           resolve();
         });
         
@@ -131,12 +145,71 @@ class PeerService {
   }
   
   /**
+   * 设置页面关闭时的处理
+   */
+  private setupBeforeUnload() {
+    window.addEventListener('beforeunload', this.handleBeforeUnload);
+  }
+  
+  private handleBeforeUnload = () => {
+    // 尝试发送离开消息
+    this.broadcast('player-left', { playerId: this.myPeerId });
+    this.disconnect();
+  };
+  
+  /**
+   * 启动心跳
+   */
+  private startHeartbeat() {
+    // 定期发送心跳
+    this.heartbeatInterval = window.setInterval(() => {
+      this.connections.forEach((conn) => {
+        if (conn.open) {
+          conn.send({ type: 'heartbeat', timestamp: Date.now() });
+        }
+      });
+    }, HEARTBEAT_INTERVAL);
+    
+    // 定期检查心跳超时
+    this.heartbeatCheckInterval = window.setInterval(() => {
+      const now = Date.now();
+      this.lastHeartbeat.forEach((lastTime, peerId) => {
+        if (now - lastTime > HEARTBEAT_TIMEOUT) {
+          console.log('心跳超时，断开连接:', peerId);
+          this.lastHeartbeat.delete(peerId);
+          const conn = this.connections.get(peerId);
+          if (conn) {
+            this.connections.delete(peerId);
+            this.disconnectionHandlers.forEach(handler => handler(peerId));
+          }
+        }
+      });
+    }, HEARTBEAT_INTERVAL);
+  }
+  
+  /**
+   * 停止心跳
+   */
+  private stopHeartbeat() {
+    if (this.heartbeatInterval) {
+      clearInterval(this.heartbeatInterval);
+      this.heartbeatInterval = null;
+    }
+    if (this.heartbeatCheckInterval) {
+      clearInterval(this.heartbeatCheckInterval);
+      this.heartbeatCheckInterval = null;
+    }
+    this.lastHeartbeat.clear();
+  }
+  
+  /**
    * 处理新连接
    */
   private handleConnection(conn: DataConnection) {
     conn.on('open', () => {
       console.log('新玩家连接:', conn.peer);
       this.connections.set(conn.peer, conn);
+      this.lastHeartbeat.set(conn.peer, Date.now());
       this.setupConnectionHandlers(conn);
       
       // 通知连接处理器
@@ -148,7 +221,18 @@ class PeerService {
    * 设置连接的消息处理
    */
   private setupConnectionHandlers(conn: DataConnection) {
+    // 初始化心跳时间
+    this.lastHeartbeat.set(conn.peer, Date.now());
+    
     conn.on('data', (data) => {
+      // 处理心跳消息
+      if (data && typeof data === 'object' && 'type' in data) {
+        if ((data as { type: string }).type === 'heartbeat') {
+          this.lastHeartbeat.set(conn.peer, Date.now());
+          return;
+        }
+      }
+      
       const message = data as GameMessage;
       console.log('收到消息:', message);
       this.messageHandlers.forEach(handler => handler(message));
@@ -157,6 +241,7 @@ class PeerService {
     conn.on('close', () => {
       console.log('连接关闭:', conn.peer);
       this.connections.delete(conn.peer);
+      this.lastHeartbeat.delete(conn.peer);
       this.disconnectionHandlers.forEach(handler => handler(conn.peer));
     });
     
@@ -248,6 +333,12 @@ class PeerService {
    * 断开所有连接
    */
   disconnect() {
+    // 移除页面关闭监听
+    window.removeEventListener('beforeunload', this.handleBeforeUnload);
+    
+    // 停止心跳
+    this.stopHeartbeat();
+    
     this.connections.forEach(conn => conn.close());
     this.connections.clear();
     
