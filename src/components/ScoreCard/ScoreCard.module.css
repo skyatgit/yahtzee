@@ -1,6 +1,6 @@
 /**
- * 计分板 - 自适应布局
- * 完全填满容器，无额外边距
+ * 计分板 - 完全自适应布局
+ * 表格完全填满容器，不出现滚动条
  */
 
 .board {
@@ -9,36 +9,47 @@
   display: flex;
   flex-direction: column;
   background: var(--bg-card);
-  overflow: auto;
-  padding: clamp(10px, min(2vw, 3vh), 24px);
+  overflow: hidden;
+  padding: clamp(3px, min(0.8vw, 1vh), 12px);
+  box-sizing: border-box;
+  /* 启用容器查询 */
+  container-type: size;
+  container-name: scoreboard;
 }
 
 .table {
   width: 100%;
-  flex: 1;
+  height: 100%;
   border-collapse: collapse;
-  table-layout: fixed;
-  /* 确保表格外边框完整显示 */
-  border: clamp(2px, min(0.35vw, 0.5vh), 4px) solid var(--border-light);
+  table-layout: auto;
+  border: clamp(1px, min(0.2vw, 0.3vh), 3px) solid var(--border-light);
 }
 
-/* 统一所有单元格的边框样式 */
+/* 统一所有单元格 */
 .table th,
 .table td {
-  padding: 0;
+  padding: clamp(1px, 0.15cqh, 2px) clamp(1px, 0.2vw, 4px);
   text-align: center;
   vertical-align: middle;
-  font-size: clamp(8px, min(1.3vw, 2vh), 14px);
-  border: clamp(2px, min(0.35vw, 0.5vh), 4px) solid var(--border-light);
+  border: clamp(1px, min(0.2vw, 0.3vh), 3px) solid var(--border-light);
   color: var(--text);
+  line-height: 1;
+  /* 字体高度尽量填满单元格，18行内容，每行约5%容器高度，字体占4% */
+  font-size: clamp(8px, 4cqh, 18px);
+}
+
+/* 容器查询不支持时的回退 */
+@supports not (font-size: 1cqh) {
+  .table th,
+  .table td {
+    font-size: clamp(8px, min(4vh, 2vw), 18px);
+  }
 }
 
 /* === 表头行 === */
 .playerHeader {
   background: var(--bg-muted);
   font-weight: 600;
-  font-size: clamp(8px, min(1.2vw, 2vh), 13px);
-  height: clamp(24px, min(5vw, 8vh), 50px);
 }
 
 .playerHeader.activePlayer {
@@ -56,25 +67,24 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  padding: 0 clamp(2px, 0.5vw, 6px);
-  font-size: clamp(7px, min(1.1vw, 1.8vh), 12px);
+  padding: 0 clamp(1px, 0.2vw, 3px);
 }
 
 .aiTag {
   display: inline-block;
-  font-size: clamp(6px, min(0.8vw, 1.2vh), 10px);
-  padding: 1px 3px;
+  font-size: 0.7em;
+  padding: 0 2px;
   background: var(--accent);
   color: #000;
-  border-radius: 3px;
-  margin-left: 2px;
+  border-radius: 2px;
+  margin-left: 1px;
 }
 
 .categoryHeader {
-  width: clamp(45px, min(14vw, 20vh), 120px);
   text-align: center !important;
   vertical-align: middle;
   background: var(--bg-muted);
+  white-space: nowrap;
 }
 
 /* 回合信息 */
@@ -84,46 +94,45 @@
   align-items: center;
   justify-content: center;
   height: 100%;
-  gap: 1px;
+  gap: 0;
 }
 
 .roundLabel {
-  font-size: clamp(7px, min(1vw, 1.5vh), 12px);
+  font-size: 0.75em;
   font-weight: 500;
   color: var(--text-secondary);
+  line-height: 1;
 }
 
 .roundNumber {
-  font-size: clamp(10px, min(1.5vw, 2.5vh), 18px);
+  font-size: 1.1em;
   font-weight: 700;
   color: var(--accent);
+  line-height: 1;
 }
 
 /* === 分区标题行 === */
 .sectionRow td {
   background: var(--bg-muted);
-  font-weight: 600;
-  font-size: clamp(7px, min(1vw, 1.5vh), 11px);
+  font-weight: 700;
   color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
   text-align: left !important;
-  padding: clamp(1px, 0.3vh, 6px) clamp(3px, 0.8vw, 12px) !important;
+  padding-left: clamp(2px, 0.4vw, 6px) !important;
 }
 
 /* === 记分项名称 === */
 .categoryName {
   text-align: left !important;
-  padding-left: clamp(3px, 0.8vw, 12px) !important;
-  font-size: clamp(8px, min(1.2vw, 2vh), 14px);
+  padding-left: clamp(2px, 0.4vw, 6px) !important;
   color: var(--text-secondary);
   background: var(--bg-card);
+  white-space: nowrap;
 }
 
 /* === 分数单元格 === */
 .scoreCell {
   font-weight: 600;
-  font-size: clamp(9px, min(1.4vw, 2.2vh), 15px);
   cursor: default;
   transition: background 0.15s;
 }
@@ -165,35 +174,25 @@
 /* === 小计行 === */
 .subtotalRow td {
   background: var(--bg-muted);
-  font-size: clamp(8px, min(1.1vw, 1.8vh), 12px);
   font-weight: 600;
   color: var(--text-secondary);
 }
 
 .subtotalRow td:first-child {
   text-align: left !important;
-  padding-left: clamp(3px, 0.8vw, 12px) !important;
-}
-
-.subtotalCell {
-  font-size: clamp(8px, min(1.2vw, 1.8vh), 13px) !important;
+  padding-left: clamp(2px, 0.4vw, 6px) !important;
 }
 
 /* === 奖励分行 === */
 .bonusRow td {
   background: var(--bg-muted);
-  font-size: clamp(8px, min(1.1vw, 1.8vh), 12px);
   font-weight: 600;
   color: var(--text-secondary);
 }
 
 .bonusRow td:first-child {
   text-align: left !important;
-  padding-left: clamp(3px, 0.8vw, 12px) !important;
-}
-
-.bonusCell {
-  font-size: clamp(8px, min(1.2vw, 1.8vh), 13px) !important;
+  padding-left: clamp(2px, 0.4vw, 6px) !important;
 }
 
 .bonusEarned {
@@ -204,10 +203,10 @@
 /* === 奖励提示行 === */
 .hintRow td {
   background: var(--bg-card);
-  font-size: clamp(7px, min(0.9vw, 1.4vh), 11px);
+  font-weight: 700;
   color: var(--text-muted);
   text-align: left !important;
-  padding: clamp(1px, 0.3vh, 4px) clamp(3px, 0.8vw, 12px) !important;
+  padding-left: clamp(2px, 0.4vw, 6px) !important;
 }
 
 /* === 总分行 === */
@@ -215,29 +214,21 @@
   background: var(--bg-muted);
   color: var(--text);
   font-weight: 700;
-  font-size: clamp(10px, min(1.4vw, 2.2vh), 15px);
 }
 
 .totalRow td:first-child {
   text-align: left !important;
-  padding-left: clamp(3px, 0.8vw, 12px) !important;
+  padding-left: clamp(2px, 0.4vw, 6px) !important;
 }
 
 .totalCell {
-  font-size: clamp(11px, min(1.8vw, 3vh), 22px) !important;
+  font-size: 1.1em !important;
   color: var(--accent);
 }
 
 /* 小屏幕隐藏AI标签 */
 @media (max-width: 360px), (max-height: 400px) {
   .aiTag {
-    display: none;
-  }
-}
-
-/* 超扁平横屏（手机横屏）：隐藏提示行节省空间 */
-@media (orientation: landscape) and (max-height: 400px) {
-  .hintRow {
     display: none;
   }
 }

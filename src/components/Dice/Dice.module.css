@@ -29,12 +29,12 @@
 
 /* 骰子大小：根据视口自动缩放 */
 .dice {
-  --dice-size: clamp(20px, min(8vw, 10vh), 70px);
+  --dice-size: clamp(28px, min(10vw, 12vh), 80px);
   width: var(--dice-size);
   height: var(--dice-size);
   background: var(--bg-card);
-  border: clamp(1px, min(0.15vw, 0.2vh), 2px) solid var(--border-light);
-  border-radius: clamp(3px, min(0.6vw, 0.8vh), 10px);
+  border: clamp(1px, min(0.2vw, 0.25vh), 3px) solid var(--border-light);
+  border-radius: clamp(4px, min(0.8vw, 1vh), 12px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -58,22 +58,4 @@
   border-radius: 50%;
   justify-self: center;
   align-self: center;
-}
-
-.holdIndicator {
-  position: absolute;
-  bottom: clamp(-12px, min(-1.2vh, -1.2vw), -16px);
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: clamp(6px, min(0.9vh, 0.9vw), 10px);
-  font-weight: 600;
-  color: var(--accent);
-  white-space: nowrap;
-}
-
-/* 小屏幕隐藏锁定指示器 */
-@media (max-height: 400px), (max-width: 360px) {
-  .holdIndicator {
-    display: none;
-  }
 }

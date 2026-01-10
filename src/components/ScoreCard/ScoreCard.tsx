@@ -26,6 +26,38 @@ const lowerCategoriesWithoutChance: ScoreCategory[] = [
   'fourOfAKind', 'fullHouse', 'smallStraight', 'largeStraight', 'yahtzee'
 ];
 
+// 骰子图标映射
+const diceIcons: Record<string, string> = {
+  ones: '⚀',
+  twos: '⚁',
+  threes: '⚂',
+  fours: '⚃',
+  fives: '⚄',
+  sixes: '⚅',
+  chance: '⚀⚅',
+  fourOfAKind: '⚃⚃',
+  fullHouse: '⚂⚁',
+  smallStraight: '⚀⚁⚂⚃',
+  largeStraight: '⚁⚂⚃⚄',
+  yahtzee: '⚅⚅',
+};
+
+// 类别名称（不含图标）
+const categoryNames: Record<string, string> = {
+  ones: 'categoryNames.ones',
+  twos: 'categoryNames.twos',
+  threes: 'categoryNames.threes',
+  fours: 'categoryNames.fours',
+  fives: 'categoryNames.fives',
+  sixes: 'categoryNames.sixes',
+  chance: 'categoryNames.chance',
+  fourOfAKind: 'categoryNames.fourOfAKind',
+  fullHouse: 'categoryNames.fullHouse',
+  smallStraight: 'categoryNames.smallStraight',
+  largeStraight: 'categoryNames.largeStraight',
+  yahtzee: 'categoryNames.yahtzee',
+};
+
 export function ScoreBoard() {
   const { t } = useTranslation();
   const { 
@@ -63,6 +95,11 @@ export function ScoreBoard() {
   const isLocalPlayer = (player: Player) => {
     if (mode === 'local') return player.type === 'human';
     return player.id === localPlayerId;
+  };
+
+  // 渲染带骰子图标的类别名称
+  const renderCategoryName = (category: string) => {
+    return t(`score.${category}`);
   };
   
   // 渲染玩家分数单元格
@@ -137,7 +174,7 @@ export function ScoreBoard() {
           {/* 上半区分数（1~6点） */}
           {upperCategories.map(category => (
             <tr key={category} className={styles.scoreRow}>
-              <td className={styles.categoryName}>{t(`score.${category}`)}</td>
+              <td className={styles.categoryName}>{renderCategoryName(category)}</td>
               {players.map((player, index) => renderScoreCell(category, player, index))}
             </tr>
           ))}
@@ -177,14 +214,14 @@ export function ScoreBoard() {
           
           {/* 全选（单独一行） */}
           <tr className={styles.scoreRow}>
-            <td className={styles.categoryName}>{t('score.chance')}</td>
+            <td className={styles.categoryName}>{renderCategoryName('chance')}</td>
             {players.map((player, index) => renderScoreCell('chance', player, index))}
           </tr>
           
           {/* 下半区其他项目 */}
           {lowerCategoriesWithoutChance.map(category => (
             <tr key={category} className={styles.scoreRow}>
-              <td className={styles.categoryName}>{t(`score.${category}`)}</td>
+              <td className={styles.categoryName}>{renderCategoryName(category)}</td>
               {players.map((player, index) => renderScoreCell(category, player, index))}
             </tr>
           ))}
