@@ -3,31 +3,71 @@
  * 单屏布局：骰子区域 + 统一记分板
  */
 
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { DiceContainer } from '../Dice';
 import { ScoreBoard } from '../ScoreCard';
-import { OnlineSync } from '../OnlineSync';
+import { OnlineSync, onAllPlayersLeft } from '../OnlineSync';
 import { useGameStore } from '../../store/gameStore';
+import { peerService } from '../../services/peerService';
 import styles from './GameBoard.module.css';
 
 export function GameBoard() {
   const { t } = useTranslation();
-  const { 
-    players, 
-    currentPlayerIndex, 
-    currentRound, 
+  const {
+    players,
+    currentPlayerIndex,
+    currentRound,
     mode,
     isLocalPlayerTurn,
+    resetGame,
   } = useGameStore();
-  
+
+  // 其他玩家已退出的提示状态
+  const [showAllLeftAlert, setShowAllLeftAlert] = useState(false);
+
   const currentPlayer = players[currentPlayerIndex];
   const isMyTurn = isLocalPlayerTurn();
-  
+
+  // 监听所有其他玩家退出事件
+  useEffect(() => {
+    if (mode !== 'online') return;
+
+    const unsubscribe = onAllPlayersLeft(() => {
+      setShowAllLeftAlert(true);
+    });
+
+    return unsubscribe;
+  }, [mode]);
+
+  // 处理退出游戏
+  const handleExitGame = () => {
+    setShowAllLeftAlert(false);
+    peerService.disconnect();
+    resetGame();
+  };
+
   return (
     <div className={styles.container}>
       {/* 联机同步组件 - 始终渲染 */}
       <OnlineSync />
+
+      {/* 其他玩家已退出提示弹窗 */}
+      {showAllLeftAlert && (
+        <div className={styles.alertOverlay}>
+          <motion.div
+            className={styles.alertBox}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+          >
+            <p className={styles.alertText}>{t('online.allPlayersLeft')}</p>
+            <button className={styles.alertButton} onClick={handleExitGame}>
+              {t('common.ok')}
+            </button>
+          </motion.div>
+        </div>
+      )}
       
       {/* 顶部信息栏 */}
       <header className={styles.header}>

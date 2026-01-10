@@ -3,6 +3,7 @@
  * 核心职责：
  * 1. 监听PeerJS消息并更新状态
  * 2. 房主状态变化时广播给其他玩家
+ * 3. 检测玩家退出情况
  */
 
 import { useEffect, useRef } from 'react';
@@ -10,28 +11,40 @@ import { useGameStore } from '../../store/gameStore';
 import { peerService } from '../../services/peerService';
 import type { GameMessage, Dice, ScoreCategory, GamePhase, Player } from '../../types/game';
 
+// 当所有其他玩家退出时的回调
+type AllPlayersLeftCallback = () => void;
+let allPlayersLeftCallback: AllPlayersLeftCallback | null = null;
+
+// 注册回调函数
+export function onAllPlayersLeft(callback: AllPlayersLeftCallback) {
+  allPlayersLeftCallback = callback;
+  return () => {
+    allPlayersLeftCallback = null;
+  };
+}
+
 export function OnlineSync() {
   // 只取mode，其他通过getState获取避免不必要的重渲染
   const mode = useGameStore(s => s.mode);
   const initRef = useRef(false);
-  
+
   useEffect(() => {
     if (mode !== 'online') {
       initRef.current = false;
       return;
     }
-    
+
     // 防止重复初始化
     if (initRef.current) return;
     initRef.current = true;
-    
+
     console.log('[OnlineSync] === 初始化 ===');
-    
+
     // 广播状态给所有玩家
     const broadcastState = () => {
       const state = useGameStore.getState();
       if (!state.isHost) return;
-      
+
       peerService.broadcast('sync', {
         players: state.players,
         currentPlayerIndex: state.currentPlayerIndex,
@@ -42,14 +55,26 @@ export function OnlineSync() {
         isRolling: state.isRolling,
       });
     };
-    
+
+    // 检查是否只剩最后一个玩家
+    const checkLastPlayer = () => {
+      const state = useGameStore.getState();
+      // 只有在游戏进行中才检查
+      if (state.phase !== 'rolling' && state.phase !== 'finished') return;
+      // 只剩一个玩家时触发回调
+      if (state.players.length <= 1 && allPlayersLeftCallback) {
+        console.log('[OnlineSync] 只剩最后一个玩家，触发退出');
+        allPlayersLeftCallback();
+      }
+    };
+
     // 处理收到的消息
     const handleMessage = (message: GameMessage) => {
       const state = useGameStore.getState();
       const tag = state.isHost ? '[房主]' : '[客户端]';
-      
+
       console.log(`${tag} 收到消息: ${message.type}`, message.payload);
-      
+
       switch (message.type) {
         case 'sync': {
           // 同步状态
@@ -64,9 +89,11 @@ export function OnlineSync() {
           };
           console.log(`${tag} 同步状态`, data);
           useGameStore.setState(data);
+          // 同步后检查玩家数量
+          setTimeout(checkLastPlayer, 100);
           break;
         }
-        
+
         case 'action-roll': {
           // 玩家摇骰子请求（房主处理）
           if (!state.isHost) return;
@@ -80,7 +107,7 @@ export function OnlineSync() {
           broadcastState();
           break;
         }
-        
+
         case 'action-hold': {
           // 玩家锁定骰子请求（房主处理）
           if (!state.isHost) return;
@@ -93,7 +120,7 @@ export function OnlineSync() {
           broadcastState();
           break;
         }
-        
+
         case 'action-score': {
           // 玩家记分请求（房主处理）
           if (!state.isHost) return;
@@ -105,27 +132,31 @@ export function OnlineSync() {
           setTimeout(broadcastState, 100);
           break;
         }
-        
+
         case 'player-left': {
           const { playerId } = message.payload as { playerId: string };
           console.log(`${tag} 玩家离开`, playerId);
           useGameStore.getState().removeRemotePlayer(playerId);
+          // 玩家离开后检查是否只剩一个玩家
+          setTimeout(checkLastPlayer, 100);
           break;
         }
       }
     };
-    
+
     // 处理断开连接
     const handleDisconnect = (peerId: string) => {
       const state = useGameStore.getState();
       console.log('[OnlineSync] 玩家断开:', peerId);
-      
+
       const player = state.players.find(p => p.id === peerId);
       if (player) {
         useGameStore.getState().removeRemotePlayer(peerId);
         if (state.isHost) {
           peerService.broadcast('player-left', { playerId: peerId });
         }
+        // 检查是否只剩一个玩家
+        setTimeout(checkLastPlayer, 100);
       }
     };
     

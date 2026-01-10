@@ -79,6 +79,59 @@
   background: var(--bg);
 }
 
+/* 提示弹窗样式 */
+.alertOverlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 1000;
+}
+
+.alertBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 32px 40px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  max-width: 90vw;
+}
+
+.alertText {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text);
+  text-align: center;
+}
+
+.alertButton {
+  padding: 12px 32px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--primary);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.alertButton:hover {
+  background: var(--primary-hover);
+  transform: scale(1.02);
+}
+
+.alertButton:active {
+  transform: scale(0.98);
+}
+
 @media (max-width: 640px) {
   .mainArea { flex-direction: column; }
   .scoreSection {
@@ -89,6 +142,13 @@
     border-bottom: 1px solid var(--border);
   }
   .diceSection { order: 2; flex: none; padding: 16px; }
+
+  .alertBox {
+    padding: 24px 28px;
+  }
+  .alertText {
+    font-size: 16px;
+  }
 }
 
 @media (max-height: 500px) and (orientation: landscape) {

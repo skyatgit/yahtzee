@@ -38,6 +38,7 @@
     "waitingForPlayers": "Waiting for other players",
     "playerJoined": "{name} joined the game",
     "playerLeft": "{name} left the game",
+    "allPlayersLeft": "All other players have left the game",
     "connectionFailed": "Connection failed",
     "roomNotFound": "Room not found"
   },

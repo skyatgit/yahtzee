@@ -38,6 +38,7 @@
     "waitingForPlayers": "等待其他玩家加入",
     "playerJoined": "{name} 加入了游戏",
     "playerLeft": "{name} 离开了游戏",
+    "allPlayersLeft": "其他玩家已退出游戏",
     "connectionFailed": "连接失败",
     "roomNotFound": "房间不存在"
   },

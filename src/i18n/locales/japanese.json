@@ -38,6 +38,7 @@
     "waitingForPlayers": "他のプレイヤーを待っています",
     "playerJoined": "{name}がゲームに参加しました",
     "playerLeft": "{name}がゲームを離れました",
+    "allPlayersLeft": "他のプレイヤーが全員退出しました",
     "connectionFailed": "接続に失敗しました",
     "roomNotFound": "部屋が見つかりません"
   },

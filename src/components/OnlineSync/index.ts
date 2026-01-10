@@ -1,1 +1,1 @@
-export { OnlineSync } from './OnlineSync';
+export { OnlineSync, onAllPlayersLeft } from './OnlineSync';
