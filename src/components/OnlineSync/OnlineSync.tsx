@@ -179,6 +179,14 @@ export function OnlineSync() {
           triggerAllPlayersLeft();
           break;
         }
+        
+        case 'latency-update': {
+          // 收到房主广播的延迟信息（客户端接收）
+          if (state.isHost) break;
+          const latencyObj = message.payload as Record<string, number>;
+          peerService.updateLatenciesFromHost(latencyObj);
+          break;
+        }
       }
     };
 

@@ -4,9 +4,11 @@
  * 布局参考 Switch 版快艇骰子
  */
 
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ScoreCard as ScoreCardType, ScoreCategory, Player } from '../../types/game';
 import { useGameStore } from '../../store/gameStore';
+import { peerService } from '../../services/peerService';
 import {
   calculateScore,
   calculateUpperTotal,
@@ -39,7 +41,22 @@ export function ScoreBoard() {
     isLocalPlayerTurn,
     localPlayerId,
     mode,
+    isHost,
+    roomId,
   } = useGameStore();
+  
+  const [latencies, setLatencies] = useState<Map<string, number>>(new Map());
+  
+  // 监听延迟更新（仅联机模式）
+  useEffect(() => {
+    if (mode !== 'online') return;
+    
+    const unsub = peerService.onLatencyUpdate((newLatencies) => {
+      setLatencies(newLatencies);
+    });
+    
+    return unsub;
+  }, [mode]);
   
   const isMyTurn = isLocalPlayerTurn();
   const canSelect = rollsLeft < 3 && phase === 'rolling' && isMyTurn;
@@ -63,6 +80,35 @@ export function ScoreBoard() {
   const isLocalPlayer = (player: Player) => {
     if (mode === 'local') return player.type === 'human';
     return player.id === localPlayerId;
+  };
+  
+  // 获取玩家的延迟（联机模式）
+  const getPlayerLatency = (player: Player, index: number): string | null => {
+    if (mode !== 'online') return null;
+    
+    const myPeerId = peerService.getMyPeerId();
+    
+    // 不显示自己的延迟
+    if (player.id === myPeerId) return null;
+    
+    // 房主视角：显示每个客户端到房主的延迟
+    if (isHost) {
+      if (index === 0) return null; // 房主自己
+      const latency = latencies.get(player.id);
+      return latency !== undefined ? `${latency}ms` : null;
+    }
+    
+    // 客户端视角
+    if (index === 0 && roomId) {
+      // 房主位置：显示自己到房主的延迟
+      const hostPeerId = `yahtzee-${roomId}`;
+      const latency = latencies.get(hostPeerId);
+      return latency !== undefined ? `${latency}ms` : null;
+    } else {
+      // 其他客户端位置：显示他们到房主的延迟
+      const latency = latencies.get(player.id);
+      return latency !== undefined ? `${latency}ms` : null;
+    }
   };
   
   // 渲染玩家分数单元格
@@ -128,6 +174,9 @@ export function ScoreBoard() {
                 `}
               >
                 <div className={styles.playerNameWrapper}>
+                  {getPlayerLatency(player, index) && (
+                    <span className={styles.latencyBadge}>{getPlayerLatency(player, index)}</span>
+                  )}
                   <span className={styles.playerNameText}>
                     {player.name}
                     {isLocalPlayer(player) && mode === 'online' && <br />}

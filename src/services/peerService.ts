@@ -29,6 +29,7 @@ const HEARTBEAT_TIMEOUT = 6000;
 
 type MessageHandler = (message: GameMessage) => void;
 type ConnectionHandler = (peerId: string) => void;
+type LatencyHandler = (latencies: Map<string, number>) => void;
 
 class PeerService {
   private peer: Peer | null = null;
@@ -36,12 +37,17 @@ class PeerService {
   private messageHandlers: MessageHandler[] = [];
   private connectionHandlers: ConnectionHandler[] = [];
   private disconnectionHandlers: ConnectionHandler[] = [];
+  private latencyHandlers: LatencyHandler[] = [];
   private myPeerId: string | null = null;
   
   // 心跳相关
   private heartbeatInterval: number | null = null;
   private lastHeartbeat: Map<string, number> = new Map();
   private heartbeatCheckInterval: number | null = null;
+  
+  // 延迟测量���关
+  private pendingPings: Map<string, number> = new Map(); // peerId -> ping发送时间
+  private latencies: Map<string, number> = new Map(); // peerId -> 延迟(ms)
   
   /**
    * 初始化 Peer 连接（作为房主）
@@ -161,11 +167,14 @@ class PeerService {
    * 启动心跳
    */
   private startHeartbeat() {
-    // 定期发送心跳
+    // 定期发送 ping（心跳 + 延迟测量）
     this.heartbeatInterval = window.setInterval(() => {
-      this.connections.forEach((conn) => {
+      const now = Date.now();
+      this.connections.forEach((conn, peerId) => {
         if (conn.open) {
-          conn.send({ type: 'heartbeat', timestamp: Date.now() });
+          // 记录 ping 发送时间
+          this.pendingPings.set(peerId, now);
+          conn.send({ type: 'ping', timestamp: now });
         }
       });
     }, HEARTBEAT_INTERVAL);
@@ -177,6 +186,8 @@ class PeerService {
         if (now - lastTime > HEARTBEAT_TIMEOUT) {
           console.log('心跳超时，断开连接:', peerId);
           this.lastHeartbeat.delete(peerId);
+          this.latencies.delete(peerId);
+          this.pendingPings.delete(peerId);
           const conn = this.connections.get(peerId);
           if (conn) {
             this.connections.delete(peerId);
@@ -200,6 +211,8 @@ class PeerService {
       this.heartbeatCheckInterval = null;
     }
     this.lastHeartbeat.clear();
+    this.pendingPings.clear();
+    this.latencies.clear();
   }
   
   /**
@@ -227,9 +240,34 @@ class PeerService {
     this.lastHeartbeat.set(conn.peer, initialTime);
     
     conn.on('data', (data) => {
-      // 处理心跳消息
+      // 处理 ping/pong 消息
       if (data && typeof data === 'object' && 'type' in data) {
-        if ((data as { type: string }).type === 'heartbeat') {
+        const msgType = (data as { type: string }).type;
+        
+        // 收到 ping，立即回复 pong
+        if (msgType === 'ping') {
+          this.lastHeartbeat.set(conn.peer, Date.now());
+          const pingData = data as { type: string; timestamp: number };
+          conn.send({ type: 'pong', timestamp: pingData.timestamp });
+          return;
+        }
+        
+        // 收到 pong，计算延迟
+        if (msgType === 'pong') {
+          this.lastHeartbeat.set(conn.peer, Date.now());
+          const sendTime = this.pendingPings.get(conn.peer);
+          if (sendTime) {
+            const rtt = Date.now() - sendTime;
+            this.latencies.set(conn.peer, rtt);
+            this.pendingPings.delete(conn.peer);
+            // 通知延迟更新
+            this.notifyLatencyUpdate();
+          }
+          return;
+        }
+        
+        // 兼容旧的 heartbeat 消息
+        if (msgType === 'heartbeat') {
           this.lastHeartbeat.set(conn.peer, Date.now());
           return;
         }
@@ -241,15 +279,65 @@ class PeerService {
     });
     
     conn.on('close', () => {
-      console.log('连接关闭:', conn.peer);
+      console.log('连���关闭:', conn.peer);
       this.connections.delete(conn.peer);
       this.lastHeartbeat.delete(conn.peer);
+      this.latencies.delete(conn.peer);
+      this.pendingPings.delete(conn.peer);
       this.disconnectionHandlers.forEach(handler => handler(conn.peer));
     });
     
     conn.on('error', (err) => {
       console.error('连接错误:', err);
     });
+  }
+  
+  /**
+   * 通知延迟更新
+   */
+  private notifyLatencyUpdate() {
+    // 通知本地监听器
+    this.latencyHandlers.forEach(handler => handler(new Map(this.latencies)));
+    
+    // 如果是房主，广播延迟信息给所有客户端
+    if (this.myPeerId && this.myPeerId.startsWith('yahtzee-')) {
+      // 将 Map 转换为普通对象以便传输
+      const latencyObj: Record<string, number> = {};
+      this.latencies.forEach((value, key) => {
+        latencyObj[key] = value;
+      });
+      this.broadcast('latency-update', latencyObj);
+    }
+  }
+  
+  /**
+   * 更新从房主收到的延迟信息（客户端使用）
+   */
+  updateLatenciesFromHost(latencyObj: Record<string, number>) {
+    // 保留自己到房主的延迟
+    const myLatencyToHost = this.latencies.size > 0 ? 
+      Array.from(this.latencies.values())[0] : null;
+    
+    // 清空并更新
+    this.latencies.clear();
+    
+    // 添加房主广播的所有客户端延迟
+    Object.entries(latencyObj).forEach(([peerId, latency]) => {
+      this.latencies.set(peerId, latency);
+    });
+    
+    // 如果有自己到房主的延迟，添加到房主的 peerId 上
+    if (myLatencyToHost !== null) {
+      // 找到房主的 peerId（以 yahtzee- 开头）
+      this.connections.forEach((_, peerId) => {
+        if (peerId.startsWith('yahtzee-')) {
+          this.latencies.set(peerId, myLatencyToHost);
+        }
+      });
+    }
+    
+    // 通知本地监听器
+    this.latencyHandlers.forEach(handler => handler(new Map(this.latencies)));
   }
   
   /**
@@ -318,6 +406,34 @@ class PeerService {
   }
   
   /**
+   * 注册延迟更新处理器
+   */
+  onLatencyUpdate(handler: LatencyHandler) {
+    this.latencyHandlers.push(handler);
+    // 立即通知当前延迟
+    if (this.latencies.size > 0) {
+      handler(new Map(this.latencies));
+    }
+    return () => {
+      this.latencyHandlers = this.latencyHandlers.filter(h => h !== handler);
+    };
+  }
+  
+  /**
+   * 获取所有连接的延迟
+   */
+  getLatencies(): Map<string, number> {
+    return new Map(this.latencies);
+  }
+  
+  /**
+   * 获取到特定 peer 的延迟
+   */
+  getLatencyTo(peerId: string): number | null {
+    return this.latencies.get(peerId) ?? null;
+  }
+  
+  /**
    * 获取连接数量
    */
   getConnectionCount(): number {
@@ -353,6 +469,7 @@ class PeerService {
     this.messageHandlers = [];
     this.connectionHandlers = [];
     this.disconnectionHandlers = [];
+    this.latencyHandlers = [];
   }
   
   /**

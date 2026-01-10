@@ -70,6 +70,7 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
   const [copiedLink, setCopiedLink] = useState(false);
   const autoJoinRef = useRef(false);
   const messageHandlerRegistered = useRef(false);
+  const [latencies, setLatencies] = useState<Map<string, number>>(new Map());
   
   // 加入房间的核心逻辑
   const joinRoomAsync = async (targetRoomId: string, name: string) => {
@@ -235,6 +236,14 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
         setMode('select');
         break;
       }
+      
+      case 'latency-update': {
+        // 收到房主广播的延迟信息（客户端收到）
+        if (state.isHost) return;
+        const latencyObj = message.payload as Record<string, number>;
+        peerService.updateLatenciesFromHost(latencyObj);
+        break;
+      }
     }
   }, [addRemotePlayer, removeRemotePlayer, syncGameState, onStart, t]);
   
@@ -277,11 +286,15 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
   useEffect(() => {
     const unsubMessage = peerService.onMessage(handleMessage);
     const unsubDisconnect = peerService.onDisconnection(handleDisconnection);
+    const unsubLatency = peerService.onLatencyUpdate((newLatencies) => {
+      setLatencies(newLatencies);
+    });
     messageHandlerRegistered.current = true;
     
     return () => {
       unsubMessage();
       unsubDisconnect();
+      unsubLatency();
       messageHandlerRegistered.current = false;
     };
   }, [handleMessage, handleDisconnection]);
@@ -411,6 +424,34 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
     onBack();
   };
   
+  // 获取玩家的延迟显示
+  const getPlayerLatency = (player: Player, index: number): string | null => {
+    const state = useGameStore.getState();
+    const myPeerId = peerService.getMyPeerId();
+    
+    // 不显示自己的延迟
+    if (player.id === myPeerId) return null;
+    
+    // 房主视角：显示每个客户端到房主的延迟
+    if (state.isHost) {
+      if (index === 0) return null; // 房主自己
+      const latency = latencies.get(player.id);
+      return latency !== undefined ? `${latency}ms` : null;
+    }
+    
+    // 客户端视角
+    if (index === 0) {
+      // 房主位置：显示自己到房主的延迟
+      const hostPeerId = `yahtzee-${roomId}`;
+      const latency = latencies.get(hostPeerId);
+      return latency !== undefined ? `${latency}ms` : null;
+    } else {
+      // 其他客户端位置：显示他们到房主的延迟
+      const latency = latencies.get(player.id);
+      return latency !== undefined ? `${latency}ms` : null;
+    }
+  };
+  
   return (
     <div className={styles.container}>
       <motion.div
@@ -514,28 +555,32 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
             <div className={styles.section}>
               <label className={styles.label}>{t('setup.players')} ({players.length}/4)</label>
               <div className={styles.playerList}>
-                {players.map((player, index) => (
-                  <motion.div
-                    key={player.id}
-                    className={styles.playerItem}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                  >
-                    <span className={styles.playerIcon}>👤</span>
-                    <span className={styles.playerName}>{player.name}</span>
-                    {index === 0 && <span className={styles.hostBadge}>{t('online.host')}</span>}
-                    {index !== 0 && (
-                      <button 
-                        className={styles.kickButton}
-                        onClick={() => handleKickPlayer(player.id)}
-                        title={t('online.kick')}
-                      >
-                        ✕
-                      </button>
-                    )}
-                  </motion.div>
-                ))}
+                {players.map((player, index) => {
+                  const latency = getPlayerLatency(player, index);
+                  return (
+                    <motion.div
+                      key={player.id}
+                      className={styles.playerItem}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                    >
+                      <span className={styles.playerIcon}>👤</span>
+                      <span className={styles.playerName}>{player.name}</span>
+                      {latency && <span className={styles.latencyBadge}>{latency}</span>}
+                      {index === 0 && <span className={styles.hostBadge}>{t('online.host')}</span>}
+                      {index !== 0 && (
+                        <button 
+                          className={styles.kickButton}
+                          onClick={() => handleKickPlayer(player.id)}
+                          title={t('online.kick')}
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </motion.div>
+                  );
+                })}
               </div>
             </div>
             
@@ -571,18 +616,22 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
             <div className={styles.section}>
               <label className={styles.label}>{t('setup.players')}</label>
               <div className={styles.playerList}>
-                {players.map((player, index) => (
-                  <motion.div
-                    key={player.id}
-                    className={styles.playerItem}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                  >
-                    <span className={styles.playerIcon}>👤</span>
-                    <span className={styles.playerName}>{player.name}</span>
-                    {index === 0 && <span className={styles.hostBadge}>{t('online.host')}</span>}
-                  </motion.div>
-                ))}
+                {players.map((player, index) => {
+                  const latency = getPlayerLatency(player, index);
+                  return (
+                    <motion.div
+                      key={player.id}
+                      className={styles.playerItem}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                    >
+                      <span className={styles.playerIcon}>👤</span>
+                      <span className={styles.playerName}>{player.name}</span>
+                      {latency && <span className={styles.latencyBadge}>{latency}</span>}
+                      {index === 0 && <span className={styles.hostBadge}>{t('online.host')}</span>}
+                    </motion.div>
+                  );
+                })}
               </div>
             </div>
             
