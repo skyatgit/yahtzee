@@ -1,6 +1,6 @@
 /**
  * PeerJS 联机服务
- * 使用 PeerJS 官方服务器实现P2P联机
+ * 使用自建 PeerJS 服务器实现P2P联机
  */
 
 import Peer from 'peerjs';
@@ -17,8 +17,11 @@ export const generateRoomId = (): string => {
   return result;
 };
 
-// PeerJS 配置（使用官方服务器）
+// PeerJS 配置（使用自建服务器）
 const PEER_CONFIG = {
+  host: 'peerjs.sky9527.top',
+  port: 9000,
+  secure: true,  // 使用 HTTPS
   debug: 1
 };
 
