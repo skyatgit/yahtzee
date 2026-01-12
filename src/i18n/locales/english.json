@@ -19,6 +19,7 @@
     "playerType": "Player Type",
     "human": "Human",
     "ai": "Computer",
+    "addPlayer": "Add",
     "aiDifficulty": "AI Difficulty",
     "easy": "Easy",
     "medium": "Normal",

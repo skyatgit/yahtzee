@@ -20,36 +20,6 @@ interface OnlineSetupProps {
 
 type OnlineMode = 'select' | 'create' | 'join';
 
-// localStorage key for player name
-const PLAYER_NAME_KEY = 'yahtzee_player_name';
-
-// 生成随机后缀
-const generateRandomSuffix = (): string => {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let result = '';
-  for (let i = 0; i < 4; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return result;
-};
-
-// 获取保存的玩家名或生成新的
-const getSavedPlayerName = (t: (key: string) => string): string => {
-  const saved = localStorage.getItem(PLAYER_NAME_KEY);
-  if (saved) {
-    return saved;
-  }
-  // 第一次使用，生成随机名称
-  const newName = `${t('setup.human')}${generateRandomSuffix()}`;
-  localStorage.setItem(PLAYER_NAME_KEY, newName);
-  return newName;
-};
-
-// 保存玩家名
-const savePlayerName = (name: string) => {
-  localStorage.setItem(PLAYER_NAME_KEY, name);
-};
-
 export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps) {
   const { t } = useTranslation();
   const { 
@@ -61,7 +31,6 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
   } = useGameStore();
   
   const [mode, setMode] = useState<OnlineMode>('select');
-  const [playerName, setPlayerName] = useState(() => getSavedPlayerName(t));
   const [roomId, setRoomId] = useState('');
   const [inputRoomId, setInputRoomId] = useState('');
   const [isConnecting, setIsConnecting] = useState(false);
@@ -73,7 +42,7 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
   const [latencies, setLatencies] = useState<Map<string, number>>(new Map());
   
   // 加入房间的核心逻辑
-  const joinRoomAsync = async (targetRoomId: string, name: string) => {
+  const joinRoomAsync = async (targetRoomId: string) => {
     setIsConnecting(true);
     setError(null);
     
@@ -83,12 +52,13 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
       
       console.log('[客户端] 加入房间成功, peerId:', peerId);
       
-      initOnlineGame(false, targetRoomId.toUpperCase(), name, peerId);
+      // 玩家名由房主分配，先使用临时名
+      initOnlineGame(false, targetRoomId.toUpperCase(), 'P?', peerId);
       
       // 发送加入消息给房主
       const myPlayer: Player = {
         id: peerId,
-        name: name,
+        name: 'P?', // 临时名，房主会重新分配
         type: 'remote',
         scoreCard: createEmptyScoreCard(),
         isConnected: true
@@ -107,12 +77,6 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
     } finally {
       setIsConnecting(false);
     }
-  };
-  
-  // 玩家名修改时自动保存
-  const handlePlayerNameChange = (name: string) => {
-    setPlayerName(name);
-    savePlayerName(name);
   };
   
   // 处理收到的消息
@@ -143,8 +107,23 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
           return;
         }
         
-        console.log('[房主] 添加新玩家:', newPlayer.name);
-        addRemotePlayer(newPlayer);
+        // 找到第一个空闲的编号 (已有玩家的编号集合，找1-4中第一个不在集合中的)
+        const usedNumbers = state.players.map(p => parseInt(p.name.replace('P', '')));
+        let assignedNumber = 1;
+        for (let i = 1; i <= 4; i++) {
+          if (!usedNumbers.includes(i)) {
+            assignedNumber = i;
+            break;
+          }
+        }
+        
+        const assignedPlayer: Player = {
+          ...newPlayer,
+          name: `P${assignedNumber}`
+        };
+        
+        console.log('[房主] 添加新玩家:', assignedPlayer.name);
+        addRemotePlayer(assignedPlayer);
         
         // 广播更新后的玩家列表给所有人
         setTimeout(() => {
@@ -307,7 +286,7 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
         if (autoJoinRef.current) return;
         autoJoinRef.current = true;
         setInputRoomId(inviteRoomId);
-        joinRoomAsync(inviteRoomId, playerName);
+        joinRoomAsync(inviteRoomId);
       };
       
       // 稍微延迟确保消息处理器已注册
@@ -315,7 +294,7 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
       return () => clearTimeout(timer);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [inviteRoomId, mode, isConnecting, playerName]);
+  }, [inviteRoomId, mode, isConnecting]);
   
   // 踢出玩家（房主）
   const handleKickPlayer = (playerId: string) => {
@@ -357,7 +336,8 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
       console.log('[房主] 创建房间成功:', newRoomId, 'peerId:', peerId);
       
       setRoomId(newRoomId);
-      initOnlineGame(true, newRoomId, playerName, peerId);
+      // 房主自动为 P1
+      initOnlineGame(true, newRoomId, 'P1', peerId);
       setMode('create');
     } catch (err) {
       console.error('创建房间失败:', err);
@@ -370,7 +350,7 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
   // 手动加入房间
   const handleJoinRoom = async () => {
     if (!inputRoomId.trim()) return;
-    await joinRoomAsync(inputRoomId, playerName);
+    await joinRoomAsync(inputRoomId);
   };
   
   // 开始游戏（房主）
@@ -468,24 +448,12 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
         
         {mode === 'select' && (
           <div className={styles.card}>
-            {/* 玩家名称 */}
-            <div className={styles.section}>
-              <label className={styles.label}>{t('setup.playerName')}</label>
-              <input
-                type="text"
-                className="input"
-                value={playerName}
-                onChange={(e) => handlePlayerNameChange(e.target.value)}
-                maxLength={10}
-              />
-            </div>
-            
             {/* 创建/加入选择 */}
             <div className={styles.modeButtons}>
               <motion.button
                 className="btn btn-primary btn-large btn-full"
                 onClick={handleCreateRoom}
-                disabled={isConnecting || !playerName.trim()}
+                disabled={isConnecting}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
@@ -508,7 +476,7 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
                 <motion.button
                   className="btn btn-success"
                   onClick={handleJoinRoom}
-                  disabled={isConnecting || !inputRoomId.trim() || !playerName.trim()}
+                  disabled={isConnecting || !inputRoomId.trim()}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
@@ -554,32 +522,47 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
             {/* 玩家列表 */}
             <div className={styles.section}>
               <label className={styles.label}>{t('setup.players')} ({players.length}/4)</label>
-              <div className={styles.playerList}>
-                {players.map((player, index) => {
-                  const latency = getPlayerLatency(player, index);
-                  return (
-                    <motion.div
-                      key={player.id}
-                      className={styles.playerItem}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                    >
-                      <span className={styles.playerIcon}>👤</span>
-                      <span className={styles.playerName}>{player.name}</span>
-                      {latency && <span className={styles.latencyBadge}>{latency}</span>}
-                      {index === 0 && <span className={styles.hostBadge}>{t('online.host')}</span>}
-                      {index !== 0 && (
-                        <button 
-                          className={styles.kickButton}
-                          onClick={() => handleKickPlayer(player.id)}
-                          title={t('online.kick')}
-                        >
-                          ✕
-                        </button>
-                      )}
-                    </motion.div>
-                  );
+              <div className={styles.playerGrid}>
+                {/* 4个固定槽位 */}
+                {[1, 2, 3, 4].map((slotNumber) => {
+                  const player = players.find(p => p.name === `P${slotNumber}`);
+                  if (player) {
+                    const latency = getPlayerLatency(player, players.indexOf(player));
+                    const isMe = player.id === peerService.getMyPeerId();
+                    const isHost = player.name === 'P1';
+                    return (
+                      <motion.div
+                        key={slotNumber}
+                        className={`${styles.playerCard} ${isMe ? styles.isMe : ''}`}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                      >
+                        <div className={styles.playerBadge} data-player={slotNumber}>
+                          {player.name}
+                        </div>
+                        <div className={styles.playerMeta}>
+                          {isHost && <span className={styles.hostBadge}>{t('online.host')}</span>}
+                          {isMe && <span className={styles.meBadge}>{t('common.you')}</span>}
+                          {latency && <span className={styles.latencyBadge}>{latency}</span>}
+                        </div>
+                        {!isHost && (
+                          <button 
+                            className={styles.kickButton}
+                            onClick={() => handleKickPlayer(player.id)}
+                            title={t('online.kick')}
+                          >
+                            ✕
+                          </button>
+                        )}
+                      </motion.div>
+                    );
+                  } else {
+                    return (
+                      <div key={slotNumber} className={styles.playerCardEmpty}>
+                        <div className={styles.emptySlot}>?</div>
+                      </div>
+                    );
+                  }
                 })}
               </div>
             </div>
@@ -615,22 +598,38 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
             {/* 玩家列表 */}
             <div className={styles.section}>
               <label className={styles.label}>{t('setup.players')}</label>
-              <div className={styles.playerList}>
-                {players.map((player, index) => {
-                  const latency = getPlayerLatency(player, index);
-                  return (
-                    <motion.div
-                      key={player.id}
-                      className={styles.playerItem}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                    >
-                      <span className={styles.playerIcon}>👤</span>
-                      <span className={styles.playerName}>{player.name}</span>
-                      {latency && <span className={styles.latencyBadge}>{latency}</span>}
-                      {index === 0 && <span className={styles.hostBadge}>{t('online.host')}</span>}
-                    </motion.div>
-                  );
+              <div className={styles.playerGrid}>
+                {/* 4个固定槽位 */}
+                {[1, 2, 3, 4].map((slotNumber) => {
+                  const player = players.find(p => p.name === `P${slotNumber}`);
+                  if (player) {
+                    const latency = getPlayerLatency(player, players.indexOf(player));
+                    const isMe = player.id === peerService.getMyPeerId();
+                    const isHost = player.name === 'P1';
+                    return (
+                      <motion.div
+                        key={slotNumber}
+                        className={`${styles.playerCard} ${isMe ? styles.isMe : ''}`}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                      >
+                        <div className={styles.playerBadge} data-player={slotNumber}>
+                          {player.name}
+                        </div>
+                        <div className={styles.playerMeta}>
+                          {isHost && <span className={styles.hostBadge}>{t('online.host')}</span>}
+                          {isMe && <span className={styles.meBadge}>{t('common.you')}</span>}
+                          {latency && <span className={styles.latencyBadge}>{latency}</span>}
+                        </div>
+                      </motion.div>
+                    );
+                  } else {
+                    return (
+                      <div key={slotNumber} className={styles.playerCardEmpty}>
+                        <div className={styles.emptySlot}>?</div>
+                      </div>
+                    );
+                  }
                 })}
               </div>
             </div>

@@ -28,6 +28,9 @@ const lowerCategoriesWithoutChance: ScoreCategory[] = [
   'fourOfAKind', 'fullHouse', 'smallStraight', 'largeStraight', 'yahtzee'
 ];
 
+// 玩家颜色配置
+const PLAYER_COLORS = ['#5a9a6a', '#d4a850', '#6a8cca', '#ca6a8c'];
+
 export function ScoreBoard() {
   const { t } = useTranslation();
   const { 
@@ -51,11 +54,9 @@ export function ScoreBoard() {
   useEffect(() => {
     if (mode !== 'online') return;
     
-    const unsub = peerService.onLatencyUpdate((newLatencies) => {
+    return peerService.onLatencyUpdate((newLatencies) => {
       setLatencies(newLatencies);
     });
-    
-    return unsub;
   }, [mode]);
   
   const isMyTurn = isLocalPlayerTurn();
@@ -163,29 +164,33 @@ export function ScoreBoard() {
                 <span className={styles.roundNumber}>{currentRound}/12</span>
               </div>
             </th>
-            {players.map((player, index) => (
-              <th 
-                key={player.id} 
-                rowSpan={2}
-                className={`
-                  ${styles.playerHeader} 
-                  ${index === currentPlayerIndex ? styles.activePlayer : ''}
-                  ${isLocalPlayer(player) ? styles.localPlayerHeader : ''}
-                `}
-              >
-                <div className={styles.playerNameWrapper}>
-                  {getPlayerLatency(player, index) && (
-                    <span className={styles.latencyBadge}>{getPlayerLatency(player, index)}</span>
-                  )}
-                  <span className={styles.playerNameText}>
-                    {player.name}
-                    {isLocalPlayer(player) && mode === 'online' && <br />}
-                    {isLocalPlayer(player) && mode === 'online' && `(${t('common.you')})`}
-                  </span>
-                  {mode === 'local' && player.type === 'ai' && <span className={styles.aiTag}>AI</span>}
-                </div>
-              </th>
-            ))}
+            {players.map((player, index) => {
+              // 从玩家名提取编号，用于颜色
+              const playerNumber = parseInt(player.name.replace('P', '')) || (index + 1);
+              return (
+                <th 
+                  key={player.id} 
+                  rowSpan={2}
+                  className={`
+                    ${styles.playerHeader} 
+                    ${index === currentPlayerIndex ? styles.activePlayer : ''}
+                    ${isLocalPlayer(player) ? styles.localPlayerHeader : ''}
+                  `}
+                  style={{ '--player-color': PLAYER_COLORS[playerNumber - 1] || PLAYER_COLORS[0] } as React.CSSProperties}
+                  data-player={playerNumber}
+                >
+                  <div className={styles.playerNameWrapper}>
+                    {getPlayerLatency(player, index) && (
+                      <span className={styles.latencyBadge}>{getPlayerLatency(player, index)}</span>
+                    )}
+                    <span className={styles.playerNameText}>
+                      {player.name}
+                    </span>
+                    {mode === 'local' && player.type === 'ai' && <span className={styles.aiTag}>AI</span>}
+                  </div>
+                </th>
+              );
+            })}
           </tr>
           {/* 第二行：排列组合名（第一列），玩家列被rowspan占用 */}
           <tr className={styles.sectionRow}>

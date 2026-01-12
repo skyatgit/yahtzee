@@ -19,6 +19,7 @@
     "playerType": "玩家類型",
     "human": "玩家",
     "ai": "電腦",
+    "addPlayer": "添加",
     "aiDifficulty": "電腦難度",
     "easy": "簡單",
     "medium": "普通",

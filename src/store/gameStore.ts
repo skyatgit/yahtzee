@@ -95,8 +95,9 @@ export const useGameStore = create<GameStore>()(
     setMode: (mode) => set({ mode }),
     
     initLocalGame: (playerConfigs) => {
-      const players = playerConfigs.map((config, index) =>
-        createPlayer(config.name || `玩家${index + 1}`, config.type)
+      // 直接使用传入的名字，不重新编号
+      const players = playerConfigs.map((config) =>
+        createPlayer(config.name, config.type)
       );
       set({
         mode: 'local',

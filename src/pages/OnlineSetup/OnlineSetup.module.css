@@ -1,5 +1,5 @@
 /**
- * 联机设置页面 - 按需自适应
+ * 联机设置页面 - 优化的玩家卡片样式
  */
 
 .container {
@@ -15,11 +15,10 @@
 }
 
 .content {
-  max-width: min(400px, 90vw);
+  max-width: min(420px, 90vw);
   width: 100%;
 }
 
-/* 宽屏时允许更宽的内容区 */
 @media (min-width: 500px) {
   .content {
     max-width: min(500px, 90vw);
@@ -162,36 +161,87 @@
   margin-bottom: clamp(10px, 2vh, 16px);
 }
 
-.playerList {
+/* 玩家网格布局 - 2x2 */
+.playerGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: clamp(8px, 1.5vh, 12px);
+}
+
+/* 玩家卡片 */
+.playerCard {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: clamp(6px, 1.2vh, 10px);
+  align-items: center;
+  gap: clamp(4px, 0.8vh, 8px);
+  padding: clamp(10px, 2vh, 16px);
+  background: var(--bg-muted);
+  border-radius: var(--radius-lg);
+  border: 2px solid transparent;
+  transition: all 0.2s;
 }
 
-.playerItem {
+.playerCard.isMe {
+  border-color: var(--primary);
+  background: rgba(90, 154, 106, 0.1);
+}
+
+.playerCard:hover {
+  background: var(--bg-hover);
+}
+
+/* 玩家编号徽章 - 使用不同颜色 */
+.playerBadge {
+  width: clamp(40px, 7vh, 56px);
+  height: clamp(40px, 7vh, 56px);
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: clamp(8px, 1.5vh, 12px);
-  background: var(--bg-muted);
-  border-radius: var(--radius);
-}
-
-.playerIcon {
+  justify-content: center;
+  color: #fff;
+  font-weight: 700;
   font-size: clamp(16px, 2.8vh, 22px);
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
-.playerName {
-  flex: 1;
-  font-weight: 500;
-  color: var(--text);
-  font-size: clamp(12px, 2vh, 14px);
+.playerBadge[data-player="1"] {
+  background: #5a9a6a;
+}
+
+.playerBadge[data-player="2"] {
+  background: #d4a850;
+}
+
+.playerBadge[data-player="3"] {
+  background: #6a8cca;
+}
+
+.playerBadge[data-player="4"] {
+  background: #ca6a8c;
+}
+
+/* 玩家信息区域 */
+.playerMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: center;
 }
 
 .hostBadge {
   padding: 2px 8px;
   background: var(--accent);
   color: #000;
+  font-size: clamp(9px, 1.5vh, 11px);
+  font-weight: 600;
+  border-radius: 10px;
+}
+
+.meBadge {
+  padding: 2px 8px;
+  background: var(--primary);
+  color: #fff;
   font-size: clamp(9px, 1.5vh, 11px);
   font-weight: 600;
   border-radius: 10px;
@@ -208,8 +258,11 @@
 }
 
 .kickButton {
-  width: clamp(20px, 3vh, 28px);
-  height: clamp(20px, 3vh, 28px);
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: clamp(18px, 2.5vh, 24px);
+  height: clamp(18px, 2.5vh, 24px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -217,7 +270,7 @@
   color: #fff;
   border: none;
   border-radius: 50%;
-  font-size: clamp(10px, 1.6vh, 14px);
+  font-size: clamp(10px, 1.4vh, 12px);
   cursor: pointer;
   transition: opacity 0.15s;
   flex-shrink: 0;
@@ -225,6 +278,32 @@
 
 .kickButton:hover {
   opacity: 0.8;
+}
+
+/* 空位卡片 */
+.playerCardEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(10px, 2vh, 16px);
+  background: var(--bg-muted);
+  border-radius: var(--radius-lg);
+  border: 2px dashed var(--border);
+  opacity: 0.5;
+}
+
+.emptySlot {
+  width: clamp(40px, 7vh, 56px);
+  height: clamp(40px, 7vh, 56px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-weight: 700;
+  font-size: clamp(18px, 3vh, 24px);
+  border: 2px dashed var(--border);
+  border-radius: 50%;
 }
 
 .waiting {
@@ -246,16 +325,14 @@
   50% { opacity: 0.3; }
 }
 
-/* 横屏且宽度足够时才使用双列 */
+/* 横屏宽屏优化 - 4列 */
 @media (min-aspect-ratio: 4/3) and (min-width: 700px) {
   .content {
-    max-width: min(550px, 70vw);
+    max-width: min(650px, 80vw);
   }
 
-  .playerList {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: clamp(5px, 1vh, 8px);
+  .playerGrid {
+    grid-template-columns: repeat(4, 1fr);
   }
 }
 
@@ -268,6 +345,10 @@
   .roomIdDisplay {
     flex-direction: column;
     gap: 6px;
+  }
+
+  .playerMeta {
+    flex-direction: column;
   }
 }
 
@@ -322,24 +403,32 @@
     letter-spacing: 2px;
   }
 
-  .playerList {
-    gap: 4px;
-  }
-
-  .playerItem {
-    padding: 4px 6px;
+  .playerGrid {
     gap: 6px;
   }
 
-  .playerIcon {
+  .playerCard,
+  .playerCardEmpty {
+    padding: 6px;
+    flex-direction: row;
+    gap: 6px;
+  }
+
+  .playerBadge,
+  .emptySlot {
+    width: 28px;
+    height: 28px;
     font-size: 12px;
   }
 
-  .playerName {
-    font-size: 10px;
+  .playerMeta {
+    flex: 1;
+    justify-content: flex-start;
   }
 
-  .hostBadge {
+  .hostBadge,
+  .meBadge,
+  .latencyBadge {
     font-size: 8px;
     padding: 1px 4px;
   }
@@ -354,5 +443,13 @@
     padding: 4px;
     margin-bottom: 6px;
     font-size: 10px;
+  }
+
+  .kickButton {
+    width: 16px;
+    height: 16px;
+    font-size: 9px;
+    top: 2px;
+    right: 2px;
   }
 }
