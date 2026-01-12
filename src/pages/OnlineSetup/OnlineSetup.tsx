@@ -550,9 +550,8 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
                             className={styles.kickButton}
                             onClick={() => handleKickPlayer(player.id)}
                             title={t('online.kick')}
-                          >
-                            ✕
-                          </button>
+                            aria-label={t('online.kick')}
+                          />
                         )}
                       </motion.div>
                     );

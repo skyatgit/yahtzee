@@ -118,9 +118,8 @@ export function LocalSetup({ onBack, onStart }: LocalSetupProps) {
                         className={styles.removeButton}
                         onClick={() => removePlayer(index)}
                         title={t('online.kick')}
-                      >
-                        ✕
-                      </button>
+                        aria-label={t('online.kick')}
+                      />
                     )}
                     <div className={styles.playerBadge} data-player={index + 1}>
                       P{index + 1}

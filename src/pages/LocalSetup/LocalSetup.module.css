@@ -222,8 +222,8 @@
   position: absolute;
   top: 4px;
   right: 4px;
-  width: clamp(18px, 2.5vh, 24px);
-  height: clamp(18px, 2.5vh, 24px);
+  width: clamp(20px, 3vh, 26px);
+  height: clamp(20px, 3vh, 26px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -231,14 +231,34 @@
   color: #fff;
   border: none;
   border-radius: 50%;
-  font-size: clamp(10px, 1.4vh, 12px);
+  padding: 0;
   cursor: pointer;
-  transition: opacity 0.15s;
+  transition: opacity 0.15s, transform 0.15s;
   flex-shrink: 0;
 }
 
+/* 用伪元素画 X 图标 */
+.removeButton::before,
+.removeButton::after {
+  content: '';
+  position: absolute;
+  width: 55%;
+  height: 2px;
+  background: #fff;
+  border-radius: 1px;
+}
+
+.removeButton::before {
+  transform: rotate(45deg);
+}
+
+.removeButton::after {
+  transform: rotate(-45deg);
+}
+
 .removeButton:hover {
-  opacity: 0.8;
+  opacity: 0.85;
+  transform: scale(1.1);
 }
 
 /* 横屏宽屏优化 - 4列 */
@@ -328,10 +348,14 @@
   }
 
   .removeButton {
-    width: 16px;
-    height: 16px;
-    font-size: 9px;
+    width: 18px;
+    height: 18px;
     top: 2px;
     right: 2px;
+  }
+
+  .removeButton::before,
+  .removeButton::after {
+    height: 1.5px;
   }
 }
