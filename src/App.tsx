@@ -2,8 +2,7 @@
  * 快艇骰子游戏主应用
  */
 
-import { useEffect } from 'react';
-import { BrowserRouter, Routes, Route, useNavigate, useSearchParams } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import { MainMenu } from './pages/MainMenu';
 import { LocalSetup } from './pages/LocalSetup';
 import { OnlineSetup } from './pages/OnlineSetup';
@@ -18,88 +17,48 @@ import './i18n';
 // 导入全局样式
 import './styles/global.css';
 
-/**
- * 主菜单页面包装器
- */
-function MenuPage() {
-  const navigate = useNavigate();
-  
-  return (
-    <MainMenu
-      onLocalGame={() => navigate('/local')}
-      onOnlineGame={() => navigate('/online')}
-      onSettings={() => navigate('/settings')}
-    />
-  );
-}
+// 应用页面类型
+type AppPage = 'menu' | 'local-setup' | 'online-setup' | 'settings' | 'game';
 
-/**
- * 本地游戏设置页面包装器
- */
-function LocalSetupPage() {
-  const navigate = useNavigate();
-  
-  return (
-    <LocalSetup
-      onBack={() => navigate('/')}
-      onStart={() => navigate('/game')}
-    />
-  );
-}
+// 从 URL 获取房间号
+const getRoomIdFromUrl = (): string | null => {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('room');
+};
 
-/**
- * 联机游戏设置页面包装器
- */
-function OnlineSetupPage() {
-  const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const roomId = searchParams.get('room');
-  
-  // 清除 URL 中的房间号参数（保持 URL 整洁）
-  useEffect(() => {
-    if (roomId) {
-      setSearchParams({}, { replace: true });
-    }
-  }, [roomId, setSearchParams]);
-  
-  return (
-    <OnlineSetup
-      onBack={() => navigate('/')}
-      onStart={() => navigate('/game')}
-      inviteRoomId={roomId?.toUpperCase() || null}
-    />
-  );
-}
+// 清除 URL 中的房间号参数
+const clearRoomIdFromUrl = () => {
+  const url = new URL(window.location.href);
+  url.searchParams.delete('room');
+  window.history.replaceState({}, '', url.pathname);
+};
 
-/**
- * 设置页面包装器
- */
-function SettingsPage() {
-  const navigate = useNavigate();
-  
-  return (
-    <Settings
-      onBack={() => navigate('/')}
-    />
-  );
-}
+// 检查初始状态
+const getInitialState = (): { page: AppPage; roomId: string | null } => {
+  const roomId = getRoomIdFromUrl();
+  if (roomId) {
+    clearRoomIdFromUrl();
+    return { page: 'online-setup', roomId: roomId.toUpperCase() };
+  }
+  return { page: 'menu', roomId: null };
+};
 
-/**
- * 游戏页面包装器
- */
-function GamePage() {
-  const navigate = useNavigate();
+const initialState = getInitialState();
+
+function App() {
+  const [currentPage, setCurrentPage] = useState<AppPage>(initialState.page);
+  const [inviteRoomId, setInviteRoomId] = useState<string | null>(initialState.roomId);
   const { phase, resetGame, players, startGame, initLocalGame } = useGameStore();
   
-  // 如果没有玩家（直接访问 /game），重定向到主菜单
+  // 初始化主题（默认深色模式）
   useEffect(() => {
-    if (players.length === 0) {
-      navigate('/', { replace: true });
-    }
-  }, [players.length, navigate]);
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+  }, []);
   
   // 处理再来一局
   const handlePlayAgain = () => {
+    // 重新初始化玩家（保留配置）
     const playerConfigs = players.map(p => ({
       name: p.name,
       type: p.type
@@ -111,56 +70,76 @@ function GamePage() {
   // 返回主菜单
   const handleBackToMenu = () => {
     resetGame();
-    navigate('/');
+    setCurrentPage('menu');
   };
   
-  if (players.length === 0) {
-    return null; // 等待重定向
-  }
+  // 处理进入联机设置页面
+  const handleOnlineGame = () => {
+    setInviteRoomId(null); // 清除邀请房间号
+    setCurrentPage('online-setup');
+  };
   
-  return (
-    <>
-      <GameBoard onBackToMenu={handleBackToMenu} />
-      {phase === 'finished' && (
-        <GameOver
-          onPlayAgain={handlePlayAgain}
-          onBackToMenu={handleBackToMenu}
-        />
-      )}
-    </>
-  );
-}
-
-/**
- * 主应用组件
- */
-function AppContent() {
-  // 初始化主题（默认深色模式）
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('theme') || 'dark';
-    document.documentElement.setAttribute('data-theme', savedTheme);
-  }, []);
+  // 根据当前页面渲染内容
+  const renderPage = () => {
+    switch (currentPage) {
+      case 'menu':
+        return (
+          <MainMenu
+            onLocalGame={() => setCurrentPage('local-setup')}
+            onOnlineGame={handleOnlineGame}
+            onSettings={() => setCurrentPage('settings')}
+          />
+        );
+      
+      case 'local-setup':
+        return (
+          <LocalSetup
+            onBack={() => setCurrentPage('menu')}
+            onStart={() => setCurrentPage('game')}
+          />
+        );
+      
+      case 'online-setup':
+        return (
+          <OnlineSetup
+            onBack={() => {
+              setInviteRoomId(null);
+              setCurrentPage('menu');
+            }}
+            onStart={() => setCurrentPage('game')}
+            inviteRoomId={inviteRoomId}
+          />
+        );
+      
+      case 'settings':
+        return (
+          <Settings
+            onBack={() => setCurrentPage('menu')}
+          />
+        );
+      
+      case 'game':
+        return (
+          <>
+            <GameBoard onBackToMenu={handleBackToMenu} />
+            {phase === 'finished' && (
+              <GameOver
+                onPlayAgain={handlePlayAgain}
+                onBackToMenu={handleBackToMenu}
+              />
+            )}
+          </>
+        );
+      
+      default:
+        return null;
+    }
+  };
   
   return (
     <div className="app">
-      <Routes>
-        <Route path="/" element={<MenuPage />} />
-        <Route path="/local" element={<LocalSetupPage />} />
-        <Route path="/online" element={<OnlineSetupPage />} />
-        <Route path="/settings" element={<SettingsPage />} />
-        <Route path="/game" element={<GamePage />} />
-        {/* 未匹配路由重定向到主菜单 */}
-        <Route path="*" element={<MenuPage />} />
-      </Routes>
+      {renderPage()}
     </div>
-  );
-}
-
-function App() {
-  return (
-    <BrowserRouter>
-      <AppContent />
-    </BrowserRouter>
   );
 }
 
