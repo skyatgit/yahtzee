@@ -7,4 +7,6 @@ export default defineConfig({
   server: {
     host: true, // 允许局域网访问
   },
+  // 生产构建时，所有路由都回退到 index.html（SPA 路由支持）
+  appType: 'spa',
 })
