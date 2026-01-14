@@ -22,31 +22,13 @@ const PEER_CONFIG = {
   host: 'peerjs.sky9527.top',
   port: 9000,
   secure: true,  // 使用 HTTPS
-  debug: 1,
-  config: {
-    // 增加 ICE 服务器配置，提高连接成功率
-    iceServers: [
-      { urls: 'stun:stun.l.google.com:19302' },
-      { urls: 'stun:stun1.l.google.com:19302' },
-      { urls: 'stun:stun2.l.google.com:19302' },
-      { urls: 'stun:stun3.l.google.com:19302' },
-      { urls: 'stun:stun4.l.google.com:19302' },
-    ],
-    // 增加 ICE 候选超时时间
-    iceCandidatePoolSize: 10,
-  }
+  debug: 1
 };
 
-// 心跳间隔（毫秒）- 每3秒发送一次心跳
-const HEARTBEAT_INTERVAL = 3000;
-// 心跳超时（毫秒）- 超过15秒没收到心跳才认为断开（允许错过4-5个心跳）
-const HEARTBEAT_TIMEOUT = 15000;
-// 心跳检查间隔（毫秒）- 每5秒检查一次
-const HEARTBEAT_CHECK_INTERVAL = 5000;
-// 重连尝试次数
-const MAX_RECONNECT_ATTEMPTS = 3;
-// 重连间隔（毫秒）
-const RECONNECT_INTERVAL = 2000;
+// 心跳间隔（毫秒）
+const HEARTBEAT_INTERVAL = 2000;
+// 心跳超时（毫秒）- 超过这个时间没收到心跳就认为断开
+const HEARTBEAT_TIMEOUT = 6000;
 
 type MessageHandler = (message: GameMessage) => void;
 type ConnectionHandler = (peerId: string) => void;
@@ -66,17 +48,9 @@ class PeerService {
   private lastHeartbeat: Map<string, number> = new Map();
   private heartbeatCheckInterval: number | null = null;
   
-  // 延迟测量相关
+  // 延迟测量���关
   private pendingPings: Map<string, number> = new Map(); // peerId -> ping发送时间
   private latencies: Map<string, number> = new Map(); // peerId -> 延迟(ms)
-  
-  // 重连相关
-  private reconnectAttempts: Map<string, number> = new Map(); // peerId -> 重连尝试次数
-  private reconnectTimers: Map<string, number> = new Map(); // peerId -> 重连定时器
-  private isReconnecting: boolean = false;
-  
-  // 连接状态监控
-  private connectionStates: Map<string, string> = new Map(); // peerId -> 状态描述
   
   /**
    * 初始化 Peer 连接（作为房主）
@@ -103,17 +77,6 @@ class PeerService {
         console.error('Peer 错误:', err);
         reject(err);
       });
-      
-      // 监听与信令服务器断开
-      this.peer.on('disconnected', () => {
-        console.log('与信令服务器断开，尝试重连...');
-        this.tryReconnectToServer();
-      });
-      
-      // 监听 peer 关闭
-      this.peer.on('close', () => {
-        console.log('Peer 已关闭');
-      });
     });
   }
   
@@ -133,27 +96,26 @@ class PeerService {
       
       // 创建一个随机的 Peer ID
       this.peer = new Peer(PEER_CONFIG);
-
-      // 设置超时（8秒，增加容错）
+      
+      // 设置超时（5秒）
       const timeoutId = window.setTimeout(() => {
         if (settled) return;
         settled = true;
         console.error('连接超时');
         this.disconnect();
         reject(new Error('连接超时，房间可能不存在'));
-      }, 8000);
-
+      }, 5000);
+      
       this.peer.on('open', (id) => {
         console.log('我的 Peer ID:', id);
         this.myPeerId = id;
-
+        
         // 连接到房主
         const hostPeerId = `yahtzee-${roomId}`;
         const conn = this.peer!.connect(hostPeerId, {
-          reliable: true,
-          serialization: 'json'
+          reliable: true
         });
-
+        
         conn.on('open', () => {
           if (settled) return;
           settled = true;
@@ -165,7 +127,7 @@ class PeerService {
           this.setupBeforeUnload();
           resolve();
         });
-
+        
         conn.on('error', (err) => {
           if (settled) return;
           settled = true;
@@ -175,11 +137,11 @@ class PeerService {
           reject(new Error('房间不存在或无法连接'));
         });
       });
-
+      
       this.peer.on('connection', (conn) => {
         this.handleConnection(conn);
       });
-
+      
       this.peer.on('error', (err) => {
         if (settled) return;
         settled = true;
@@ -188,49 +150,7 @@ class PeerService {
         this.disconnect();
         reject(err);
       });
-
-      // 监听与信令服务器断开
-      this.peer.on('disconnected', () => {
-        console.log('与信令服务器断开，尝试重连...');
-        this.tryReconnectToServer();
-      });
     });
-  }
-
-  /**
-   * 尝试重连到信令服务器
-   */
-  private tryReconnectToServer() {
-    if (!this.peer || this.peer.destroyed) {
-      console.log('Peer 已销毁，无法重连');
-      return;
-    }
-
-    if (this.isReconnecting) {
-      console.log('已在重连中，跳过');
-      return;
-    }
-
-    this.isReconnecting = true;
-
-    // 尝试重连
-    try {
-      this.peer.reconnect();
-      console.log('正在重连到信令服务器...');
-
-      // 5秒后检查是否重连成功
-      setTimeout(() => {
-        this.isReconnecting = false;
-        if (this.peer && !this.peer.disconnected) {
-          console.log('重连信令服务器成功');
-        } else {
-          console.log('重连信令服务器失败');
-        }
-      }, 5000);
-    } catch (err) {
-      console.error('重连失败:', err);
-      this.isReconnecting = false;
-    }
   }
   
   /**
@@ -250,9 +170,6 @@ class PeerService {
    * 启动心跳
    */
   private startHeartbeat() {
-    // 先停止现有的心跳
-    this.stopHeartbeat();
-    
     // 定期发送 ping（心跳 + 延迟测量）
     this.heartbeatInterval = window.setInterval(() => {
       const now = Date.now();
@@ -260,106 +177,28 @@ class PeerService {
         if (conn.open) {
           // 记录 ping 发送时间
           this.pendingPings.set(peerId, now);
-          try {
-            conn.send({ type: 'ping', timestamp: now });
-          } catch (err) {
-            console.error('发送心跳失败:', peerId, err);
-          }
+          conn.send({ type: 'ping', timestamp: now });
         }
       });
     }, HEARTBEAT_INTERVAL);
     
-    // 定期检查心跳超时（使用不同的检查间隔）
+    // 定期检查心跳超时
     this.heartbeatCheckInterval = window.setInterval(() => {
       const now = Date.now();
-      const timedOutPeers: string[] = [];
-      
       this.lastHeartbeat.forEach((lastTime, peerId) => {
-        const timeSinceLastHeartbeat = now - lastTime;
-        
-        // 如果超时，记录下来
-        if (timeSinceLastHeartbeat > HEARTBEAT_TIMEOUT) {
-          console.log(`心跳超时: ${peerId}, 上次心跳: ${timeSinceLastHeartbeat}ms 前`);
-          timedOutPeers.push(peerId);
-        } else if (timeSinceLastHeartbeat > HEARTBEAT_TIMEOUT * 0.7) {
-          // 如果快要超时了，发送额外的心跳
-          console.log(`心跳警告: ${peerId}, 已经 ${timeSinceLastHeartbeat}ms 没收到心跳`);
+        if (now - lastTime > HEARTBEAT_TIMEOUT) {
+          console.log('心跳超时，断开连接:', peerId);
+          this.lastHeartbeat.delete(peerId);
+          this.latencies.delete(peerId);
+          this.pendingPings.delete(peerId);
           const conn = this.connections.get(peerId);
-          if (conn && conn.open) {
-            try {
-              conn.send({ type: 'ping', timestamp: now, urgent: true });
-            } catch (err) {
-              console.error('发送紧急心跳失败:', err);
-            }
+          if (conn) {
+            this.connections.delete(peerId);
+            this.disconnectionHandlers.forEach(handler => handler(peerId));
           }
         }
       });
-      
-      // 处理超时的连接
-      timedOutPeers.forEach(peerId => {
-        this.handlePeerTimeout(peerId);
-      });
-    }, HEARTBEAT_CHECK_INTERVAL);
-  }
-  
-  /**
-   * 处理 peer 心跳超时
-   */
-  private handlePeerTimeout(peerId: string) {
-    const attempts = this.reconnectAttempts.get(peerId) || 0;
-    
-    if (attempts < MAX_RECONNECT_ATTEMPTS) {
-      // 还有重连机会，尝试重连
-      console.log(`尝试重连 ${peerId} (${attempts + 1}/${MAX_RECONNECT_ATTEMPTS})`);
-      this.reconnectAttempts.set(peerId, attempts + 1);
-      
-      // 给一个额外的缓冲时间
-      this.lastHeartbeat.set(peerId, Date.now() + HEARTBEAT_TIMEOUT / 2);
-      
-      // 尝试发送一个 ping
-      const conn = this.connections.get(peerId);
-      if (conn && conn.open) {
-        try {
-          conn.send({ type: 'ping', timestamp: Date.now(), reconnect: true });
-        } catch (err) {
-          console.error('重连 ping 发送失败:', err);
-        }
-      }
-    } else {
-      // 重连次数用尽，真正断开
-      console.log(`重连次数用尽，断开连接: ${peerId}`);
-      this.cleanupPeer(peerId);
-      this.disconnectionHandlers.forEach(handler => handler(peerId));
-    }
-  }
-  
-  /**
-   * 清理 peer 相关数据
-   */
-  private cleanupPeer(peerId: string) {
-    this.lastHeartbeat.delete(peerId);
-    this.latencies.delete(peerId);
-    this.pendingPings.delete(peerId);
-    this.reconnectAttempts.delete(peerId);
-    this.connectionStates.delete(peerId);
-    
-    // 清除重连定时器
-    const timer = this.reconnectTimers.get(peerId);
-    if (timer) {
-      clearTimeout(timer);
-      this.reconnectTimers.delete(peerId);
-    }
-    
-    // 关闭连接
-    const conn = this.connections.get(peerId);
-    if (conn) {
-      try {
-        conn.close();
-      } catch {
-        // 忽略关闭错误
-      }
-      this.connections.delete(peerId);
-    }
+    }, HEARTBEAT_INTERVAL);
   }
   
   /**
@@ -377,35 +216,21 @@ class PeerService {
     this.lastHeartbeat.clear();
     this.pendingPings.clear();
     this.latencies.clear();
-    this.reconnectAttempts.clear();
-    
-    // 清除所有重连定时器
-    this.reconnectTimers.forEach(timer => clearTimeout(timer));
-    this.reconnectTimers.clear();
   }
   
   /**
    * 处理新连接
    */
   private handleConnection(conn: DataConnection) {
-    console.log('收到新连接请求:', conn.peer);
-    
     conn.on('open', () => {
-      console.log('新玩家连接成功:', conn.peer);
+      console.log('新玩家连接:', conn.peer);
       this.connections.set(conn.peer, conn);
-      // 给足够的初始缓冲时间（2倍超时时间）
-      this.lastHeartbeat.set(conn.peer, Date.now() + HEARTBEAT_TIMEOUT * 2);
-      // 重置重连计数
-      this.reconnectAttempts.set(conn.peer, 0);
-      this.connectionStates.set(conn.peer, 'connected');
+      // 给足够的初始缓冲时间
+      this.lastHeartbeat.set(conn.peer, Date.now() + HEARTBEAT_TIMEOUT);
       this.setupConnectionHandlers(conn);
       
       // 通知连接处理器
       this.connectionHandlers.forEach(handler => handler(conn.peer));
-    });
-    
-    conn.on('error', (err) => {
-      console.error('新连接错误:', conn.peer, err);
     });
   }
   
@@ -414,33 +239,25 @@ class PeerService {
    */
   private setupConnectionHandlers(conn: DataConnection) {
     // 初始化心跳时间（给足够的初始缓冲时间）
-    const initialTime = Date.now() + HEARTBEAT_TIMEOUT * 2;
+    const initialTime = Date.now() + HEARTBEAT_TIMEOUT; // 额外给一个超时周期的缓冲
     this.lastHeartbeat.set(conn.peer, initialTime);
-    this.reconnectAttempts.set(conn.peer, 0); // 重置重连计数
-
+    
     conn.on('data', (data) => {
       // 处理 ping/pong 消息
       if (data && typeof data === 'object' && 'type' in data) {
         const msgType = (data as { type: string }).type;
-
-        // 收到任何消息都更新心跳时间
-        this.lastHeartbeat.set(conn.peer, Date.now());
-        // 收到消息说明连接正常，重置重连计数
-        this.reconnectAttempts.set(conn.peer, 0);
-
+        
         // 收到 ping，立即回复 pong
         if (msgType === 'ping') {
+          this.lastHeartbeat.set(conn.peer, Date.now());
           const pingData = data as { type: string; timestamp: number };
-          try {
-            conn.send({ type: 'pong', timestamp: pingData.timestamp });
-          } catch (err) {
-            console.error('回复 pong 失败:', err);
-          }
+          conn.send({ type: 'pong', timestamp: pingData.timestamp });
           return;
         }
-
+        
         // 收到 pong，计算延迟
         if (msgType === 'pong') {
+          this.lastHeartbeat.set(conn.peer, Date.now());
           const sendTime = this.pendingPings.get(conn.peer);
           if (sendTime) {
             const rtt = Date.now() - sendTime;
@@ -451,69 +268,31 @@ class PeerService {
           }
           return;
         }
-
+        
         // 兼容旧的 heartbeat 消息
         if (msgType === 'heartbeat') {
+          this.lastHeartbeat.set(conn.peer, Date.now());
           return;
         }
       }
-
+      
       const message = data as GameMessage;
       console.log('收到消息:', message);
       this.messageHandlers.forEach(handler => handler(message));
     });
-
+    
     conn.on('close', () => {
-      console.log('连接关闭:', conn.peer);
-      this.connectionStates.set(conn.peer, 'closed');
-
-      // 不立即处理断开，给一个短暂的缓冲期看是否能恢复
-      const attempts = this.reconnectAttempts.get(conn.peer) || 0;
-      if (attempts < MAX_RECONNECT_ATTEMPTS) {
-        console.log(`连接关闭，等待可能的重连 (${attempts + 1}/${MAX_RECONNECT_ATTEMPTS})`);
-        this.reconnectAttempts.set(conn.peer, attempts + 1);
-
-        // 延迟一段时间再处理
-        const timer = window.setTimeout(() => {
-          // 如果连接没有恢复，才真正断开
-          if (this.connectionStates.get(conn.peer) !== 'connected') {
-            console.log('连接未恢复，执行断开处理:', conn.peer);
-            this.cleanupPeer(conn.peer);
-            this.disconnectionHandlers.forEach(handler => handler(conn.peer));
-          }
-        }, RECONNECT_INTERVAL);
-
-        this.reconnectTimers.set(conn.peer, timer);
-      } else {
-        // 重连次数用尽
-        this.cleanupPeer(conn.peer);
-        this.disconnectionHandlers.forEach(handler => handler(conn.peer));
-      }
+      console.log('连���关闭:', conn.peer);
+      this.connections.delete(conn.peer);
+      this.lastHeartbeat.delete(conn.peer);
+      this.latencies.delete(conn.peer);
+      this.pendingPings.delete(conn.peer);
+      this.disconnectionHandlers.forEach(handler => handler(conn.peer));
     });
-
+    
     conn.on('error', (err) => {
-      console.error('连接错误:', conn.peer, err);
-      this.connectionStates.set(conn.peer, 'error');
+      console.error('连接错误:', err);
     });
-
-    // 监听 ICE 连接状态变化（如果可用）
-    const pc = conn.peerConnection;
-    if (pc) {
-      pc.oniceconnectionstatechange = () => {
-        const state = pc.iceConnectionState;
-        console.log(`ICE 连接状态变化 (${conn.peer}):`, state);
-        this.connectionStates.set(conn.peer, `ice-${state}`);
-
-        if (state === 'disconnected' || state === 'failed') {
-          console.log('ICE 连接断开/失败，但保持连接等待恢复');
-          // 不立即断开，等待可能的恢复
-        } else if (state === 'connected' || state === 'completed') {
-          // 连接恢复，重置重连计数
-          this.reconnectAttempts.set(conn.peer, 0);
-          this.lastHeartbeat.set(conn.peer, Date.now());
-        }
-      };
-    }
   }
   
   /**
@@ -576,13 +355,9 @@ class PeerService {
     };
     
     console.log('广播消息:', message);
-    this.connections.forEach((conn, peerId) => {
+    this.connections.forEach(conn => {
       if (conn.open) {
-        try {
-          conn.send(message);
-        } catch (err) {
-          console.error('广播消息失败:', peerId, err);
-        }
+        conn.send(message);
       }
     });
   }
@@ -599,11 +374,7 @@ class PeerService {
         playerId: this.myPeerId || '',
         timestamp: Date.now()
       };
-      try {
-        conn.send(message);
-      } catch (err) {
-        console.error('发送消息失败:', peerId, err);
-      }
+      conn.send(message);
     }
   }
   
@@ -689,32 +460,19 @@ class PeerService {
     // 停止心跳
     this.stopHeartbeat();
     
-    // 关闭所有连接
-    this.connections.forEach((conn) => {
-      try {
-        conn.close();
-      } catch {
-        // 忽略关闭错误
-      }
-    });
+    this.connections.forEach(conn => conn.close());
     this.connections.clear();
     
     if (this.peer) {
-      try {
-        this.peer.destroy();
-      } catch {
-        // 忽略销毁错误
-      }
+      this.peer.destroy();
       this.peer = null;
     }
     
     this.myPeerId = null;
-    this.isReconnecting = false;
     this.messageHandlers = [];
     this.connectionHandlers = [];
     this.disconnectionHandlers = [];
     this.latencyHandlers = [];
-    this.connectionStates.clear();
   }
   
   /**
