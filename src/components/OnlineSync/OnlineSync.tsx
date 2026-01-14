@@ -8,8 +8,8 @@
 
 import { useEffect, useRef } from 'react';
 import { useGameStore } from '../../store/gameStore';
-import { peerService } from '../../services/peerService';
-import { triggerAllPlayersLeft } from './onlineSyncEvents';
+import { peerService, type DisconnectReason, type ConnectionStatus } from '../../services/peerService';
+import { triggerAllPlayersLeft, triggerConnectionStatusChange } from './onlineSyncEvents';
 import type { GameMessage, Dice, ScoreCategory, GamePhase, Player } from '../../types/game';
 
 export function OnlineSync() {
@@ -191,9 +191,9 @@ export function OnlineSync() {
     };
 
     // 处理断开连接
-    const handleDisconnect = (peerId: string) => {
+    const handleDisconnect = (peerId: string, reason: DisconnectReason) => {
       const state = useGameStore.getState();
-      console.log('[OnlineSync] 玩家断开:', peerId);
+      console.log('[OnlineSync] 玩家断开:', peerId, '原因:', reason);
       
       // 非房主：检测是否是房主断开（与房主的连接断开意味着房间解散）
       if (!state.isHost) {
@@ -201,7 +201,7 @@ export function OnlineSync() {
         if (peerId.startsWith('yahtzee-')) {
           console.log('[客户端] 房主断开连接，房间解散');
           peerService.disconnect();
-          triggerAllPlayersLeft();
+          triggerAllPlayersLeft(reason === 'peer_network' ? 'host_network' : 'host_left');
           return;
         }
       }
@@ -210,11 +210,20 @@ export function OnlineSync() {
       if (player) {
         useGameStore.getState().removeRemotePlayer(peerId);
         if (state.isHost) {
-          peerService.broadcast('player-left', { playerId: peerId });
+          peerService.broadcast('player-left', { 
+            playerId: peerId,
+            reason: reason 
+          });
         }
         // 检查是否只剩一个玩家
         setTimeout(checkLastPlayer, 100);
       }
+    };
+    
+    // 处理连接状态变化
+    const handleStatusChange = (peerId: string, status: ConnectionStatus, reason?: DisconnectReason) => {
+      console.log('[OnlineSync] 连接状态变化:', peerId, status, reason);
+      triggerConnectionStatusChange(peerId, status, reason);
     };
     
     // 房主：监听状态变化并广播（排除isRolling变化，因为有单独的roll-start/roll-end）
@@ -248,6 +257,7 @@ export function OnlineSync() {
     // 注册消息和断开处理器
     const unsubMessage = peerService.onMessage(handleMessage);
     const unsubDisconnect = peerService.onDisconnection(handleDisconnect);
+    const unsubStatusChange = peerService.onStatusChange(handleStatusChange);
     
     return () => {
       console.log('[OnlineSync] === 清理 ===');
@@ -255,6 +265,7 @@ export function OnlineSync() {
       unsubscribeStore();
       unsubMessage();
       unsubDisconnect();
+      unsubStatusChange();
     };
   }, [mode]);
   

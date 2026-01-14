@@ -110,7 +110,8 @@ export type MessageType =
   | 'room-full'      // 房间已满
   | 'game-started'   // 游戏已开始（无法加入）
   | 'room-closed'    // 房间已关闭
-  | 'latency-update';// 延迟信息更新
+  | 'latency-update' // 延迟信息更新
+  | 'connection-status'; // 连接状态更新
 
 // 联机消息
 export interface GameMessage {

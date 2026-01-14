@@ -101,6 +101,34 @@
   font-family: monospace;
 }
 
+/* 重连中徽章 */
+.reconnectingBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 6px;
+  background: rgba(212, 168, 80, 0.3);
+  border-radius: 4px;
+}
+
+.reconnectingSpinner {
+  width: clamp(8px, 1.5cqh, 12px);
+  height: clamp(8px, 1.5cqh, 12px);
+  border: 2px solid rgba(212, 168, 80, 0.3);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spinnerRotate 0.8s linear infinite;
+}
+
+@keyframes spinnerRotate {
+  to { transform: rotate(360deg); }
+}
+
+/* 重连中的玩家头部样式 */
+.playerHeader.reconnecting {
+  opacity: 0.7;
+}
+
 .playerNameText {
   text-align: center;
   font-weight: 600;

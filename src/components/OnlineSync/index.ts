@@ -1,2 +1,2 @@
 export { OnlineSync } from './OnlineSync';
-export { onAllPlayersLeft } from './onlineSyncEvents';
+export { onAllPlayersLeft, onConnectionStatusChange, type DisconnectReasonExtended } from './onlineSyncEvents';

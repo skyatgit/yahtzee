@@ -3,11 +3,20 @@
  * 用于在组件之间共享事件回调
  */
 
+import type { ConnectionStatus, DisconnectReason } from '../../services/peerService';
+
+// 断开原因类型（扩展）
+export type DisconnectReasonExtended = DisconnectReason | 'host_network' | 'host_left';
+
 // 当所有其他玩家退出时的回调类型
-type AllPlayersLeftCallback = () => void;
+type AllPlayersLeftCallback = (reason?: DisconnectReasonExtended) => void;
+
+// 连接状态变化回调类型
+type ConnectionStatusChangeCallback = (peerId: string, status: ConnectionStatus, reason?: DisconnectReason) => void;
 
 // 回调存储
 let allPlayersLeftCallback: AllPlayersLeftCallback | null = null;
+let connectionStatusChangeCallback: ConnectionStatusChangeCallback | null = null;
 
 /**
  * 注册所有玩家退出的回调
@@ -24,8 +33,29 @@ export function onAllPlayersLeft(callback: AllPlayersLeftCallback) {
 /**
  * 触发所有玩家退出事件
  */
-export function triggerAllPlayersLeft() {
+export function triggerAllPlayersLeft(reason?: DisconnectReasonExtended) {
   if (allPlayersLeftCallback) {
-    allPlayersLeftCallback();
+    allPlayersLeftCallback(reason);
+  }
+}
+
+/**
+ * 注册连接状态变化回调
+ * @param callback 回调函数
+ * @returns 取消注册的函数
+ */
+export function onConnectionStatusChange(callback: ConnectionStatusChangeCallback) {
+  connectionStatusChangeCallback = callback;
+  return () => {
+    connectionStatusChangeCallback = null;
+  };
+}
+
+/**
+ * 触发连接状态变化事件
+ */
+export function triggerConnectionStatusChange(peerId: string, status: ConnectionStatus, reason?: DisconnectReason) {
+  if (connectionStatusChangeCallback) {
+    connectionStatusChangeCallback(peerId, status, reason);
   }
 }

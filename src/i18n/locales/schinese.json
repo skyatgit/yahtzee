@@ -50,7 +50,16 @@
     "kicked": "你已被房主踢出房间",
     "kick": "踢出",
     "host": "房主",
-    "joinedRoom": "已加入房间 {{roomId}}"
+    "joinedRoom": "已加入房间 {{roomId}}",
+    "connectionUnstable": "与 {{name}} 的连接不稳定，正在尝试恢复...",
+    "disconnectSelfNetwork": "你的网络连接已断开",
+    "disconnectPeerNetwork": "对方网络连接已断开",
+    "disconnectPeerLeft": "对方已退出游戏",
+    "disconnectHostNetwork": "与房主的连接已断开，可能是网络问题",
+    "reconnecting": "网络连接中断，正在重连...",
+    "reconnectingToHost": "与房主的连接中断，正在重连...",
+    "reconnectingPlayer": "与 {{name}} 的连接中断，正在重连...",
+    "reconnectingHint": "请稍候，连接恢复后将自动继续游戏"
   },
   "game": {
     "round": "回合",

@@ -50,7 +50,16 @@
     "kicked": "ホストにキックされました",
     "kick": "キック",
     "host": "ホスト",
-    "joinedRoom": "部屋 {{roomId}} に参加しました"
+    "joinedRoom": "部屋 {{roomId}} に参加しました",
+    "connectionUnstable": "{{name}}との接続が不安定です。回復を試みています...",
+    "disconnectSelfNetwork": "ネットワーク接続が切断されました",
+    "disconnectPeerNetwork": "相手のネットワーク接続が切断されました",
+    "disconnectPeerLeft": "相手がゲームを退出しました",
+    "disconnectHostNetwork": "ホストとの接続が切断されました。ネットワークの問題の可能性があります",
+    "reconnecting": "接続が切断されました。再接続中...",
+    "reconnectingToHost": "ホストとの接続が切断されました。再接続中...",
+    "reconnectingPlayer": "{{name}}との接続が切断されました。再接続中...",
+    "reconnectingHint": "しばらくお待ちください。接続が回復次第、ゲームを再開します"
   },
   "game": {
     "round": "ラウンド",

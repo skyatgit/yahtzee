@@ -8,7 +8,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ScoreCard as ScoreCardType, ScoreCategory, Player } from '../../types/game';
 import { useGameStore } from '../../store/gameStore';
-import { peerService } from '../../services/peerService';
+import { peerService, type ConnectionStatus } from '../../services/peerService';
 import {
   calculateScore,
   calculateUpperTotal,
@@ -49,6 +49,7 @@ export function ScoreBoard() {
   } = useGameStore();
   
   const [latencies, setLatencies] = useState<Map<string, number>>(new Map());
+  const [connectionStatuses, setConnectionStatuses] = useState<Map<string, ConnectionStatus>>(new Map());
   
   // 监听延迟更新（仅联机模式）
   useEffect(() => {
@@ -56,6 +57,23 @@ export function ScoreBoard() {
     
     return peerService.onLatencyUpdate((newLatencies) => {
       setLatencies(newLatencies);
+    });
+  }, [mode]);
+  
+  // 监听连接状态变化（仅联机模式）
+  useEffect(() => {
+    if (mode !== 'online') return;
+    
+    return peerService.onStatusChange((peerId, status) => {
+      setConnectionStatuses(prev => {
+        const next = new Map(prev);
+        if (status === 'disconnected') {
+          next.delete(peerId);
+        } else {
+          next.set(peerId, status);
+        }
+        return next;
+      });
     });
   }, [mode]);
   
@@ -81,6 +99,16 @@ export function ScoreBoard() {
   const isLocalPlayer = (player: Player) => {
     if (mode === 'local') return player.type === 'human';
     return player.id === localPlayerId;
+  };
+  
+  // 检查玩家是否正在重连
+  const isPlayerReconnecting = (player: Player): boolean => {
+    if (mode !== 'online') return false;
+    // 不显示自己的状态
+    if (player.id === localPlayerId) return false;
+    
+    const status = connectionStatuses.get(player.id);
+    return status === 'unstable' || status === 'reconnecting';
   };
   
   // 获取玩家的延迟（联机模式）
@@ -167,6 +195,7 @@ export function ScoreBoard() {
             {players.map((player, index) => {
               // 从玩家名提取编号，用于颜色
               const playerNumber = parseInt(player.name.replace('P', '')) || (index + 1);
+              const isReconnecting = isPlayerReconnecting(player);
               return (
                 <th 
                   key={player.id} 
@@ -175,14 +204,19 @@ export function ScoreBoard() {
                     ${styles.playerHeader} 
                     ${index === currentPlayerIndex ? styles.activePlayer : ''}
                     ${isLocalPlayer(player) ? styles.localPlayerHeader : ''}
+                    ${isReconnecting ? styles.reconnecting : ''}
                   `}
                   style={{ '--player-color': PLAYER_COLORS[playerNumber - 1] || PLAYER_COLORS[0] } as React.CSSProperties}
                   data-player={playerNumber}
                 >
                   <div className={styles.playerNameWrapper}>
-                    {getPlayerLatency(player, index) && (
+                    {isReconnecting ? (
+                      <span className={styles.reconnectingBadge}>
+                        <span className={styles.reconnectingSpinner} />
+                      </span>
+                    ) : getPlayerLatency(player, index) ? (
                       <span className={styles.latencyBadge}>{getPlayerLatency(player, index)}</span>
-                    )}
+                    ) : null}
                     <span className={styles.playerNameText}>
                       {player.name}
                     </span>

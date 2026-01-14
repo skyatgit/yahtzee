@@ -7,7 +7,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useGameStore } from '../../store/gameStore';
-import { peerService, generateRoomId } from '../../services/peerService';
+import { peerService, generateRoomId, type DisconnectReason } from '../../services/peerService';
 import type { Player, GameMessage } from '../../types/game';
 import { createEmptyScoreCard } from '../../utils/scoring';
 import styles from './OnlineSetup.module.css';
@@ -227,8 +227,8 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
   }, [addRemotePlayer, removeRemotePlayer, syncGameState, onStart, t]);
   
   // 处理玩家断开连接
-  const handleDisconnection = useCallback((peerId: string) => {
-    console.log('[OnlineSetup] 玩家断开连接:', peerId);
+  const handleDisconnection = useCallback((peerId: string, reason: DisconnectReason) => {
+    console.log('[OnlineSetup] 玩家断开连接:', peerId, '原因:', reason);
     const state = useGameStore.getState();
     
     // 非房主：检测是否是房主断开（房间解散）
@@ -236,7 +236,10 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
       if (peerId.startsWith('yahtzee-')) {
         console.log('[客户端] 房主断开连接，房间解散');
         peerService.disconnect();
-        setError(t('online.hostLeft'));
+        const msg = reason === 'peer_network' 
+          ? t('online.disconnectHostNetwork')
+          : t('online.hostLeft');
+        setError(msg);
         setMode('select');
         return;
       }
@@ -251,12 +254,24 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
       if (state.isHost) {
         peerService.broadcast('player-left', { 
           playerId: peerId,
-          playerName: disconnectedPlayer.name 
+          playerName: disconnectedPlayer.name,
+          reason: reason
         });
       }
       
-      // 显示断开连接通知
-      setError(t('online.playerDisconnected', { name: disconnectedPlayer.name }));
+      // 根据断开原因显示不同的提示
+      let msg: string;
+      switch (reason) {
+        case 'peer_left':
+          msg = t('online.playerLeft', { name: disconnectedPlayer.name });
+          break;
+        case 'peer_network':
+          msg = t('online.playerDisconnected', { name: disconnectedPlayer.name });
+          break;
+        default:
+          msg = t('online.playerDisconnected', { name: disconnectedPlayer.name });
+      }
+      setError(msg);
       setTimeout(() => setError(null), 3000);
     }
   }, [removeRemotePlayer, t]);

@@ -50,7 +50,16 @@
     "kicked": "You have been kicked by the host",
     "kick": "Kick",
     "host": "Host",
-    "joinedRoom": "Joined room {{roomId}}"
+    "joinedRoom": "Joined room {{roomId}}",
+    "connectionUnstable": "Connection to {{name}} is unstable, trying to recover...",
+    "disconnectSelfNetwork": "Your network connection was lost",
+    "disconnectPeerNetwork": "Opponent's network connection was lost",
+    "disconnectPeerLeft": "Opponent has left the game",
+    "disconnectHostNetwork": "Connection to host was lost, possibly due to network issues",
+    "reconnecting": "Connection lost, reconnecting...",
+    "reconnectingToHost": "Connection to host lost, reconnecting...",
+    "reconnectingPlayer": "Connection to {{name}} lost, reconnecting...",
+    "reconnectingHint": "Please wait, game will resume once connection is restored"
   },
   "game": {
     "round": "Round",

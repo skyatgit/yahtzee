@@ -5,12 +5,12 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { DiceContainer } from '../Dice';
 import { ScoreBoard } from '../ScoreCard';
-import { OnlineSync, onAllPlayersLeft } from '../OnlineSync';
+import { OnlineSync, onAllPlayersLeft, onConnectionStatusChange, type DisconnectReasonExtended } from '../OnlineSync';
 import { useGameStore } from '../../store/gameStore';
-import { peerService } from '../../services/peerService';
+import { peerService, type ConnectionStatus } from '../../services/peerService';
 import styles from './GameBoard.module.css';
 
 interface GameBoardProps {
@@ -19,7 +19,6 @@ interface GameBoardProps {
 
 /**
  * 自定义 Hook：检测屏幕是否为竖屏模式
- * 当宽度小于高度时为竖屏
  */
 function useIsPortrait() {
   const [isPortrait, setIsPortrait] = useState(() => {
@@ -35,7 +34,6 @@ function useIsPortrait() {
     };
 
     window.addEventListener('resize', handleResize);
-    // 也监听屏幕方向变化
     window.addEventListener('orientationchange', handleResize);
     
     return () => {
@@ -45,6 +43,26 @@ function useIsPortrait() {
   }, []);
 
   return isPortrait;
+}
+
+// 获取断开原因的提示文字
+function getDisconnectMessage(t: (key: string, options?: Record<string, unknown>) => string, reason?: DisconnectReasonExtended): string {
+  switch (reason) {
+    case 'self_network':
+      return t('online.disconnectSelfNetwork');
+    case 'peer_network':
+      return t('online.disconnectPeerNetwork');
+    case 'peer_left':
+      return t('online.disconnectPeerLeft');
+    case 'host_network':
+      return t('online.disconnectHostNetwork');
+    case 'host_left':
+      return t('online.hostLeft');
+    case 'kicked':
+      return t('online.kicked');
+    default:
+      return t('online.allPlayersLeft');
+  }
 }
 
 export function GameBoard({ onBackToMenu }: GameBoardProps) {
@@ -57,24 +75,52 @@ export function GameBoard({ onBackToMenu }: GameBoardProps) {
   // 检测屏幕方向
   const isPortrait = useIsPortrait();
 
-  // 其他玩家已退出的提示状态
-  const [showAllLeftAlert, setShowAllLeftAlert] = useState(false);
+  // 断开提示状态
+  const [showDisconnectAlert, setShowDisconnectAlert] = useState(false);
+  const [disconnectReason, setDisconnectReason] = useState<DisconnectReasonExtended | undefined>();
+  
+  // 自己断网重连中
+  const [showReconnectingBar, setShowReconnectingBar] = useState(false);
 
   // 监听所有其他玩家退出事件
   useEffect(() => {
     if (mode !== 'online') return;
 
-    return onAllPlayersLeft(() => {
-      setShowAllLeftAlert(true);
+    return onAllPlayersLeft((reason) => {
+      setDisconnectReason(reason);
+      setShowDisconnectAlert(true);
+      setShowReconnectingBar(false);
+    });
+  }, [mode]);
+  
+  // 监听连接状态变化 - 只处理自己的断网
+  useEffect(() => {
+    if (mode !== 'online') return;
+    
+    return onConnectionStatusChange((peerId, status: ConnectionStatus) => {
+      // 检查是不是自己到对方的连接断开（说明是自己断网了）
+      const isHostMode = peerService.getIsHost();
+      
+      // 如果是房主，收到客户端的连接状态变化，不是自己断网
+      // 如果是客户端，收到房主的连接状态变化，可能是自己断网
+      const isSelfDisconnect = !isHostMode && peerId.startsWith('yahtzee-');
+      
+      if (isSelfDisconnect) {
+        if (status === 'unstable' || status === 'reconnecting') {
+          setShowReconnectingBar(true);
+        } else if (status === 'connected') {
+          setShowReconnectingBar(false);
+        }
+      }
     });
   }, [mode]);
 
   // 处理退出游戏
   const handleExitGame = () => {
-    setShowAllLeftAlert(false);
+    setShowDisconnectAlert(false);
+    setShowReconnectingBar(false);
     peerService.disconnect();
     resetGame();
-    // 通知父组件返回主菜单
     if (onBackToMenu) {
       onBackToMenu();
     }
@@ -83,7 +129,6 @@ export function GameBoard({ onBackToMenu }: GameBoardProps) {
   // 根据屏幕方向计算样式
   const layoutStyles = useMemo(() => {
     if (isPortrait) {
-      // 竖屏：上下布局，底部留出安全区域
       return {
         main: {
           display: 'flex',
@@ -111,7 +156,6 @@ export function GameBoard({ onBackToMenu }: GameBoardProps) {
         },
       };
     } else {
-      // 横屏：左右布局
       return {
         main: {
           display: 'flex',
@@ -155,18 +199,38 @@ export function GameBoard({ onBackToMenu }: GameBoardProps) {
         boxSizing: 'border-box',
       }}
     >
-      {/* 联机同步组件 - 始终渲染 */}
+      {/* 联机同步组件 */}
       <OnlineSync />
+      
+      {/* 自己断网重连中 - 顶部loading条 */}
+      <AnimatePresence>
+        {showReconnectingBar && (
+          <motion.div
+            className={styles.reconnectingBar}
+            initial={{ opacity: 0, y: -40 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -40 }}
+            transition={{ duration: 0.2 }}
+          >
+            <div className={styles.reconnectingSpinner} />
+            <span className={styles.reconnectingText}>
+              {t('online.reconnecting')}
+            </span>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* 其他玩家已退出提示弹窗 */}
-      {showAllLeftAlert && (
+      {/* 断开连接提示弹窗 */}
+      {showDisconnectAlert && (
         <div className={styles.alertOverlay}>
           <motion.div
             className={styles.alertBox}
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
           >
-            <p className={styles.alertText}>{t('online.allPlayersLeft')}</p>
+            <p className={styles.alertText}>
+              {getDisconnectMessage(t, disconnectReason)}
+            </p>
             <button className={styles.alertButton} onClick={handleExitGame}>
               {t('common.ok')}
             </button>
@@ -176,12 +240,9 @@ export function GameBoard({ onBackToMenu }: GameBoardProps) {
       
       {/* 主游戏区域 */}
       <main style={layoutStyles.main}>
-        {/* 记分板 */}
         <section style={layoutStyles.score}>
           <ScoreBoard />
         </section>
-
-        {/* 骰子区域 */}
         <section style={layoutStyles.dice}>
           <DiceContainer />
         </section>

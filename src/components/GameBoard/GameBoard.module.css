@@ -107,6 +107,42 @@
   }
 }
 
+/* ========== 连接状态提示（顶部loading条） ========== */
+.reconnectingBar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px 16px;
+  background: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+  z-index: 999;
+}
+
+.reconnectingSpinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--border-light);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.reconnectingText {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+}
+
 /* ========== 弹窗样式 ========== */
 .alertOverlay {
   position: fixed;
