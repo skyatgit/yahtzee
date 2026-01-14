@@ -31,15 +31,15 @@ const PEER_CONFIG = {
 };
 
 // 心跳间隔（毫秒）
-const HEARTBEAT_INTERVAL = 2000;
-// 心跳警告阈值（毫秒）- 超过这个时间开始显示重连提示
-const HEARTBEAT_WARNING_THRESHOLD = 3000;
-// 心跳超时（毫秒）- 超过这个时间才真正断开
-const HEARTBEAT_TIMEOUT = 15000;
-// 重连尝试次数
-const MAX_RECONNECT_ATTEMPTS = 5;
+const HEARTBEAT_INTERVAL = 1000;
+// 心跳警告阈值（毫秒）- 超过此时间开始显示重连提示（1次心跳未响应即提示）
+const HEARTBEAT_WARNING_THRESHOLD = 1500;
+// 心跳超时（毫秒）- 超过此时间才真正断开
+const HEARTBEAT_TIMEOUT = 30000;
+// 重连尝试次数（30秒内持续尝试）
+const MAX_RECONNECT_ATTEMPTS = 30;
 // 重连间隔（毫秒）
-const RECONNECT_INTERVAL = 2000;
+const RECONNECT_INTERVAL = 1000;
 
 // 连接状态
 export type ConnectionStatus = 'connected' | 'unstable' | 'reconnecting' | 'disconnected';
@@ -232,38 +232,53 @@ class PeerService {
             conn.send({ type: 'ping', timestamp: now });
           } catch (err) {
             console.error('[PeerService] 发送心跳失败:', peerId, err);
+            // 发送失败时立即检查连接状态
+            this.checkConnectionStatus(peerId);
           }
+        } else {
+          // 连接已关闭，立即检查状态
+          this.checkConnectionStatus(peerId);
         }
       });
     }, HEARTBEAT_INTERVAL);
     
     // 定期检查心跳超时
     this.heartbeatCheckInterval = window.setInterval(() => {
-      const now = Date.now();
-      this.lastHeartbeat.forEach((lastTime, peerId) => {
-        const timeSinceLastHeartbeat = now - lastTime;
-        const currentStatus = this.connectionStatus.get(peerId) || 'connected';
-        
-        if (timeSinceLastHeartbeat > HEARTBEAT_TIMEOUT) {
-          // 真正超时，断开连接
-          console.log('[PeerService] 心跳超时，断开连接:', peerId, `(${timeSinceLastHeartbeat}ms)`);
-          this.handlePeerDisconnect(peerId, 'peer_network');
-        } else if (timeSinceLastHeartbeat > HEARTBEAT_WARNING_THRESHOLD) {
-          // 进入警告状态，开始重连尝试
-          if (currentStatus === 'connected') {
-            console.warn('[PeerService] 心跳不稳定，尝试恢复:', peerId);
-            this.updateConnectionStatus(peerId, 'unstable');
-            this.attemptReconnect(peerId);
-          }
-        } else if (currentStatus === 'unstable' || currentStatus === 'reconnecting') {
-          // 心跳恢复正常
-          console.log('[PeerService] 连接恢复正常:', peerId);
-          this.updateConnectionStatus(peerId, 'connected');
-          this.reconnectAttempts.delete(peerId);
-          this.clearReconnectTimer(peerId);
-        }
+      this.connections.forEach((_, peerId) => {
+        this.checkConnectionStatus(peerId);
       });
     }, HEARTBEAT_INTERVAL);
+  }
+  
+  /**
+   * 检查单个连接的状态
+   */
+  private checkConnectionStatus(peerId: string) {
+    const lastTime = this.lastHeartbeat.get(peerId);
+    if (!lastTime) return;
+    
+    const now = Date.now();
+    const timeSinceLastHeartbeat = now - lastTime;
+    const currentStatus = this.connectionStatus.get(peerId) || 'connected';
+    
+    if (timeSinceLastHeartbeat > HEARTBEAT_TIMEOUT) {
+      // 真正超时，断开连接
+      console.log('[PeerService] 心跳超时，断开连接:', peerId, `(${timeSinceLastHeartbeat}ms)`);
+      this.handlePeerDisconnect(peerId, 'peer_network');
+    } else if (timeSinceLastHeartbeat > HEARTBEAT_WARNING_THRESHOLD) {
+      // 进入警告状态，开始重连尝试
+      if (currentStatus === 'connected') {
+        console.warn('[PeerService] 心跳不稳定，尝试恢复:', peerId);
+        this.updateConnectionStatus(peerId, 'unstable');
+        this.attemptReconnect(peerId);
+      }
+    } else if (currentStatus === 'unstable' || currentStatus === 'reconnecting') {
+      // 心跳恢复正常
+      console.log('[PeerService] 连接恢复正常:', peerId);
+      this.updateConnectionStatus(peerId, 'connected');
+      this.reconnectAttempts.delete(peerId);
+      this.clearReconnectTimer(peerId);
+    }
   }
   
   /**
