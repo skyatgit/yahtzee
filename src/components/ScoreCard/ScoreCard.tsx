@@ -80,9 +80,12 @@ export function ScoreBoard() {
   const isMyTurn = isLocalPlayerTurn();
   const canSelect = rollsLeft < 3 && phase === 'rolling' && isMyTurn;
   
+  // 是否可以显示预览分数（当前玩家已摇骰子）
+  const canShowPreview = rollsLeft < 3 && phase === 'rolling';
+
   // 计算预览分数
   const getPreviewScore = (category: ScoreCategory, scoreCard: ScoreCardType): number | null => {
-    if (!canSelect || scoreCard[category] !== null) return null;
+    if (!canShowPreview || scoreCard[category] !== null) return null;
     return calculateScore(category, dice, scoreCard);
   };
   
@@ -145,7 +148,8 @@ export function ScoreBoard() {
     const score = player.scoreCard[category];
     const isCurrentPlayer = playerIndex === currentPlayerIndex;
     const isLocal = isLocalPlayer(player);
-    const previewScore = (isCurrentPlayer && isMyTurn) ? getPreviewScore(category, player.scoreCard) : null;
+    // 只显示当前玩家的预览分数
+    const previewScore = isCurrentPlayer ? getPreviewScore(category, player.scoreCard) : null;
     const isAvailable = canSelect && isCurrentPlayer && score === null;
     const isZero = score === 0;
     
