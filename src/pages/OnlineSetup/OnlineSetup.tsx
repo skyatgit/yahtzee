@@ -100,17 +100,17 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
           return;
         }
         
-        // 检查房间是否已满（最多4人）
-        if (state.players.length >= 4) {
+        // 检查房间是否已满（最多8人）
+        if (state.players.length >= 8) {
           console.log('[房主] 房间已满，拒绝加入');
           peerService.sendTo(newPlayer.id, 'room-full', {});
           return;
         }
         
-        // 找到第一个空闲的编号 (已有玩家的编号集合，找1-4中第一个不在集合中的)
+        // 找到第一个空闲的编号 (已有玩家的编号集合，找1-8中第一个不在集合中的)
         const usedNumbers = state.players.map(p => parseInt(p.name.replace('P', '')));
         let assignedNumber = 1;
-        for (let i = 1; i <= 4; i++) {
+        for (let i = 1; i <= 8; i++) {
           if (!usedNumbers.includes(i)) {
             assignedNumber = i;
             break;
@@ -125,14 +125,15 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
         console.log('[房主] 添加新玩家:', assignedPlayer.name);
         addRemotePlayer(assignedPlayer);
         
-        // 广播更新后的玩家列表给所有人
-        setTimeout(() => {
+        // 立即获取更新后的状态并广播给所有人
+        // 使用 queueMicrotask 确保状态已更新
+        queueMicrotask(() => {
           const updatedState = useGameStore.getState();
           console.log('[房主] 广播玩家列表:', updatedState.players);
           peerService.broadcast('sync', { 
             players: updatedState.players 
           });
-        }, 100);
+        });
         break;
       }
       
@@ -325,8 +326,8 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
     // 移除玩家
     removeRemotePlayer(playerId);
     
-    // 广播更新后的玩家列表
-    setTimeout(() => {
+    // 立即广播更新后的玩家列表
+    queueMicrotask(() => {
       const updatedState = useGameStore.getState();
       peerService.broadcast('sync', { 
         players: updatedState.players 
@@ -335,7 +336,7 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
         playerId,
         playerName: playerToKick.name 
       });
-    }, 100);
+    });
   };
   
   // 创建房间
@@ -536,10 +537,10 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
             
             {/* 玩家列表 */}
             <div className={styles.section}>
-              <label className={styles.label}>{t('setup.players')} ({players.length}/4)</label>
+              <label className={styles.label}>{t('setup.players')} ({players.length}/8)</label>
               <div className={styles.playerGrid}>
-                {/* 4个固定槽位 */}
-                {[1, 2, 3, 4].map((slotNumber) => {
+                {/* 8个固定槽位 */}
+                {[1, 2, 3, 4, 5, 6, 7, 8].map((slotNumber) => {
                   const player = players.find(p => p.name === `P${slotNumber}`);
                   if (player) {
                     const latency = getPlayerLatency(player, players.indexOf(player));
@@ -597,7 +598,7 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
-              {t('menu.start')} ({players.length}/4)
+              {t('menu.start')} ({players.length}/8)
             </motion.button>
           </div>
         )}
@@ -613,8 +614,8 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
             <div className={styles.section}>
               <label className={styles.label}>{t('setup.players')}</label>
               <div className={styles.playerGrid}>
-                {/* 4个固定槽位 */}
-                {[1, 2, 3, 4].map((slotNumber) => {
+                {/* 8个固定槽位 */}
+                {[1, 2, 3, 4, 5, 6, 7, 8].map((slotNumber) => {
                   const player = players.find(p => p.name === `P${slotNumber}`);
                   if (player) {
                     const latency = getPlayerLatency(player, players.indexOf(player));

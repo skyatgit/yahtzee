@@ -218,6 +218,8 @@ export function ScoreBoard() {
                       <span className={styles.reconnectingBadge}>
                         <span className={styles.reconnectingSpinner} />
                       </span>
+                    ) : mode === 'online' && isLocalPlayer(player) ? (
+                      <span className={styles.youTag}>{t('common.you')}</span>
                     ) : getPlayerLatency(player, index) ? (
                       <span className={styles.latencyBadge}>{getPlayerLatency(player, index)}</span>
                     ) : null}

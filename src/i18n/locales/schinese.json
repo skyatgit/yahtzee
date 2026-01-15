@@ -10,7 +10,7 @@
     "back": "返回",
     "start": "开始游戏",
     "waiting": "等待中...",
-    "footerText": "快艇骰子 • 2~4人"
+    "footerText": "快艇骰子 • 2~8人"
   },
   "setup": {
     "playerCount": "玩家数量",

@@ -10,7 +10,7 @@
     "back": "Back",
     "start": "Start Game",
     "waiting": "Waiting...",
-    "footerText": "Yahtzee • 2~4 Players"
+    "footerText": "Yahtzee • 2~8 Players"
   },
   "setup": {
     "playerCount": "Player Count",

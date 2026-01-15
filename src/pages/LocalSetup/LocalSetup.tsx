@@ -28,6 +28,10 @@ export function LocalSetup({ onBack, onStart }: LocalSetupProps) {
     { active: true, type: 'human' },
     { active: true, type: 'ai' },
     { active: false, type: 'ai' },
+    { active: false, type: 'ai' },
+    { active: false, type: 'ai' },
+    { active: false, type: 'ai' },
+    { active: false, type: 'ai' },
     { active: false, type: 'ai' }
   ]);
 
@@ -101,7 +105,7 @@ export function LocalSetup({ onBack, onStart }: LocalSetupProps) {
         <div className={styles.card}>
           {/* 玩家列表 */}
           <div className={styles.section}>
-            <label className={styles.label}>{t('setup.players')} ({activeCount}/4)</label>
+            <label className={styles.label}>{t('setup.players')} ({activeCount}/8)</label>
             <div className={styles.playerGrid}>
               {slots.map((slot, index) => (
                 slot.active ? (
