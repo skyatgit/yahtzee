@@ -15,6 +15,16 @@
   box-sizing: border-box;
   container-type: size;
   container-name: scoreboard;
+  /* 支持全屏滑动 */
+  touch-action: none;
+  user-select: none;
+  /* 取消区域需要相对定位 */
+  position: relative;
+}
+
+/* 滑动选择模式时的样式 */
+.board.dragging {
+  cursor: grabbing;
 }
 
 .table {
@@ -115,13 +125,12 @@
 }
 
 .youTag {
-  padding: 0 0.4cqw;
-  background: rgba(128, 128, 128, 0.3);
-  color: var(--text-secondary);
-  font-size: min(2.5cqh, 1.5cqw);
-  font-weight: 500;
+  display: inline-block;
+  font-size: min(2.2cqh, 1.3cqw);
+  padding: 0 0.3cqw;
+  background: var(--accent);
+  color: #000;
   border-radius: 2px;
-  font-family: monospace;
   white-space: nowrap;
   line-height: 1.15;
 }
@@ -257,6 +266,15 @@
   background: rgba(90, 154, 106, 0.35);
 }
 
+/* 滑动选择时的高亮效果 */
+.scoreCell.hovered {
+  background: rgba(90, 154, 106, 0.5) !important;
+  transform: scale(1.05);
+  box-shadow: 0 0 8px rgba(90, 154, 106, 0.6);
+  z-index: 10;
+  position: relative;
+}
+
 .scoreCell.filled {
   color: var(--text);
 }
@@ -358,11 +376,11 @@
     font-size: min(4cqh, 3.5cqw);
   }
 
-  .latencyBadge,
-  .youTag {
+  .latencyBadge {
     font-size: min(2.5cqh, 2.5cqw);
   }
 
+  .youTag,
   .aiTag {
     font-size: min(2.2cqh, 2cqw);
   }
