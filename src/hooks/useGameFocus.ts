@@ -15,10 +15,9 @@
  * - 竖屏：计分板在上面，骰子区域在下面（骰子水平排列，按钮在右边）
  */
 
-import { useState, useCallback, useEffect, useRef, useContext, useMemo } from 'react';
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { useGamepadAction, useGamepadVibration, useGamepadConnection } from './useGamepad';
 import { useInputMode } from './useInputMode';
-import { GameFocusContext } from './GameFocusContext';
 import type { GamepadAction } from '../services/gamepadService';
 import type { GameFocusArea, GameFocusContextValue } from './useGameFocusTypes';
 
@@ -106,15 +105,18 @@ export function useGameFocusProvider(options: {
   useEffect(() => {
     if (!isEnabled) return;
     
-    // 强制切换到骰子区域并选中摇骰子按钮
-    if (gameRules.forceDiceArea && gameRules.forceRollButton) {
-      setCurrentArea('dice');
-      setDiceFocusIndex(5);
-    }
-    // 强制切换到计分板区域
-    else if (gameRules.forceScorecardArea) {
-      setCurrentArea('scorecard');
-    }
+    // 使用 queueMicrotask 延迟状态更新，避免级联渲染
+    queueMicrotask(() => {
+      // 强制切换到骰子区域并选中摇骰子按钮
+      if (gameRules.forceDiceArea && gameRules.forceRollButton) {
+        setCurrentArea('dice');
+        setDiceFocusIndex(5);
+      }
+      // 强制切换到计分板区域
+      else if (gameRules.forceScorecardArea) {
+        setCurrentArea('scorecard');
+      }
+    });
   }, [isEnabled, gameRules.forceDiceArea, gameRules.forceRollButton, gameRules.forceScorecardArea]);
   
   // 派生状态：在渲染时计算约束后的计分板焦点索引
@@ -389,15 +391,4 @@ export function useGameFocusProvider(options: {
     isScoreFocused,
     enabled: isEnabled,
   };
-}
-
-/**
- * 使用游戏焦点上下文
- */
-export function useGameFocus(): GameFocusContextValue {
-  const context = useContext(GameFocusContext);
-  if (!context) {
-    throw new Error('useGameFocus must be used within a GameFocusProvider');
-  }
-  return context;
 }

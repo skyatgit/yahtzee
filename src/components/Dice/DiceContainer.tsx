@@ -9,7 +9,7 @@ import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { Dice } from './Dice';
 import { useGameStore } from '../../store/gameStore';
-import { GameFocusContext } from '../../hooks/GameFocusContext';
+import { GameFocusContext } from '../../hooks';
 import styles from './DiceContainer.module.css';
 
 export function DiceContainer() {

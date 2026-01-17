@@ -11,12 +11,13 @@
  * - 支持手柄导航选择记分项（通过 GameFocusProvider）
  */
 
+import type { TouchEvent, CSSProperties } from 'react';
 import { useState, useEffect, useRef, useCallback, useMemo, useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ScoreCard as ScoreCardType, ScoreCategory, Player } from '../../types/game';
 import { useGameStore } from '../../store/gameStore';
 import { peerService, type ConnectionStatus } from '../../services/peerService';
-import { GameFocusContext } from '../../hooks/GameFocusContext';
+import { GameFocusContext } from '../../hooks';
 import {
   calculateScore,
   calculateUpperTotal,
@@ -204,7 +205,7 @@ export function ScoreBoard({ availableCategories: propAvailableCategories }: Sco
   }, [players, currentPlayerIndex]);
   
   // 全屏触摸开始
-  const handleBoardTouchStart = useCallback((e: React.TouchEvent) => {
+  const handleBoardTouchStart = useCallback((e: TouchEvent) => {
     if (!canSelect) return;
     
     touchStarted.current = true;
@@ -228,7 +229,7 @@ export function ScoreBoard({ availableCategories: propAvailableCategories }: Sco
   }, [canSelect, getCategoryFromPoint, vibrate]);
   
   // 全屏触摸移动
-  const handleBoardTouchMove = useCallback((e: React.TouchEvent) => {
+  const handleBoardTouchMove = useCallback((e: TouchEvent) => {
     if (!isDragging || !canSelect || !touchStarted.current) return;
     
     hasMoved.current = true;
@@ -436,7 +437,7 @@ export function ScoreBoard({ availableCategories: propAvailableCategories }: Sco
                     ${isLocalPlayer(player) ? styles.localPlayerHeader : ''}
                     ${isReconnecting ? styles.reconnecting : ''}
                   `}
-                  style={{ '--player-color': PLAYER_COLORS[playerNumber - 1] || PLAYER_COLORS[0] } as React.CSSProperties}
+                  style={{ '--player-color': PLAYER_COLORS[playerNumber - 1] || PLAYER_COLORS[0] } as CSSProperties}
                   data-player={playerNumber}
                 >
                   <div className={styles.playerNameWrapper}>

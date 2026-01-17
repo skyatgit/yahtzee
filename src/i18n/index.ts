@@ -22,7 +22,7 @@ export const supportedLanguages = [
 // 从本地存储获取语言设置，默认简体中文
 const savedLanguage = localStorage.getItem('language') || 'schinese';
 
-i18n
+void i18n
   .use(initReactI18next)
   .init({
     resources: {
@@ -40,8 +40,8 @@ i18n
 
 // 切换语言并保存到本地存储
 export const changeLanguage = (lang: string) => {
-  i18n.changeLanguage(lang);
+  void i18n.changeLanguage(lang);
   localStorage.setItem('language', lang);
 };
 
-export default i18n;
+export { i18n };
