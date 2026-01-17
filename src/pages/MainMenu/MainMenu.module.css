@@ -75,8 +75,23 @@
   border-color: var(--border-light);
 }
 
+/* 手柄模式下禁用 hover 效果 */
+:global(html[data-input-mode="gamepad"]) .menuButton:hover {
+  background: var(--bg-card);
+  border-color: var(--border);
+}
+
 .menuButton:active {
   transform: scale(0.98);
+}
+
+/* 手柄焦点样式 - 与 hover 效果相同，加选中框，优先级高于 hover 禁用 */
+:global(html[data-input-mode="gamepad"]) .menuButton.focused,
+:global(html[data-input-mode="gamepad"]) .menuButton.focused:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-light);
+  outline: 3px solid var(--primary);
+  outline-offset: 2px;
 }
 
 .buttonIcon {

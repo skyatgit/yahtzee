@@ -36,6 +36,15 @@
   color: var(--text);
 }
 
+/* 全局 btn 按钮的手柄焦点样式 */
+:global(html[data-input-mode="gamepad"]) :global(.btn).focused,
+:global(html[data-input-mode="gamepad"]) :global(.btn).focused:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-light);
+  outline: 3px solid var(--primary);
+  outline-offset: 2px;
+}
+
 .card {
   background: var(--bg-card);
   border: 1px solid var(--border);
@@ -83,10 +92,30 @@
   border-color: var(--border-light);
 }
 
+/* 手柄模式下禁用 hover 效果 */
+:global(html[data-input-mode="gamepad"]) .languageButton:hover {
+  border-color: var(--border);
+}
+
 .languageButton.active {
   background: var(--primary);
   border-color: var(--primary);
   color: #fff;
+}
+
+/* 手柄焦点样式 - 优先级高于 hover 禁用 */
+:global(html[data-input-mode="gamepad"]) .languageButton.focused,
+:global(html[data-input-mode="gamepad"]) .languageButton.focused:hover {
+  border-color: var(--border-light);
+  outline: 3px solid var(--primary);
+  outline-offset: 2px;
+}
+
+:global(html[data-input-mode="gamepad"]) .themeToggle.focused,
+:global(html[data-input-mode="gamepad"]) .themeToggle.focused:hover {
+  border-color: var(--border-light);
+  outline: 3px solid var(--primary);
+  outline-offset: 2px;
 }
 
 .themeToggle {
@@ -107,6 +136,11 @@
 
 .themeToggle:hover {
   border-color: var(--border-light);
+}
+
+/* 手柄模式下禁用 hover 效果 */
+:global(html[data-input-mode="gamepad"]) .themeToggle:hover {
+  border-color: var(--border);
 }
 
 .themeIcon {

@@ -10,6 +10,7 @@ import { Settings } from './pages/Settings';
 import { GameBoard } from './components/GameBoard';
 import { GameOver } from './components/GameOver';
 import { useGameStore } from './store/gameStore';
+import { gamepadService } from './services/gamepadService';
 
 // 导入i18n配置
 import './i18n';
@@ -54,6 +55,22 @@ function App() {
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme') || 'dark';
     document.documentElement.setAttribute('data-theme', savedTheme);
+  }, []);
+  
+  // 初始化手柄服务和加载震动设置
+  useEffect(() => {
+    // 加载保存的震动设置
+    const savedVibration = localStorage.getItem('gamepadVibration');
+    if (savedVibration !== null) {
+      gamepadService.setVibrationEnabled(savedVibration === 'true');
+    }
+    
+    // 启动手柄服务
+    gamepadService.start();
+    
+    return () => {
+      // 组件卸载时不需要停止服务，保持全局可用
+    };
   }, []);
   
   // 处理再来一局

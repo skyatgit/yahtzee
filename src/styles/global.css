@@ -24,6 +24,59 @@ html, body, #root {
   touch-action: manipulation;
 }
 
+/* 手柄模式下隐藏鼠标指针 */
+html[data-input-mode="gamepad"],
+html[data-input-mode="gamepad"] * {
+  cursor: none !important;
+}
+
+/* 手柄模式下禁用所有 hover 效果 */
+html[data-input-mode="gamepad"] *:hover {
+  /* 使用 all: unset 会破坏样式，所以只重置常见的 hover 属性 */
+}
+
+/* 手柄模式下按钮 hover 不变色 */
+html[data-input-mode="gamepad"] .btn:hover:not(:disabled) {
+  background: inherit;
+  border-color: inherit;
+  transform: none;
+}
+
+html[data-input-mode="gamepad"] .btn-primary:hover:not(:disabled) {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+html[data-input-mode="gamepad"] .btn-success:hover:not(:disabled) {
+  background: var(--success);
+  border-color: var(--success);
+}
+
+/* 手柄焦点样式 - .btn 按钮，优先级高于 hover 禁用 */
+html[data-input-mode="gamepad"] .btn.focused,
+html[data-input-mode="gamepad"] .btn.focused:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-light);
+  outline: 3px solid var(--primary);
+  outline-offset: 2px;
+}
+
+html[data-input-mode="gamepad"] .btn-primary.focused,
+html[data-input-mode="gamepad"] .btn-primary.focused:hover {
+  background: var(--primary-hover);
+  border-color: var(--primary-hover);
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+html[data-input-mode="gamepad"] .btn-success.focused,
+html[data-input-mode="gamepad"] .btn-success.focused:hover {
+  background: var(--success);
+  border-color: var(--success);
+  outline: 3px solid var(--primary);
+  outline-offset: 2px;
+}
+
 /* 安全区域适配 */
 .app {
   width: 100%;

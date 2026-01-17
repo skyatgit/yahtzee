@@ -156,6 +156,23 @@
   font-size: 0.95rem;
 }
 
+/* 手柄焦点样式 - 优先级高于 hover 禁用 */
+:global(html[data-input-mode="gamepad"]) .actions :global(.btn).focused,
+:global(html[data-input-mode="gamepad"]) .actions :global(.btn).focused:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-light);
+  outline: 3px solid var(--primary);
+  outline-offset: 2px;
+}
+
+:global(html[data-input-mode="gamepad"]) .actions :global(.btn-primary).focused,
+:global(html[data-input-mode="gamepad"]) .actions :global(.btn-primary).focused:hover {
+  background: var(--primary-hover);
+  border-color: var(--primary-hover);
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
 /* ===== 横屏模式 ===== */
 @media (orientation: landscape) {
   .modal {

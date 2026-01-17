@@ -3,13 +3,20 @@
  * 创建房间或加入房间
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useGameStore } from '../../store/gameStore';
 import { peerService, generateRoomId, type DisconnectReason } from '../../services/peerService';
 import type { Player, GameMessage } from '../../types/game';
 import { createEmptyScoreCard } from '../../utils/scoring';
+import { 
+  useLayoutNavigation, 
+  useGamepadConnection,
+  useResponsiveColumns,
+  generateGridRows,
+  LOCAL_SETUP_BREAKPOINTS,
+} from '../../hooks';
 import styles from './OnlineSetup.module.css';
 
 interface OnlineSetupProps {
@@ -22,12 +29,14 @@ type OnlineMode = 'select' | 'create' | 'join';
 
 export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps) {
   const { t } = useTranslation();
+  const { hasGamepad } = useGamepadConnection();
   const { 
     initOnlineGame, 
     addRemotePlayer, 
     removeRemotePlayer,
     players, 
     syncGameState,
+    isHost,
   } = useGameStore();
   
   const [mode, setMode] = useState<OnlineMode>('select');
@@ -41,8 +50,12 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
   const messageHandlerRegistered = useRef(false);
   const [latencies, setLatencies] = useState<Map<string, number>>(new Map());
   
-  // 加入房间的核心逻辑
-  const joinRoomAsync = async (targetRoomId: string) => {
+  // 响应式列数检测（与 LocalSetup 共用配置）
+  const gridColumns = useResponsiveColumns(4, LOCAL_SETUP_BREAKPOINTS);
+  
+  // 加入房间的核心逻辑 - 使用 ref 避免在 useEffect 中需要它作为依赖
+  const joinRoomAsyncRef = useRef<(targetRoomId: string) => Promise<boolean>>(undefined);
+  joinRoomAsyncRef.current = async (targetRoomId: string) => {
     setIsConnecting(true);
     setError(null);
     
@@ -50,21 +63,16 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
       await peerService.joinRoom(targetRoomId.toUpperCase());
       const peerId = peerService.getMyPeerId()!;
       
-      console.log('[客户端] 加入房间成功, peerId:', peerId);
-      
-      // 玩家名由房主分配，先使用临时名
       initOnlineGame(false, targetRoomId.toUpperCase(), 'P?', peerId);
       
-      // 发送加入消息给房主
       const myPlayer: Player = {
         id: peerId,
-        name: 'P?', // 临时名，房主会重新分配
+        name: 'P?',
         type: 'remote',
         scoreCard: createEmptyScoreCard(),
         isConnected: true
       };
       
-      console.log('[客户端] 发送加入请求:', myPlayer);
       peerService.broadcast('join', myPlayer);
       
       setRoomId(targetRoomId.toUpperCase());
@@ -79,35 +87,29 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
     }
   };
   
+  const joinRoomAsync = (targetRoomId: string) => joinRoomAsyncRef.current?.(targetRoomId) ?? Promise.resolve(false);
+  
   // 处理收到的消息
   const handleMessage = useCallback((message: GameMessage) => {
-    console.log('[OnlineSetup] 收到消息:', message.type, message.payload);
     const state = useGameStore.getState();
     
     switch (message.type) {
       case 'join': {
-        // 有新玩家加入（房主收到）
         if (!state.isHost) return;
         
         const newPlayer = message.payload as Player;
-        // 检查玩家是否已存在
         if (state.players.some(p => p.id === newPlayer.id)) return;
         
-        // 检查游戏是否已经开始
         if (state.phase !== 'waiting') {
-          console.log('[房主] 游戏已开始，拒绝加入');
           peerService.sendTo(newPlayer.id, 'game-started', {});
           return;
         }
         
-        // 检查房间是否已满（最多8人）
         if (state.players.length >= 8) {
-          console.log('[房主] 房间已满，拒绝加入');
           peerService.sendTo(newPlayer.id, 'room-full', {});
           return;
         }
         
-        // 找到第一个空闲的编号 (已有玩家的编号集合，找1-8中第一个不在集合中的)
         const usedNumbers = state.players.map(p => parseInt(p.name.replace('P', '')));
         let assignedNumber = 1;
         for (let i = 1; i <= 8; i++) {
@@ -122,27 +124,18 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
           name: `P${assignedNumber}`
         };
         
-        console.log('[房主] 添加新玩家:', assignedPlayer.name);
         addRemotePlayer(assignedPlayer);
         
-        // 立即获取更新后的状态并广播给所有人
-        // 使用 queueMicrotask 确保状态已更新
         queueMicrotask(() => {
           const updatedState = useGameStore.getState();
-          console.log('[房主] 广播玩家列表:', updatedState.players);
-          peerService.broadcast('sync', { 
-            players: updatedState.players 
-          });
+          peerService.broadcast('sync', { players: updatedState.players });
         });
         break;
       }
       
       case 'sync': {
-        // 同步游戏状态（非房主收到）
         if (state.isHost) return;
-        
         const syncData = message.payload as { players?: Player[] };
-        console.log('[客户端] 同步玩家列表:', syncData.players);
         if (syncData.players) {
           syncGameState({ players: syncData.players });
         }
@@ -150,14 +143,8 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
       }
       
       case 'game-start': {
-        // 游戏开始（非房主收到）
         if (state.isHost) return;
-        
-        const startData = message.payload as {
-          players: Player[];
-          currentPlayerIndex: number;
-        };
-        console.log('[客户端] 游戏开始:', startData);
+        const startData = message.payload as { players: Player[]; currentPlayerIndex: number };
         syncGameState({
           players: startData.players,
           currentPlayerIndex: startData.currentPlayerIndex,
@@ -171,9 +158,7 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
       
       case 'player-left': {
         const { playerId, playerName: leftPlayerName } = message.payload as { playerId: string; playerName?: string };
-        console.log('[OnlineSetup] 玩家离开:', playerId);
         removeRemotePlayer(playerId);
-        // 显示通知
         if (leftPlayerName) {
           setError(t('online.playerLeft', { name: leftPlayerName }));
           setTimeout(() => setError(null), 3000);
@@ -182,8 +167,6 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
       }
       
       case 'kicked': {
-        // 被房主踢出（非房主收到）
-        console.log('[客户端] 被踢出房间');
         peerService.disconnect();
         setError(t('online.kicked'));
         setMode('select');
@@ -191,8 +174,6 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
       }
       
       case 'room-full': {
-        // 房间已满（加入者收到）
-        console.log('[客户端] 房间已满');
         peerService.disconnect();
         setError(t('online.roomFull'));
         setMode('select');
@@ -200,8 +181,6 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
       }
       
       case 'game-started': {
-        // 游戏已开始（加入者收到）
-        console.log('[客户端] 游戏已开始，无法加入');
         peerService.disconnect();
         setError(t('online.gameAlreadyStarted'));
         setMode('select');
@@ -209,8 +188,6 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
       }
       
       case 'room-closed': {
-        // 房主关闭房间（客户端收到）
-        console.log('[客户端] 房主关闭了房间');
         peerService.disconnect();
         setError(t('online.hostLeft'));
         setMode('select');
@@ -218,7 +195,6 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
       }
       
       case 'latency-update': {
-        // 收到房主广播的延迟信息（客户端收到）
         if (state.isHost) return;
         const latencyObj = message.payload as Record<string, number>;
         peerService.updateLatenciesFromHost(latencyObj);
@@ -229,13 +205,10 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
   
   // 处理玩家断开连接
   const handleDisconnection = useCallback((peerId: string, reason: DisconnectReason) => {
-    console.log('[OnlineSetup] 玩家断开连接:', peerId, '原因:', reason);
     const state = useGameStore.getState();
     
-    // 非房主：检测是否是房主断开（房间解散）
     if (!state.isHost) {
       if (peerId.startsWith('yahtzee-')) {
-        console.log('[客户端] 房主断开连接，房间解散');
         peerService.disconnect();
         const msg = reason === 'peer_network' 
           ? t('online.disconnectHostNetwork')
@@ -246,12 +219,10 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
       }
     }
     
-    // 查找断开的玩家
     const disconnectedPlayer = state.players.find(p => p.id === peerId);
     if (disconnectedPlayer) {
       removeRemotePlayer(peerId);
       
-      // 房主广播玩家离开（带玩家名）
       if (state.isHost) {
         peerService.broadcast('player-left', { 
           playerId: peerId,
@@ -260,14 +231,10 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
         });
       }
       
-      // 根据断开原因显示不同的提示
       let msg: string;
       switch (reason) {
         case 'peer_left':
           msg = t('online.playerLeft', { name: disconnectedPlayer.name });
-          break;
-        case 'peer_network':
-          msg = t('online.playerDisconnected', { name: disconnectedPlayer.name });
           break;
         default:
           msg = t('online.playerDisconnected', { name: disconnectedPlayer.name });
@@ -294,53 +261,40 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
     };
   }, [handleMessage, handleDisconnection]);
   
-  // 如果有邀请房间号，自动加入（确保消息处理器已注册）
+  // 自动加入邀请房间
   useEffect(() => {
     if (inviteRoomId && !autoJoinRef.current && mode === 'select' && !isConnecting) {
-      // 等待消息处理器注册完成
       const tryAutoJoin = () => {
         if (autoJoinRef.current) return;
         autoJoinRef.current = true;
         setInputRoomId(inviteRoomId);
         joinRoomAsync(inviteRoomId);
       };
-      
-      // 稍微延迟确保消息处理器已注册
       const timer = setTimeout(tryAutoJoin, 100);
       return () => clearTimeout(timer);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [inviteRoomId, mode, isConnecting]);
   
   // 踢出玩家（房主）
-  const handleKickPlayer = (playerId: string) => {
+  const handleKickPlayer = useCallback((playerId: string) => {
     const state = useGameStore.getState();
     if (!state.isHost) return;
     
     const playerToKick = state.players.find(p => p.id === playerId);
     if (!playerToKick) return;
     
-    // 发送踢出消息给该玩家
     peerService.sendTo(playerId, 'kicked', {});
-    
-    // 移除玩家
     removeRemotePlayer(playerId);
     
-    // 立即广播更新后的玩家列表
     queueMicrotask(() => {
       const updatedState = useGameStore.getState();
-      peerService.broadcast('sync', { 
-        players: updatedState.players 
-      });
-      peerService.broadcast('player-left', { 
-        playerId,
-        playerName: playerToKick.name 
-      });
+      peerService.broadcast('sync', { players: updatedState.players });
+      peerService.broadcast('player-left', { playerId, playerName: playerToKick.name });
     });
-  };
+  }, [removeRemotePlayer]);
   
   // 创建房间
-  const handleCreateRoom = async () => {
+  const handleCreateRoom = useCallback(async () => {
     setIsConnecting(true);
     setError(null);
     
@@ -349,10 +303,7 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
       await peerService.createRoom(newRoomId);
       const peerId = peerService.getMyPeerId()!;
       
-      console.log('[房主] 创建房间成功:', newRoomId, 'peerId:', peerId);
-      
       setRoomId(newRoomId);
-      // 房主自动为 P1
       initOnlineGame(true, newRoomId, 'P1', peerId);
       setMode('create');
     } catch (err) {
@@ -361,22 +312,20 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
     } finally {
       setIsConnecting(false);
     }
-  };
+  }, [initOnlineGame, t]);
   
   // 手动加入房间
-  const handleJoinRoom = async () => {
+  const handleJoinRoom = useCallback(async () => {
     if (!inputRoomId.trim()) return;
     await joinRoomAsync(inputRoomId);
-  };
+  }, [inputRoomId]);
   
   // 开始游戏（房主）
-  const handleStartGame = () => {
+  const handleStartGame = useCallback(() => {
     if (players.length < 2) return;
     
     const state = useGameStore.getState();
-    console.log('[房主] 开始游戏, 玩家:', state.players);
     
-    // 更新本地状态
     syncGameState({
       phase: 'rolling',
       currentPlayerIndex: 0,
@@ -384,69 +333,145 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
       currentRound: 1,
     });
     
-    // 广播游戏开始给所有玩家
     peerService.broadcast('game-start', {
       players: state.players,
       currentPlayerIndex: 0,
     });
     
     onStart();
-  };
+  }, [players.length, syncGameState, onStart]);
   
   // 复制房间号
-  const copyRoomId = () => {
-    navigator.clipboard.writeText(roomId);
+  const copyRoomId = useCallback(() => {
+    navigator.clipboard.writeText(roomId).catch(() => {});
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-  };
-  
-  // 生成邀请链接
-  const getInviteLink = () => {
-    const url = new URL(window.location.href);
-    url.searchParams.set('room', roomId);
-    return url.toString();
-  };
+  }, [roomId]);
   
   // 复制邀请链接
-  const copyInviteLink = () => {
-    navigator.clipboard.writeText(getInviteLink());
+  const copyInviteLink = useCallback(() => {
+    const url = new URL(window.location.href);
+    url.searchParams.set('room', roomId);
+    navigator.clipboard.writeText(url.toString()).catch(() => {});
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2000);
-  };
+  }, [roomId]);
   
   // 返回时断开连接
-  const handleBack = () => {
+  const handleBack = useCallback(() => {
     peerService.disconnect();
     onBack();
-  };
+  }, [onBack]);
   
   // 获取玩家的延迟显示
   const getPlayerLatency = (player: Player, index: number): string | null => {
     const state = useGameStore.getState();
     const myPeerId = peerService.getMyPeerId();
     
-    // 不显示自己的延迟
     if (player.id === myPeerId) return null;
     
-    // 房主视角：显示每个客户端到房主的延迟
     if (state.isHost) {
-      if (index === 0) return null; // 房主自己
+      if (index === 0) return null;
       const latency = latencies.get(player.id);
       return latency !== undefined ? `${latency}ms` : null;
     }
     
-    // 客户端视角
     if (index === 0) {
-      // 房主位置：显示自己到房主的延迟
       const hostPeerId = `yahtzee-${roomId}`;
       const latency = latencies.get(hostPeerId);
       return latency !== undefined ? `${latency}ms` : null;
     } else {
-      // 其他客户端位置：显示他们到房主的延迟
       const latency = latencies.get(player.id);
       return latency !== undefined ? `${latency}ms` : null;
     }
   };
+  
+  // ===== 手柄导航处理 =====
+  
+  // 处理选择模式的选择
+  const handleSelectModeSelect = useCallback((itemId: string) => {
+    if (itemId === 'back') {
+      peerService.disconnect();
+      onBack();
+    } else if (itemId === 'create') {
+      handleCreateRoom().catch(() => {});
+    } else if (itemId === 'join') {
+      handleJoinRoom().catch(() => {});
+    }
+  }, [onBack, handleCreateRoom, handleJoinRoom]);
+  
+  // 处理创建/加入房间模式的选择
+  const handleRoomModeSelect = useCallback((itemId: string) => {
+    if (itemId === 'back') {
+      peerService.disconnect();
+      onBack();
+    } else if (itemId === 'copyRoom') {
+      copyRoomId();
+    } else if (itemId === 'copyLink') {
+      copyInviteLink();
+    } else if (itemId === 'start') {
+      handleStartGame();
+    }
+  }, [onBack, copyRoomId, copyInviteLink, handleStartGame]);
+  
+  // 选择模式的导航行
+  const selectModeRows = useMemo(() => [
+    ['back'],
+    ['create'],
+    ['join'],
+  ], []);
+  
+  // 创建房间模式的导航行
+  const createModeRows = useMemo(() => {
+    const slotIds = Array.from({ length: 8 }, (_, i) => `slot-${i + 1}`);
+    const slotRows = generateGridRows(slotIds, gridColumns);
+    
+    return [
+      ['back'],
+      ['copyRoom'],
+      ['copyLink'],
+      ...slotRows,
+      ['start'],
+    ];
+  }, [gridColumns]);
+  
+  // 加入房间模式的导航行
+  const joinModeRows = useMemo(() => {
+    const slotIds = Array.from({ length: 8 }, (_, i) => `slot-${i + 1}`);
+    const slotRows = generateGridRows(slotIds, gridColumns);
+    
+    return [
+      ['back'],
+      ...slotRows,
+    ];
+  }, [gridColumns]);
+  
+  // 选择当前模式的导航行
+  const currentRows = mode === 'select' ? selectModeRows : 
+                      mode === 'create' ? createModeRows : joinModeRows;
+  const currentOnSelect = mode === 'select' ? handleSelectModeSelect : handleRoomModeSelect;
+  
+  // 处理手柄踢人（X键）
+  const handleKickByGamepad = useCallback((itemId: string) => {
+    if (!isHost) return;
+    if (itemId.startsWith('slot-')) {
+      const slotNumber = parseInt(itemId.replace('slot-', ''));
+      const player = players.find(p => p.name === `P${slotNumber}`);
+      // 不能踢自己（房主P1）
+      if (player && player.name !== 'P1') {
+        handleKickPlayer(player.id);
+      }
+    }
+  }, [isHost, players, handleKickPlayer]);
+
+  // 使用布局导航
+  const { isFocused } = useLayoutNavigation({
+    rows: currentRows,
+    onSelect: currentOnSelect,
+    onCancel: handleBack,
+    onKick: handleKickByGamepad,
+    enabled: hasGamepad,
+  });
   
   return (
     <div className={styles.container}>
@@ -456,7 +481,10 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
         animate={{ opacity: 1, y: 0 }}
       >
         <div className={styles.header}>
-          <button className="btn btn-secondary" onClick={handleBack}>
+          <button 
+            className={`btn btn-secondary ${isFocused('back') ? styles.focused : ''}`} 
+            onClick={handleBack}
+          >
             ← {t('menu.back')}
           </button>
           <h2 className={styles.title}>{t('menu.onlineGame')}</h2>
@@ -464,10 +492,9 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
         
         {mode === 'select' && (
           <div className={styles.card}>
-            {/* 创建/加入选择 */}
             <div className={styles.modeButtons}>
               <motion.button
-                className="btn btn-primary btn-large btn-full"
+                className={`btn btn-primary btn-large btn-full ${isFocused('create') ? styles.focused : ''}`}
                 onClick={handleCreateRoom}
                 disabled={isConnecting}
                 whileHover={{ scale: 1.02 }}
@@ -490,7 +517,7 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
                   maxLength={6}
                 />
                 <motion.button
-                  className="btn btn-success"
+                  className={`btn btn-success ${isFocused('join') ? styles.focused : ''}`}
                   onClick={handleJoinRoom}
                   disabled={isConnecting || !inputRoomId.trim()}
                   whileHover={{ scale: 1.05 }}
@@ -501,21 +528,18 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
               </div>
             </div>
             
-            {error && (
-              <div className={styles.error}>{error}</div>
-            )}
+            {error && <div className={styles.error}>{error}</div>}
           </div>
         )}
         
         {mode === 'create' && (
           <div className={styles.card}>
-            {/* 房间号显示 */}
             <div className={styles.roomInfo}>
               <span className={styles.roomLabel}>{t('online.roomId')}</span>
               <div className={styles.roomIdDisplay}>
                 <span className={styles.roomIdText}>{roomId}</span>
                 <motion.button
-                  className="btn btn-secondary btn-small"
+                  className={`btn btn-secondary btn-small ${isFocused('copyRoom') ? styles.focused : ''}`}
                   onClick={copyRoomId}
                   whileTap={{ scale: 0.95 }}
                 >
@@ -524,10 +548,9 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
               </div>
             </div>
             
-            {/* 邀请链接 */}
             <div className={styles.inviteSection}>
               <motion.button
-                className="btn btn-success btn-full"
+                className={`btn btn-success btn-full ${isFocused('copyLink') ? styles.focused : ''}`}
                 onClick={copyInviteLink}
                 whileTap={{ scale: 0.98 }}
               >
@@ -535,21 +558,21 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
               </motion.button>
             </div>
             
-            {/* 玩家列表 */}
             <div className={styles.section}>
               <label className={styles.label}>{t('setup.players')} ({players.length}/8)</label>
               <div className={styles.playerGrid}>
-                {/* 8个固定槽位 */}
                 {[1, 2, 3, 4, 5, 6, 7, 8].map((slotNumber) => {
                   const player = players.find(p => p.name === `P${slotNumber}`);
+                  const slotFocused = isFocused(`slot-${slotNumber}`);
+                  
                   if (player) {
                     const latency = getPlayerLatency(player, players.indexOf(player));
                     const isMe = player.id === peerService.getMyPeerId();
-                    const isHost = player.name === 'P1';
+                    const isPlayerHost = player.name === 'P1';
                     return (
                       <motion.div
                         key={slotNumber}
-                        className={`${styles.playerCard} ${isMe ? styles.isMe : ''}`}
+                        className={`${styles.playerCard} ${isMe ? styles.isMe : ''} ${slotFocused ? styles.focused : ''}`}
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                       >
@@ -557,11 +580,11 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
                           {player.name}
                         </div>
                         <div className={styles.playerMeta}>
-                          {isHost && <span className={styles.hostBadge}>{t('online.host')}</span>}
+                          {isPlayerHost && <span className={styles.hostBadge}>{t('online.host')}</span>}
                           {isMe && <span className={styles.meBadge}>{t('common.you')}</span>}
                           {latency && <span className={styles.latencyBadge}>{latency}</span>}
                         </div>
-                        {!isHost && (
+                        {!isPlayerHost && isHost && (
                           <button 
                             className={styles.kickButton}
                             onClick={() => handleKickPlayer(player.id)}
@@ -573,7 +596,10 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
                     );
                   } else {
                     return (
-                      <div key={slotNumber} className={styles.playerCardEmpty}>
+                      <div 
+                        key={slotNumber} 
+                        className={`${styles.playerCardEmpty} ${slotFocused ? styles.focused : ''}`}
+                      >
                         <div className={styles.emptySlot}>?</div>
                       </div>
                     );
@@ -582,7 +608,6 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
               </div>
             </div>
             
-            {/* 等待提示 */}
             {players.length < 2 && (
               <div className={styles.waiting}>
                 <span className={styles.waitingDots}>⏳</span>
@@ -590,9 +615,10 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
               </div>
             )}
             
-            {/* 开始按钮 */}
+            {error && <div className={styles.error}>{error}</div>}
+            
             <motion.button
-              className="btn btn-primary btn-large btn-full"
+              className={`btn btn-primary btn-large btn-full ${isFocused('start') ? styles.focused : ''}`}
               onClick={handleStartGame}
               disabled={players.length < 2}
               whileHover={{ scale: 1.02 }}
@@ -605,26 +631,25 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
         
         {mode === 'join' && (
           <div className={styles.card}>
-            {/* 已加入提示 */}
             <div className={styles.joinedInfo}>
               <span>✅ {t('online.joinedRoom', { roomId })}</span>
             </div>
             
-            {/* 玩家列表 */}
             <div className={styles.section}>
               <label className={styles.label}>{t('setup.players')}</label>
               <div className={styles.playerGrid}>
-                {/* 8个固定槽位 */}
                 {[1, 2, 3, 4, 5, 6, 7, 8].map((slotNumber) => {
                   const player = players.find(p => p.name === `P${slotNumber}`);
+                  const slotFocused = isFocused(`slot-${slotNumber}`);
+                  
                   if (player) {
                     const latency = getPlayerLatency(player, players.indexOf(player));
                     const isMe = player.id === peerService.getMyPeerId();
-                    const isHost = player.name === 'P1';
+                    const isPlayerHost = player.name === 'P1';
                     return (
                       <motion.div
                         key={slotNumber}
-                        className={`${styles.playerCard} ${isMe ? styles.isMe : ''}`}
+                        className={`${styles.playerCard} ${isMe ? styles.isMe : ''} ${slotFocused ? styles.focused : ''}`}
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                       >
@@ -632,7 +657,7 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
                           {player.name}
                         </div>
                         <div className={styles.playerMeta}>
-                          {isHost && <span className={styles.hostBadge}>{t('online.host')}</span>}
+                          {isPlayerHost && <span className={styles.hostBadge}>{t('online.host')}</span>}
                           {isMe && <span className={styles.meBadge}>{t('common.you')}</span>}
                           {latency && <span className={styles.latencyBadge}>{latency}</span>}
                         </div>
@@ -640,7 +665,10 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
                     );
                   } else {
                     return (
-                      <div key={slotNumber} className={styles.playerCardEmpty}>
+                      <div 
+                        key={slotNumber} 
+                        className={`${styles.playerCardEmpty} ${slotFocused ? styles.focused : ''}`}
+                      >
                         <div className={styles.emptySlot}>?</div>
                       </div>
                     );
@@ -649,7 +677,8 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
               </div>
             </div>
             
-            {/* 等待房主开始 */}
+            {error && <div className={styles.error}>{error}</div>}
+            
             <div className={styles.waiting}>
               <span className={styles.waitingDots}>⏳</span>
               {t('online.waitingForHost')}

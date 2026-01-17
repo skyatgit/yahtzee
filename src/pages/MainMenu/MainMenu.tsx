@@ -2,8 +2,10 @@
  * 主菜单
  */
 
+import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
+import { useListFocus, useGamepadConnection } from '../../hooks';
 import styles from './MainMenu.module.css';
 
 interface MainMenuProps {
@@ -14,6 +16,24 @@ interface MainMenuProps {
 
 export function MainMenu({ onLocalGame, onOnlineGame, onSettings }: MainMenuProps) {
   const { t } = useTranslation();
+  const { hasGamepad } = useGamepadConnection();
+  
+  // 菜单项目列表
+  const menuItems = useMemo(() => [
+    { id: 'local', label: t('menu.localGame'), icon: '🎮', action: onLocalGame },
+    { id: 'online', label: t('menu.onlineGame'), icon: '🌐', action: onOnlineGame },
+    { id: 'settings', label: t('menu.settings'), icon: '⚙️', action: onSettings },
+  ], [t, onLocalGame, onOnlineGame, onSettings]);
+  
+  // 手柄导航焦点
+  const { isFocused } = useListFocus({
+    items: menuItems.map(item => item.id),
+    onSelect: (itemId) => {
+      const item = menuItems.find(m => m.id === itemId);
+      item?.action();
+    },
+    enabled: hasGamepad,
+  });
   
   return (
     <div className={styles.container}>
@@ -36,35 +56,18 @@ export function MainMenu({ onLocalGame, onOnlineGame, onSettings }: MainMenuProp
         </div>
         
         <div className={styles.menuButtons}>
-          <motion.button
-            className={styles.menuButton}
-            onClick={onLocalGame}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <span className={styles.buttonIcon}>🎮</span>
-            <span>{t('menu.localGame')}</span>
-          </motion.button>
-          
-          <motion.button
-            className={styles.menuButton}
-            onClick={onOnlineGame}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <span className={styles.buttonIcon}>🌐</span>
-            <span>{t('menu.onlineGame')}</span>
-          </motion.button>
-          
-          <motion.button
-            className={styles.menuButton}
-            onClick={onSettings}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <span className={styles.buttonIcon}>⚙️</span>
-            <span>{t('menu.settings')}</span>
-          </motion.button>
+          {menuItems.map((item, index) => (
+            <motion.button
+              key={item.id}
+              className={`${styles.menuButton} ${isFocused(index) ? styles.focused : ''}`}
+              onClick={item.action}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <span className={styles.buttonIcon}>{item.icon}</span>
+              <span>{item.label}</span>
+            </motion.button>
+          ))}
         </div>
         
         <div className={styles.footer}>

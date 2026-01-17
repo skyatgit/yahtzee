@@ -13,6 +13,11 @@
   transform: translateY(-2px);
 }
 
+/* 手柄模式下禁用 hover 效果 */
+:global(html[data-input-mode="gamepad"]) .diceWrapper:hover:not(.disabled) {
+  transform: none;
+}
+
 .diceWrapper:active:not(.disabled) {
   transform: translateY(-1px);
 }
@@ -25,6 +30,18 @@
   background: rgba(212, 168, 80, 0.2);
   border-color: var(--accent);
   box-shadow: 0 0 8px rgba(212, 168, 80, 0.3);
+}
+
+/* 手柄焦点样式 - 与 hover 效果相同，加选中框，优先级高于 hover 禁用 */
+:global(html[data-input-mode="gamepad"]) .diceWrapper.focused .dice,
+:global(html[data-input-mode="gamepad"]) .diceWrapper.focused:hover .dice {
+  outline: 3px solid var(--primary);
+  outline-offset: 3px;
+}
+
+:global(html[data-input-mode="gamepad"]) .diceWrapper.focused:not(.disabled),
+:global(html[data-input-mode="gamepad"]) .diceWrapper.focused:hover:not(.disabled) {
+  transform: translateY(-2px);
 }
 
 /* 骰子大小：根据视口自动缩放 */

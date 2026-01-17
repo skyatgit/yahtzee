@@ -20,6 +20,7 @@
     "human": "玩家",
     "ai": "電腦",
     "addPlayer": "添加",
+    "removePlayer": "移除",
     "aiDifficulty": "電腦難度",
     "easy": "簡單",
     "medium": "普通",
@@ -152,5 +153,21 @@
     "or": "或",
     "points": "分",
     "you": "你"
+  },
+  "gamepad": {
+    "connected": "手把已連接",
+    "disconnected": "手把已斷開",
+    "navigate": "導航",
+    "confirm": "確認",
+    "back": "返回",
+    "select": "選擇",
+    "start": "開始",
+    "roll": "擲骰子",
+    "toggleHold": "鎖定/解鎖",
+    "prevArea": "上一區域",
+    "nextArea": "下一區域",
+    "vibration": "手把震動",
+    "vibrationOn": "開啟",
+    "vibrationOff": "關閉"
   }
 }

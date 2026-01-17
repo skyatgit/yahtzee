@@ -266,11 +266,26 @@
   background: rgba(90, 154, 106, 0.35);
 }
 
+/* 手柄模式下禁用 hover 效果 */
+:global(html[data-input-mode="gamepad"]) .scoreCell.available:hover {
+  background: rgba(90, 154, 106, 0.2);
+}
+
 /* 滑动选择时的高亮效果 */
 .scoreCell.hovered {
-  background: rgba(90, 154, 106, 0.5) !important;
-  transform: scale(1.05);
-  box-shadow: 0 0 8px rgba(90, 154, 106, 0.6);
+  background: rgba(90, 154, 106, 0.35) !important;
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
+  z-index: 10;
+  position: relative;
+}
+
+/* 手柄焦点样式 - 与 hover 效果相同，加选中框，优先级高于 hover 禁用 */
+:global(html[data-input-mode="gamepad"]) .scoreCell.gamepadFocused,
+:global(html[data-input-mode="gamepad"]) .scoreCell.gamepadFocused:hover {
+  background: rgba(90, 154, 106, 0.35) !important;
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
   z-index: 10;
   position: relative;
 }

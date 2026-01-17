@@ -53,6 +53,11 @@
   background: var(--primary-hover);
 }
 
+/* 手柄模式下禁用 hover 效果 */
+:global(html[data-input-mode="gamepad"]) .rollButton:hover:not(.disabled) {
+  background: var(--primary);
+}
+
 .rollButton:active:not(.disabled) {
   opacity: 0.9;
 }
@@ -61,6 +66,13 @@
   background: var(--bg-muted);
   color: var(--text-muted);
   cursor: not-allowed;
+}
+
+/* 手柄焦点样式 - 与 hover 效果相同，加选中框，优先级高于 hover 禁用 */
+:global(html[data-input-mode="gamepad"]) .rollButton.focused,
+:global(html[data-input-mode="gamepad"]) .rollButton.focused:hover {
+  box-shadow: 0 0 0 3px var(--accent);
+  background: var(--primary-hover);
 }
 
 .rollIcon {

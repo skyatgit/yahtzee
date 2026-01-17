@@ -1,0 +1,74 @@
+/**
+ * 焦点指示器样式
+ */
+
+.wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.wrapper:focus {
+  outline: none;
+}
+
+.disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* 轮廓样式 - 手柄模式专用 */
+:global(html[data-input-mode="gamepad"]) .outline.focused,
+:global(html[data-input-mode="gamepad"]) .outline.focused:hover {
+  outline: 3px solid var(--primary);
+  outline-offset: 3px;
+  border-radius: 8px;
+}
+
+/* 发光样式 */
+.glow {
+  border-radius: 8px;
+}
+
+:global(html[data-input-mode="gamepad"]) .glow.focused,
+:global(html[data-input-mode="gamepad"]) .glow.focused:hover {
+  box-shadow: 0 0 0 3px var(--primary), 0 0 20px rgba(var(--primary-rgb, 90, 154, 106), 0.4);
+}
+
+.glowEffect {
+  position: absolute;
+  inset: -4px;
+  border-radius: inherit;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(var(--primary-rgb, 90, 154, 106), 0.15) 0%,
+    transparent 70%
+  );
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* 缩放样式 - 手柄模式专用 */
+:global(html[data-input-mode="gamepad"]) .scale.focused,
+:global(html[data-input-mode="gamepad"]) .scale.focused:hover {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+/* 动画 */
+@keyframes focusPulse {
+  0%, 100% {
+    outline-color: var(--primary);
+  }
+  50% {
+    outline-color: var(--primary-hover, var(--primary));
+  }
+}
+
+:global(html[data-input-mode="gamepad"]) .focused {
+  animation: focusPulse 2s ease-in-out infinite;
+}

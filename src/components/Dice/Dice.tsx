@@ -1,6 +1,7 @@
 /**
  * 骰子组件
  * 显示单个骰子，支持滚动动画和锁定状态
+ * 支持手柄焦点显示
  */
 
 import { useState, useEffect, useRef, useMemo } from 'react';
@@ -13,6 +14,7 @@ interface DiceProps {
   isRolling: boolean;
   onClick: () => void;
   disabled: boolean;
+  focused?: boolean; // 手柄焦点状态
 }
 
 // 骰子点数布局
@@ -28,19 +30,19 @@ const dotPatterns: Record<number, number[][]> = {
 // 生成随机点数
 const randomValue = (): DiceValue => (Math.floor(Math.random() * 6) + 1) as DiceValue;
 
-export function Dice({ dice, isRolling, onClick, disabled }: DiceProps) {
+export function Dice({ dice, isRolling, onClick, disabled, focused = false }: DiceProps) {
   // 动画显示的点数（仅在滚动时随机变化）
   const [animationValue, setAnimationValue] = useState<DiceValue>(dice.value);
   const intervalRef = useRef<number | null>(null);
-  
+
   // 判断是否处于滚动状态（未锁定且正在滚动）
   const isActuallyRolling = isRolling && !dice.isHeld;
-  
+
   // 计算实际显示的值：滚动时显示动画值，否则显示实际值
   const displayValue = useMemo(() => {
     return isActuallyRolling ? animationValue : dice.value;
   }, [isActuallyRolling, animationValue, dice.value]);
-  
+
   // 处理滚动动画
   useEffect(() => {
     if (isActuallyRolling) {
@@ -48,7 +50,7 @@ export function Dice({ dice, isRolling, onClick, disabled }: DiceProps) {
       intervalRef.current = window.setInterval(() => {
         setAnimationValue(randomValue());
       }, 80); // 每80ms换一次点数
-      
+
       return () => {
         if (intervalRef.current) {
           clearInterval(intervalRef.current);
@@ -63,9 +65,9 @@ export function Dice({ dice, isRolling, onClick, disabled }: DiceProps) {
       }
     }
   }, [isActuallyRolling]);
-  
+
   const dots = dotPatterns[displayValue] || [];
-  
+
   // 滚动动画
   const rollVariants = {
     rolling: {
@@ -86,10 +88,15 @@ export function Dice({ dice, isRolling, onClick, disabled }: DiceProps) {
       }
     }
   };
-  
+
   return (
     <motion.div
-      className={`${styles.diceWrapper} ${dice.isHeld ? styles.held : ''} ${disabled ? styles.disabled : ''}`}
+      className={`
+        ${styles.diceWrapper} 
+        ${dice.isHeld ? styles.held : ''} 
+        ${disabled ? styles.disabled : ''}
+        ${focused ? styles.focused : ''}
+      `}
       onClick={() => !disabled && onClick()}
       whileHover={!disabled ? { y: -4 } : {}}
       whileTap={!disabled ? { scale: 0.95 } : {}}

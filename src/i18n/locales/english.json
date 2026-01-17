@@ -20,6 +20,7 @@
     "human": "Human",
     "ai": "Computer",
     "addPlayer": "Add",
+    "removePlayer": "Remove",
     "aiDifficulty": "AI Difficulty",
     "easy": "Easy",
     "medium": "Normal",
@@ -152,5 +153,21 @@
     "or": "or",
     "points": "pts",
     "you": "You"
+  },
+  "gamepad": {
+    "connected": "Controller connected",
+    "disconnected": "Controller disconnected",
+    "navigate": "Navigate",
+    "confirm": "Confirm",
+    "back": "Back",
+    "select": "Select",
+    "start": "Start",
+    "roll": "Roll",
+    "toggleHold": "Hold/Release",
+    "prevArea": "Prev Area",
+    "nextArea": "Next Area",
+    "vibration": "Controller Vibration",
+    "vibrationOn": "On",
+    "vibrationOff": "Off"
   }
 }

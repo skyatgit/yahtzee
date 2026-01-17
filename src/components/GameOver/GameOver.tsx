@@ -1,12 +1,15 @@
 /**
  * 游戏结束组件
  * 显示游戏结果和排名
+ * 支持手柄导航
  */
 
+import { useMemo, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useGameStore } from '../../store/gameStore';
 import { calculateTotalScore } from '../../utils/scoring';
+import { useLayoutNavigation, useGamepadConnection } from '../../hooks';
 import styles from './GameOver.module.css';
 
 interface GameOverProps {
@@ -17,6 +20,7 @@ interface GameOverProps {
 export function GameOver({ onPlayAgain, onBackToMenu }: GameOverProps) {
   const { t } = useTranslation();
   const { players } = useGameStore();
+  const { hasGamepad } = useGamepadConnection();
   
   // 计算排名
   const rankings = players
@@ -29,6 +33,28 @@ export function GameOver({ onPlayAgain, onBackToMenu }: GameOverProps) {
   
   const winner = rankings[0];
   const isTie = rankings.length > 1 && rankings[0].totalScore === rankings[1].totalScore;
+  
+  // 处理选择
+  const handleSelect = useCallback((itemId: string) => {
+    if (itemId === 'playAgain') {
+      onPlayAgain();
+    } else if (itemId === 'backToMenu') {
+      onBackToMenu();
+    }
+  }, [onPlayAgain, onBackToMenu]);
+  
+  // 布局：两个按钮水平排列
+  const rows = useMemo(() => [
+    ['playAgain', 'backToMenu'],
+  ], []);
+  
+  // 使用布局导航
+  const { isFocused } = useLayoutNavigation({
+    rows,
+    onSelect: handleSelect,
+    enabled: hasGamepad,
+    horizontalLoop: true,
+  });
   
   return (
     <motion.div
@@ -88,7 +114,7 @@ export function GameOver({ onPlayAgain, onBackToMenu }: GameOverProps) {
         
         <div className={styles.actions}>
           <motion.button
-            className="btn btn-primary btn-large"
+            className={`btn btn-primary btn-large ${isFocused('playAgain') ? styles.focused : ''}`}
             onClick={onPlayAgain}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -96,7 +122,7 @@ export function GameOver({ onPlayAgain, onBackToMenu }: GameOverProps) {
             {t('game.playAgain')}
           </motion.button>
           <motion.button
-            className="btn btn-secondary btn-large"
+            className={`btn btn-secondary btn-large ${isFocused('backToMenu') ? styles.focused : ''}`}
             onClick={onBackToMenu}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}

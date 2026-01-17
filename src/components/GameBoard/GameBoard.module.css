@@ -192,6 +192,19 @@
   background: var(--primary-hover);
 }
 
+/* 手柄模式下禁用 hover 效果 */
+:global(html[data-input-mode="gamepad"]) .alertButton:hover {
+  background: var(--primary);
+}
+
+/* 手柄焦点样式 */
+:global(html[data-input-mode="gamepad"]) .alertButton.focused,
+:global(html[data-input-mode="gamepad"]) .alertButton.focused:hover {
+  background: var(--primary-hover);
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
 .alertButton:active {
   transform: scale(0.98);
 }

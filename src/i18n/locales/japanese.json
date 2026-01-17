@@ -20,6 +20,7 @@
     "human": "プレイヤー",
     "ai": "コンピュータ",
     "addPlayer": "追加",
+    "removePlayer": "削除",
     "aiDifficulty": "AI難易度",
     "easy": "簡単",
     "medium": "普通",
@@ -152,5 +153,21 @@
     "or": "または",
     "points": "点",
     "you": "あなた"
+  },
+  "gamepad": {
+    "connected": "コントローラー接続済み",
+    "disconnected": "コントローラー切断",
+    "navigate": "移動",
+    "confirm": "決定",
+    "back": "戻る",
+    "select": "選択",
+    "start": "開始",
+    "roll": "振る",
+    "toggleHold": "保持切替",
+    "prevArea": "前エリア",
+    "nextArea": "次エリア",
+    "vibration": "振動",
+    "vibrationOn": "オン",
+    "vibrationOff": "オフ"
   }
 }

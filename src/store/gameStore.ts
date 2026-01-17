@@ -235,7 +235,7 @@ export const useGameStore = create<GameStore>()(
       }
       
       // 计算得分
-      const score = calculateScore(category, state.dice, currentPlayer.scoreCard);
+      const score = calculateScore(category, state.dice);
       
       // 更新记分卡
       const updatedPlayers = state.players.map((player, index) => {
@@ -422,7 +422,7 @@ export const useGameStore = create<GameStore>()(
         
       } else if (decision.action === 'score' && decision.category) {
         // 记分延迟
-        const score = calculateScore(decision.category, currentState.dice, player.scoreCard);
+        const score = calculateScore(decision.category, currentState.dice);
         let scoreDelay = score === 0 ? 500 : (score >= 25 ? 200 : 300);
         scoreDelay += Math.random() * 200;
         

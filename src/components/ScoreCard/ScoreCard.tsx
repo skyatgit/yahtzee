@@ -8,13 +8,15 @@
  * - 移动端支持全屏滑动选择记分项
  * - 滑动到第一列（类别名）区域可取消选择
  * - 点击只在自己列有效，其他位置视为误触
+ * - 支持手柄导航选择记分项（通过 GameFocusProvider）
  */
 
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo, useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ScoreCard as ScoreCardType, ScoreCategory, Player } from '../../types/game';
 import { useGameStore } from '../../store/gameStore';
 import { peerService, type ConnectionStatus } from '../../services/peerService';
+import { GameFocusContext } from '../../hooks/GameFocusContext';
 import {
   calculateScore,
   calculateUpperTotal,
@@ -44,7 +46,12 @@ const ALL_SCORE_CATEGORIES: ScoreCategory[] = [
 // 玩家颜色配置
 const PLAYER_COLORS = ['#5a9a6a', '#d4a850', '#6a8cca', '#ca6a8c'];
 
-export function ScoreBoard() {
+interface ScoreBoardProps {
+  /** 可选的计分项列表（由 GameBoard 传入） */
+  availableCategories?: ScoreCategory[];
+}
+
+export function ScoreBoard({ availableCategories: propAvailableCategories }: ScoreBoardProps) {
   const { t } = useTranslation();
   const { 
     dice, 
@@ -67,13 +74,16 @@ export function ScoreBoard() {
   // 滑动选择状态
   const [isDragging, setIsDragging] = useState(false);
   const [hoveredCategory, setHoveredCategory] = useState<ScoreCategory | null>(null);
-  const [isInCancelZone, setIsInCancelZone] = useState(false); // 是否在取消区域（无效区域）
+  const [isInCancelZone, setIsInCancelZone] = useState(false);
   const lastVibrationCategory = useRef<ScoreCategory | null>(null);
   const lastWasInCancelZone = useRef(false);
   const cellRefs = useRef<Map<ScoreCategory, HTMLTableCellElement>>(new Map());
   const boardRef = useRef<HTMLDivElement>(null);
   const touchStarted = useRef(false);
-  const hasMoved = useRef(false); // 是否发生了滑动
+  const hasMoved = useRef(false);
+  
+  // 获取游戏焦点状态（可能为 null）
+  const gameFocus = useContext(GameFocusContext);
   
   // 震动反馈
   const vibrate = useCallback(() => {
@@ -85,19 +95,16 @@ export function ScoreBoard() {
   // 获取本地玩家索引
   const getLocalPlayerIndex = useCallback((): number => {
     if (mode === 'local') {
-      // 本地模式：找到第一个人类玩家
       return players.findIndex(p => p.type === 'human');
     }
-    // 联机模式：找到自己
     return players.findIndex(p => p.id === localPlayerId);
   }, [mode, players, localPlayerId]);
   
   // 重新排列玩家顺序，把本地玩家放在第一位
   const sortedPlayers = useMemo(() => {
     const localIndex = getLocalPlayerIndex();
-    if (localIndex <= 0) return players; // 已经在第一位或找不到
+    if (localIndex <= 0) return players;
     
-    // 本地玩家放第一位，其他玩家保持原顺序
     const result: Player[] = [];
     result.push(players[localIndex]);
     for (let i = 0; i < players.length; i++) {
@@ -108,15 +115,23 @@ export function ScoreBoard() {
     return result;
   }, [players, getLocalPlayerIndex]);
   
-  // 获取玩家在原始数组中的索引（用于判断是否是当前回合玩家）
+  // 获取玩家在原始数组中的索引
   const getOriginalIndex = useCallback((player: Player): number => {
     return players.findIndex(p => p.id === player.id);
   }, [players]);
   
-  // 获取排序后的玩家在显示中的索引（用于判断是否是第一列）
+  // 获取排序后的玩家在显示中的索引
   const getSortedIndex = useCallback((player: Player): number => {
     return sortedPlayers.findIndex(p => p.id === player.id);
   }, [sortedPlayers]);
+  
+  // 计算可选的计分项（如果没有通过 props 传入）
+  const availableCategories = useMemo(() => {
+    if (propAvailableCategories) return propAvailableCategories;
+    const currentPlayer = players[currentPlayerIndex];
+    if (!currentPlayer) return [];
+    return ALL_SCORE_CATEGORIES.filter(cat => currentPlayer.scoreCard[cat] === null);
+  }, [propAvailableCategories, players, currentPlayerIndex]);
   
   // 监听延迟更新（仅联机模式）
   useEffect(() => {
@@ -146,14 +161,12 @@ export function ScoreBoard() {
   
   const isMyTurn = isLocalPlayerTurn();
   const canSelect = rollsLeft < 3 && phase === 'rolling' && isMyTurn;
-  
-  // 是否可以显示预览分数（当前玩家已摇骰子）
   const canShowPreview = rollsLeft < 3 && phase === 'rolling';
 
   // 计算预览分数
   const getPreviewScore = (category: ScoreCategory, scoreCard: ScoreCardType): number | null => {
     if (!canShowPreview || scoreCard[category] !== null) return null;
-    return calculateScore(category, dice, scoreCard);
+    return calculateScore(category, dice);
   };
   
   // 处理点击记分项
@@ -163,7 +176,6 @@ export function ScoreBoard() {
     const originalIndex = getOriginalIndex(player);
     if (originalIndex !== currentPlayerIndex) return;
     
-    // 只有点击自己的列才有效（第一列）
     const sortedIndex = getSortedIndex(player);
     if (sortedIndex !== 0) return;
     
@@ -172,14 +184,12 @@ export function ScoreBoard() {
     selectScore(category);
   };
   
-  // 根据触摸位置获取对应的记分项，如果在无效区域则返回 null
+  // 根据触摸位置获取对应的记分项
   const getCategoryFromPoint = useCallback((clientY: number): ScoreCategory | null => {
     const currentPlayer = players[currentPlayerIndex];
     if (!currentPlayer) return null;
     
-    // 遍历所有可选的记分项，检查触摸位置是否在某个可选格子内
     for (const category of ALL_SCORE_CATEGORIES) {
-      // 跳过已填写的
       if (currentPlayer.scoreCard[category] !== null) continue;
       
       const cell = cellRefs.current.get(category);
@@ -190,7 +200,6 @@ export function ScoreBoard() {
         }
       }
     }
-    // 不在任何可选格子内，返回 null（表示在取消区域）
     return null;
   }, [players, currentPlayerIndex]);
   
@@ -208,12 +217,10 @@ export function ScoreBoard() {
     const category = getCategoryFromPoint(touch.clientY);
     
     if (category) {
-      // 在有效的可选格子上
       setHoveredCategory(category);
       lastVibrationCategory.current = category;
       vibrate();
     } else {
-      // 在无效区域（取消区域）
       setIsInCancelZone(true);
       setHoveredCategory(null);
       lastWasInCancelZone.current = true;
@@ -230,9 +237,7 @@ export function ScoreBoard() {
     const category = getCategoryFromPoint(touch.clientY);
     
     if (category) {
-      // 在有效的可选格子上
       if (lastWasInCancelZone.current) {
-        // 从取消区域回到有效区域
         lastWasInCancelZone.current = false;
         setIsInCancelZone(false);
       }
@@ -245,9 +250,7 @@ export function ScoreBoard() {
         }
       }
     } else {
-      // 在无效区域（取消区域）
       if (!lastWasInCancelZone.current) {
-        // 刚进入取消区域，震动提示
         vibrate();
         lastWasInCancelZone.current = true;
       }
@@ -261,7 +264,6 @@ export function ScoreBoard() {
     if (!touchStarted.current) return;
     touchStarted.current = false;
     
-    // 如果没有滑动过，让 click 事件处理
     if (!hasMoved.current) {
       setIsDragging(false);
       setHoveredCategory(null);
@@ -269,7 +271,6 @@ export function ScoreBoard() {
       return;
     }
     
-    // 如果在取消区域，不选择任何记分项
     if (isInCancelZone) {
       setIsDragging(false);
       setHoveredCategory(null);
@@ -279,7 +280,6 @@ export function ScoreBoard() {
       return;
     }
     
-    // 滑动选择确认
     if (hoveredCategory && canSelect) {
       const currentPlayer = players[currentPlayerIndex];
       if (currentPlayer && currentPlayer.scoreCard[hoveredCategory] === null) {
@@ -323,7 +323,6 @@ export function ScoreBoard() {
   // 检查玩家是否正在重连
   const isPlayerReconnecting = (player: Player): boolean => {
     if (mode !== 'online') return false;
-    // 不显示自己的状态
     if (player.id === localPlayerId) return false;
     
     const status = connectionStatuses.get(player.id);
@@ -335,25 +334,19 @@ export function ScoreBoard() {
     if (mode !== 'online') return null;
     
     const myPeerId = peerService.getMyPeerId();
-    
-    // 不显示自己的延迟
     if (player.id === myPeerId) return null;
     
-    // 房主视角：显示每个客户端到房主的延迟
     if (isHost) {
-      if (index === 0) return null; // 房主自己
+      if (index === 0) return null;
       const latency = latencies.get(player.id);
       return latency !== undefined ? `${latency}ms` : null;
     }
     
-    // 客户端视角
     if (index === 0 && roomId) {
-      // 房主位置：显示自己到房主的延迟
       const hostPeerId = `yahtzee-${roomId}`;
       const latency = latencies.get(hostPeerId);
       return latency !== undefined ? `${latency}ms` : null;
     } else {
-      // 其他客户端位置：显示他们到房主的延迟
       const latency = latencies.get(player.id);
       return latency !== undefined ? `${latency}ms` : null;
     }
@@ -365,11 +358,18 @@ export function ScoreBoard() {
     const score = player.scoreCard[category];
     const isCurrentPlayer = originalIndex === currentPlayerIndex;
     const isLocal = isLocalPlayer(player);
-    // 只显示当前玩家的预览分数
     const previewScore = isCurrentPlayer ? getPreviewScore(category, player.scoreCard) : null;
     const isAvailable = canSelect && isCurrentPlayer && score === null;
     const isZero = score === 0;
     const isHovered = isDragging && hoveredCategory === category && isCurrentPlayer;
+    
+    // 手柄焦点：通过 availableCategories 索引判断
+    const categoryIndex = availableCategories.indexOf(category);
+    const isGamepadFocused = gameFocus?.enabled && 
+                             gameFocus.currentArea === 'scorecard' && 
+                             isCurrentPlayer && 
+                             categoryIndex !== -1 && 
+                             gameFocus.scoreFocusIndex === categoryIndex;
     
     return (
       <td
@@ -383,6 +383,7 @@ export function ScoreBoard() {
           ${score !== null ? styles.filled : ''}
           ${isZero ? styles.zero : ''}
           ${isHovered ? styles.hovered : ''}
+          ${isGamepadFocused ? styles.gamepadFocused : ''}
         `}
         onClick={() => handleScoreClick(category, player)}
       >
@@ -407,7 +408,6 @@ export function ScoreBoard() {
       onTouchCancel={handleBoardTouchCancel}
     >
       <table className={styles.table}>
-        {/* 定义列宽：第一列自适应，玩家列均分剩余空间 */}
         <colgroup>
           <col className={styles.categoryCol} />
           {sortedPlayers.map(player => (
@@ -415,7 +415,6 @@ export function ScoreBoard() {
           ))}
         </colgroup>
         <thead>
-          {/* 第一行：回合 + 玩家名（玩家名rowspan=2） */}
           <tr>
             <th className={styles.roundCell}>
               <div className={styles.roundInfo}>
@@ -425,7 +424,6 @@ export function ScoreBoard() {
             </th>
             {sortedPlayers.map((player) => {
               const originalIndex = getOriginalIndex(player);
-              // 从玩家名提取编号，用于颜色
               const playerNumber = parseInt(player.name.replace('P', '')) || (originalIndex + 1);
               const isReconnecting = isPlayerReconnecting(player);
               return (
@@ -459,14 +457,11 @@ export function ScoreBoard() {
               );
             })}
           </tr>
-          {/* 第二行：排列组合名（第一列），玩家列被rowspan占用 */}
           <tr className={styles.sectionRow}>
             <th className={styles.sectionHeader}>{t('score.upperSection')}</th>
           </tr>
         </thead>
         <tbody>
-          
-          {/* 上半区分数（1~6点） */}
           {upperCategories.map(category => (
             <tr key={category} className={styles.scoreRow}>
               <td className={styles.categoryName}>{t(`score.${category}`)}</td>
@@ -474,7 +469,6 @@ export function ScoreBoard() {
             </tr>
           ))}
           
-          {/* 上半区小计 */}
           <tr className={styles.subtotalRow}>
             <td>{t('score.upperTotal')}</td>
             {sortedPlayers.map(player => {
@@ -487,7 +481,6 @@ export function ScoreBoard() {
             })}
           </tr>
           
-          {/* 上半区奖励分 */}
           <tr className={styles.bonusRow}>
             <td>{t('score.upperBonus')}</td>
             {sortedPlayers.map(player => {
@@ -502,18 +495,15 @@ export function ScoreBoard() {
             })}
           </tr>
           
-          {/* 奖励分提示 */}
           <tr className={styles.hintRow}>
             <td colSpan={sortedPlayers.length + 1}>{t('score.bonusHint')}</td>
           </tr>
           
-          {/* 全选（单独一行） */}
           <tr className={styles.scoreRow}>
             <td className={styles.categoryName}>{t('score.chance')}</td>
             {sortedPlayers.map((player) => renderScoreCell('chance', player))}
           </tr>
           
-          {/* 下半区其他项目 */}
           {lowerCategoriesWithoutChance.map(category => (
             <tr key={category} className={styles.scoreRow}>
               <td className={styles.categoryName}>{t(`score.${category}`)}</td>
@@ -521,7 +511,6 @@ export function ScoreBoard() {
             </tr>
           ))}
           
-          {/* 总分 */}
           <tr className={styles.totalRow}>
             <td>{t('score.grandTotal')}</td>
             {sortedPlayers.map(player => (

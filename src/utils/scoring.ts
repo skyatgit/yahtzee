@@ -103,9 +103,7 @@ export function isYahtzee(values: DiceValue[]): boolean {
  */
 export function calculateScore(
   category: ScoreCategory,
-  dice: Dice[],
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  _scoreCard?: ScoreCard
+  dice: Dice[]
 ): number {
   const values = getDiceValues(dice);
   
