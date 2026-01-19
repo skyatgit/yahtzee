@@ -55,6 +55,31 @@ const createPlayer = (
   isConnected: true
 });
 
+// 游戏结束回调类型
+type GameOverCallback = (finalPlayers: Player[]) => void;
+
+// 游戏结束回调存储
+let gameOverCallback: GameOverCallback | null = null;
+
+/**
+ * 注册游戏结束回调
+ */
+export function onGameOver(callback: GameOverCallback) {
+  gameOverCallback = callback;
+  return () => {
+    gameOverCallback = null;
+  };
+}
+
+/**
+ * 触发游戏结束事件
+ */
+function triggerGameOver(finalPlayers: Player[]) {
+  if (gameOverCallback) {
+    gameOverCallback(finalPlayers);
+  }
+}
+
 interface GameStore extends GameState {
   localPlayerId: string | null;
   
@@ -75,6 +100,8 @@ interface GameStore extends GameState {
   isLocalPlayerTurn: () => boolean;
   setIsRolling: (isRolling: boolean) => void;
   processAITurn: () => void;
+  /** 重置房间到等待状态（房主用，游戏结束后） */
+  resetRoomToWaiting: () => void;
 }
 
 export const useGameStore = create<GameStore>()(
@@ -146,7 +173,7 @@ export const useGameStore = create<GameStore>()(
     
     startGame: () => {
       set({
-        phase: 'rolling',
+        phase: 'playing',
         currentPlayerIndex: 0,
         currentRound: 1,
         rollsLeft: 3,
@@ -161,7 +188,7 @@ export const useGameStore = create<GameStore>()(
     
     rollDice: () => {
       const state = get();
-      if (state.rollsLeft <= 0 || state.isRolling || state.phase !== 'rolling') return;
+      if (state.rollsLeft <= 0 || state.isRolling || state.phase !== 'playing') return;
       if (!get().isLocalPlayerTurn()) return;
       
       // 生成新骰子结果（但先不应用）
@@ -266,8 +293,31 @@ export const useGameStore = create<GameStore>()(
       const isRoundComplete = nextPlayerIndex === 0;
       const newRound = isRoundComplete ? state.currentRound + 1 : state.currentRound;
       
+      // 游戏结束
       if (newRound > TOTAL_ROUNDS) {
-        set({ phase: 'finished' });
+        // 保存最终玩家数据用于结算显示
+        const finalPlayers = [...state.players];
+        
+        if (state.mode === 'online' && state.isHost) {
+          // 房主：广播游戏结束消息，然后重置房间状态
+          peerService.broadcast('game-over', { finalPlayers });
+          
+          // 重置房间到等待状态，只保留房主自己
+          get().resetRoomToWaiting();
+        } else if (state.mode === 'local') {
+          // 本地模式：重置到等待状态
+          set({
+            phase: 'waiting',
+            currentPlayerIndex: 0,
+            dice: createInitialDice(),
+            rollsLeft: 3,
+            currentRound: 1,
+          });
+        }
+        // 联机客户端：状态由 OnlineSync 处理
+        
+        // 触发游戏结束事件（用于显示结算弹窗）
+        triggerGameOver(finalPlayers);
         return;
       }
       
@@ -276,7 +326,7 @@ export const useGameStore = create<GameStore>()(
         currentRound: newRound,
         dice: createInitialDice(),
         rollsLeft: 3,
-        phase: 'rolling'
+        phase: 'playing'
       });
       
       // AI回合
@@ -300,6 +350,32 @@ export const useGameStore = create<GameStore>()(
         roomId: null,
         isHost: false,
         localPlayerId: null
+      });
+    },
+    
+    /** 重置房间到等待状态（房主用，游戏结束后） */
+    resetRoomToWaiting: () => {
+      const state = get();
+      if (!state.isHost) return;
+      
+      // 找到房主玩家（P1）
+      const hostPlayer = state.players.find(p => p.name === 'P1');
+      if (!hostPlayer) return;
+      
+      // 重置房主玩家的记分卡
+      const resetHostPlayer: Player = {
+        ...hostPlayer,
+        scoreCard: createEmptyScoreCard(),
+        lastScoreCategory: undefined
+      };
+      
+      set({
+        phase: 'waiting',
+        players: [resetHostPlayer],
+        currentPlayerIndex: 0,
+        dice: createInitialDice(),
+        rollsLeft: 3,
+        currentRound: 1,
       });
     },
     
@@ -357,7 +433,7 @@ export const useGameStore = create<GameStore>()(
       const currentPlayer = state.players[state.currentPlayerIndex];
       
       if (!currentPlayer || currentPlayer.type !== 'ai') return;
-      if (state.phase === 'finished' || state.mode === 'online') return;
+      if (state.phase !== 'playing' || state.mode === 'online') return;
       if (state.isRolling) return; // 动画播放中不处理
       
       const currentState = get();

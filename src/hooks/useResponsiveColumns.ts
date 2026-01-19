@@ -89,13 +89,6 @@ export const LOCAL_SETUP_BREAKPOINTS: BreakpointConfig[] = [
   // 默认 4 列
 ];
 
-/**
- * 设置页面的语言按钮断点配置
- * 默认 2 列，横屏时 4 列
- */
-export const SETTINGS_LANG_BREAKPOINTS: BreakpointConfig[] = [
-  // 默认 2 列，需要检测是否横屏
-];
 
 /**
  * 检测是否横屏

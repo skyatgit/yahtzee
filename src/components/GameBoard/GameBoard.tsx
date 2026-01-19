@@ -9,11 +9,12 @@ import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DiceContainer } from '../Dice';
 import { ScoreBoard } from '../ScoreCard';
-import { OnlineSync, onAllPlayersLeft, onConnectionStatusChange, type DisconnectReasonExtended } from '../OnlineSync';
-import { useGameStore } from '../../store/gameStore';
+import { OnlineSync, onAllPlayersLeft, onConnectionStatusChange, onGameOverEvent, type DisconnectReasonExtended } from '../OnlineSync';
+import { GameOver } from '../GameOver';
+import { useGameStore, onGameOver } from '../../store/gameStore';
 import { peerService, type ConnectionStatus } from '../../services/peerService';
 import { useGamepadConnection, useGameFocusProvider, GameFocusProvider, useGamepadVibration } from '../../hooks';
-import type { ScoreCategory } from '../../types/game';
+import type { ScoreCategory, Player } from '../../types/game';
 import styles from './GameBoard.module.css';
 
 interface GameBoardProps {
@@ -90,6 +91,8 @@ export function GameBoard({ onBackToMenu }: GameBoardProps) {
     players,
     currentPlayerIndex,
     isLocalPlayerTurn,
+    isHost,
+    roomId,
   } = useGameStore();
 
   const { hasGamepad } = useGamepadConnection();
@@ -104,6 +107,11 @@ export function GameBoard({ onBackToMenu }: GameBoardProps) {
   
   // 自己断网重连中
   const [showReconnectingBar, setShowReconnectingBar] = useState(false);
+  
+  // 游戏结束状态
+  const [showGameOver, setShowGameOver] = useState(false);
+  const [gameOverPlayers, setGameOverPlayers] = useState<Player[]>([]);
+  const [savedRoomId, setSavedRoomId] = useState<string | null>(null);
 
   // 计算可选的计分项
   const availableCategories = useMemo(() => {
@@ -113,9 +121,9 @@ export function GameBoard({ onBackToMenu }: GameBoardProps) {
   }, [players, currentPlayerIndex]);
 
   const isMyTurn = isLocalPlayerTurn();
-  const canRoll = rollsLeft > 0 && !isRolling && phase === 'rolling' && isMyTurn;
+  const canRoll = rollsLeft > 0 && !isRolling && phase === 'playing' && isMyTurn;
   const canHold = rollsLeft < 3 && !isRolling && isMyTurn;
-  const canSelect = rollsLeft < 3 && phase === 'rolling' && isMyTurn;
+  const canSelect = rollsLeft < 3 && phase === 'playing' && isMyTurn;
 
   // 处理骰子区域确认
   const handleDiceConfirm = useCallback((index: number) => {
@@ -147,10 +155,32 @@ export function GameBoard({ onBackToMenu }: GameBoardProps) {
     availableScoreCount: availableCategories.length,
     rollsLeft,
     canHoldDice: canHold,
-    enabled: hasGamepad && isMyTurn,
+    enabled: hasGamepad && isMyTurn && !showGameOver,
     onDiceConfirm: handleDiceConfirm,
     onScoreConfirm: handleScoreConfirm,
   });
+
+  // 监听游戏结束事件（本地模式和房主）
+  useEffect(() => {
+    return onGameOver((finalPlayers) => {
+      console.log('[GameBoard] 游戏结束事件', finalPlayers);
+      setGameOverPlayers(finalPlayers);
+      setSavedRoomId(roomId);
+      setShowGameOver(true);
+    });
+  }, [roomId]);
+  
+  // 监听游戏结束事件（联机客户端）
+  useEffect(() => {
+    if (mode !== 'online' || isHost) return;
+    
+    return onGameOverEvent((finalPlayers, roomIdFromHost) => {
+      console.log('[GameBoard] 客户端收到游戏结束', finalPlayers, roomIdFromHost);
+      setGameOverPlayers(finalPlayers);
+      setSavedRoomId(roomIdFromHost);
+      setShowGameOver(true);
+    });
+  }, [mode, isHost]);
 
   // 监听所有其他玩家退出事件
   useEffect(() => {
@@ -191,6 +221,60 @@ export function GameBoard({ onBackToMenu }: GameBoardProps) {
       onBackToMenu();
     }
   };
+  
+  // 处理再来一局
+  const handlePlayAgain = useCallback(() => {
+    setShowGameOver(false);
+    
+    // 获取最新的 store 状态
+    const currentState = useGameStore.getState();
+    
+    if (currentState.mode === 'online') {
+      if (currentState.isHost) {
+        // 房主：关闭结算弹窗，回到房间等待页面
+        // 状态已经是 waiting 了，直接通知上层切换页面
+        if (onBackToMenu) {
+          onBackToMenu();
+        }
+      } else {
+        // 客户端：用保存的房间号重新加入
+        if (savedRoomId && onBackToMenu) {
+          // 重置状态并返回，由外层处理重新加入逻辑
+          resetGame();
+          onBackToMenu();
+          // 通过 URL 参数传递房间号，让 OnlineSetup 自动加入
+          const url = new URL(window.location.href);
+          url.searchParams.set('room', savedRoomId);
+          window.history.replaceState({}, '', url.toString());
+          window.location.reload();
+        }
+      }
+    } else {
+      // 本地模式：重新初始化并开始
+      const playerConfigs = gameOverPlayers.map(p => ({
+        name: p.name,
+        type: p.type
+      }));
+      useGameStore.getState().initLocalGame(playerConfigs);
+      useGameStore.getState().startGame();
+    }
+  }, [savedRoomId, onBackToMenu, resetGame, gameOverPlayers]);
+  
+  // 处理返回主菜单
+  const handleBackToMenu = useCallback(() => {
+    setShowGameOver(false);
+    
+    if (mode === 'online' && isHost) {
+      // 房主返回时解散房间
+      peerService.broadcast('room-closed', {});
+      peerService.disconnect();
+    }
+    
+    resetGame();
+    if (onBackToMenu) {
+      onBackToMenu();
+    }
+  }, [mode, isHost, resetGame, onBackToMenu]);
 
   // 根据屏幕方向计算样式
   const layoutStyles = useMemo(() => {
@@ -316,6 +400,17 @@ export function GameBoard({ onBackToMenu }: GameBoardProps) {
               </button>
             </motion.div>
           </div>
+        )}
+        
+        {/* 游戏结束弹窗 */}
+        {showGameOver && (
+          <GameOver
+            players={gameOverPlayers}
+            onPlayAgain={handlePlayAgain}
+            onBackToMenu={handleBackToMenu}
+            isHost={isHost}
+            isOnline={mode === 'online'}
+          />
         )}
         
         {/* 主游戏区域 */}

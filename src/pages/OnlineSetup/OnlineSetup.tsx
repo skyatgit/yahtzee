@@ -37,10 +37,19 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
     players, 
     syncGameState,
     isHost,
+    roomId: storeRoomId,
+    phase,
+    mode: gameMode,
   } = useGameStore();
   
-  const [mode, setMode] = useState<OnlineMode>('select');
-  const [roomId, setRoomId] = useState('');
+  // 根据 store 状态初始化 mode
+  // 如果已经是联机房主且有房间号，直接进入 create 模式
+  const getInitialMode = (): OnlineMode => {
+    return (gameMode === 'online' && isHost && storeRoomId && phase === 'waiting') ? 'create' : 'select';
+  };
+  
+  const [mode, setMode] = useState<OnlineMode>(getInitialMode);
+  const [roomId, setRoomId] = useState(storeRoomId || '');
   const [inputRoomId, setInputRoomId] = useState('');
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -49,6 +58,14 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
   const autoJoinRef = useRef(false);
   const messageHandlerRegistered = useRef(false);
   const [latencies, setLatencies] = useState<Map<string, number>>(new Map());
+  
+  // 当 store 状态变化时，同步本地状态
+  useEffect(() => {
+    if (gameMode === 'online' && isHost && storeRoomId && phase === 'waiting') {
+      setMode('create');
+      setRoomId(storeRoomId);
+    }
+  }, [gameMode, isHost, storeRoomId, phase]);
   
   // 响应式列数检测（与 LocalSetup 共用配置）
   const gridColumns = useResponsiveColumns(4, LOCAL_SETUP_BREAKPOINTS);
@@ -148,7 +165,7 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
         syncGameState({
           players: startData.players,
           currentPlayerIndex: startData.currentPlayerIndex,
-          phase: 'rolling',
+          phase: 'playing',
           rollsLeft: 3,
           currentRound: 1,
         });
@@ -295,6 +312,14 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
   
   // 创建房间
   const handleCreateRoom = useCallback(async () => {
+    // 如果已经是房主且有房间，不需要重新创建
+    const currentState = useGameStore.getState();
+    if (currentState.mode === 'online' && currentState.isHost && currentState.roomId) {
+      setRoomId(currentState.roomId);
+      setMode('create');
+      return;
+    }
+    
     setIsConnecting(true);
     setError(null);
     
@@ -327,7 +352,7 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
     const state = useGameStore.getState();
     
     syncGameState({
-      phase: 'rolling',
+      phase: 'playing',
       currentPlayerIndex: 0,
       rollsLeft: 3,
       currentRound: 1,

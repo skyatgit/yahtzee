@@ -30,7 +30,7 @@ export function DiceContainer() {
 
   // 检查是否可以操作
   const isMyTurn = isLocalPlayerTurn();
-  const canRoll = rollsLeft > 0 && !isRolling && phase === 'rolling' && isMyTurn;
+  const canRoll = rollsLeft > 0 && !isRolling && phase === 'playing' && isMyTurn;
   const canHold = rollsLeft < 3 && !isRolling && isMyTurn;
 
   // 处理骰子点击

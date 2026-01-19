@@ -2,13 +2,12 @@
  * 快艇骰子游戏主应用
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { MainMenu } from './pages/MainMenu';
 import { LocalSetup } from './pages/LocalSetup';
 import { OnlineSetup } from './pages/OnlineSetup';
 import { Settings } from './pages/Settings';
 import { GameBoard } from './components/GameBoard';
-import { GameOver } from './components/GameOver';
 import { useGameStore } from './store/gameStore';
 import { gamepadService } from './services/gamepadService';
 
@@ -49,7 +48,7 @@ const initialState = getInitialState();
 function App() {
   const [currentPage, setCurrentPage] = useState<AppPage>(initialState.page);
   const [inviteRoomId, setInviteRoomId] = useState<string | null>(initialState.roomId);
-  const { phase, resetGame, players, startGame, initLocalGame } = useGameStore();
+  const { resetGame } = useGameStore();
   
   // 初始化主题（默认深色模式）
   useEffect(() => {
@@ -73,22 +72,20 @@ function App() {
     };
   }, []);
   
-  // 处理再来一局
-  const handlePlayAgain = () => {
-    // 重新初始化玩家（保留配置）
-    const playerConfigs = players.map(p => ({
-      name: p.name,
-      type: p.type
-    }));
-    initLocalGame(playerConfigs);
-    startGame();
-  };
-  
-  // 返回主菜单
-  const handleBackToMenu = () => {
+  // 从游戏界面返回（可能是房间等待页或主菜单）
+  const handleGameBack = useCallback(() => {
+    const state = useGameStore.getState();
+    
+    // 联机房主在 waiting 状态时，返回到房间设置页面
+    if (state.mode === 'online' && state.isHost && state.phase === 'waiting') {
+      setCurrentPage('online-setup');
+      return;
+    }
+    
+    // 其他情况返回主菜单
     resetGame();
     setCurrentPage('menu');
-  };
+  }, [resetGame]);
   
   // 处理进入联机设置页面
   const handleOnlineGame = () => {
@@ -137,15 +134,7 @@ function App() {
       
       case 'game':
         return (
-          <>
-            <GameBoard onBackToMenu={handleBackToMenu} />
-            {phase === 'finished' && (
-              <GameOver
-                onPlayAgain={handlePlayAgain}
-                onBackToMenu={handleBackToMenu}
-              />
-            )}
-          </>
+          <GameBoard onBackToMenu={handleGameBack} />
         );
       
       default:

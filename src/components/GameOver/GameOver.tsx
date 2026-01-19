@@ -2,34 +2,54 @@
  * 游戏结束组件
  * 显示游戏结果和排名
  * 支持手柄导航
+ * 
+ * 行为说明：
+ * - 本地模式：再来一局重新开始，返回主菜单退出
+ * - 联机房主：再来一局回到房间等待页面，返回主菜单解散房间
+ * - 联机客户端：再来一局重新加入房间，返回主菜单正常退出
  */
 
 import { useMemo, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
-import { useGameStore } from '../../store/gameStore';
 import { calculateTotalScore } from '../../utils/scoring';
 import { useLayoutNavigation, useGamepadConnection } from '../../hooks';
+import type { Player } from '../../types/game';
 import styles from './GameOver.module.css';
 
 interface GameOverProps {
+  /** 最终玩家数据（用于显示排名） */
+  players: Player[];
+  /** 再来一局回调 */
   onPlayAgain: () => void;
+  /** 返回主菜单回调 */
   onBackToMenu: () => void;
+  /** 是否为房主 */
+  isHost?: boolean;
+  /** 是否为联机模式 */
+  isOnline?: boolean;
 }
 
-export function GameOver({ onPlayAgain, onBackToMenu }: GameOverProps) {
+export function GameOver({ 
+  players, 
+  onPlayAgain, 
+  onBackToMenu,
+  isHost = false,
+  isOnline = false,
+}: GameOverProps) {
   const { t } = useTranslation();
-  const { players } = useGameStore();
   const { hasGamepad } = useGamepadConnection();
   
   // 计算排名
-  const rankings = players
-    .map((player, index) => ({
-      ...player,
-      originalIndex: index,
-      totalScore: calculateTotalScore(player.scoreCard)
-    }))
-    .sort((a, b) => b.totalScore - a.totalScore);
+  const rankings = useMemo(() => {
+    return players
+      .map((player, index) => ({
+        ...player,
+        originalIndex: index,
+        totalScore: calculateTotalScore(player.scoreCard)
+      }))
+      .sort((a, b) => b.totalScore - a.totalScore);
+  }, [players]);
   
   const winner = rankings[0];
   const isTie = rankings.length > 1 && rankings[0].totalScore === rankings[1].totalScore;
@@ -55,6 +75,15 @@ export function GameOver({ onPlayAgain, onBackToMenu }: GameOverProps) {
     enabled: hasGamepad,
     horizontalLoop: true,
   });
+  
+  // 根据模式决定按钮文本
+  const getPlayAgainText = () => {
+    if (isOnline && isHost) {
+      // 房主：回到房间等待
+      return t('game.playAgain');
+    }
+    return t('game.playAgain');
+  };
   
   return (
     <motion.div
@@ -83,15 +112,15 @@ export function GameOver({ onPlayAgain, onBackToMenu }: GameOverProps) {
           {isTie ? (
             <div className={styles.tie}>
               <span className={styles.tieText}>{t('game.tie')}</span>
-              <span className={styles.tieScore}>{winner.totalScore} {t('score.grandTotal')}</span>
+              <span className={styles.tieScore}>{winner?.totalScore ?? 0} {t('score.grandTotal')}</span>
             </div>
-          ) : (
+          ) : winner ? (
             <div className={styles.winner}>
               <span className={styles.winnerLabel}>{t('game.winner')}</span>
               <span className={styles.winnerName}>{winner.name}</span>
               <span className={styles.winnerScore}>{winner.totalScore} {t('common.points')}</span>
             </div>
-          )}
+          ) : null}
         </div>
         
         <div className={styles.rankings}>
@@ -119,7 +148,7 @@ export function GameOver({ onPlayAgain, onBackToMenu }: GameOverProps) {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            {t('game.playAgain')}
+            {getPlayAgainText()}
           </motion.button>
           <motion.button
             className={`btn btn-secondary btn-large ${isFocused('backToMenu') ? styles.focused : ''}`}

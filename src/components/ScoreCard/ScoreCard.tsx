@@ -161,8 +161,8 @@ export function ScoreBoard({ availableCategories: propAvailableCategories }: Sco
   }, [mode]);
   
   const isMyTurn = isLocalPlayerTurn();
-  const canSelect = rollsLeft < 3 && phase === 'rolling' && isMyTurn;
-  const canShowPreview = rollsLeft < 3 && phase === 'rolling';
+  const canSelect = rollsLeft < 3 && phase === 'playing' && isMyTurn;
+  const canShowPreview = rollsLeft < 3 && phase === 'playing';
 
   // 计算预览分数
   const getPreviewScore = (category: ScoreCategory, scoreCard: ScoreCardType): number | null => {

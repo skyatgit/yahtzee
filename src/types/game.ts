@@ -61,9 +61,7 @@ export interface Player {
 // 游戏阶段
 export type GamePhase = 
   | 'waiting'     // 等待玩家加入
-  | 'rolling'     // 摇骰子阶段
-  | 'scoring'     // 记分阶段
-  | 'finished';   // 游戏结束
+  | 'playing';    // 游戏进行中
 
 // 游戏模式
 export type GameMode = 'local' | 'online';
@@ -97,9 +95,6 @@ export type MessageType =
   | 'join'           // 加入房间
   | 'player-joined'  // 玩家加入
   | 'game-start'     // 游戏开始
-  | 'roll'           // 摇骰子（旧）
-  | 'hold'           // 锁定骰子（旧）
-  | 'score'          // 记分（旧）
   | 'sync'           // 同步状态
   | 'player-left'    // 玩家离开
   | 'action-roll'    // 请求摇骰子
@@ -112,7 +107,8 @@ export type MessageType =
   | 'game-started'   // 游戏已开始（无法加入）
   | 'room-closed'    // 房间已关闭
   | 'latency-update' // 延迟信息更新
-  | 'connection-status'; // 连接状态更新
+  | 'connection-status' // 连接状态更新
+  | 'game-over';     // 游戏结束
 
 // 联机消息
 export interface GameMessage {
@@ -122,5 +118,3 @@ export interface GameMessage {
   timestamp: number;
 }
 
-// AI难度
-export type AIDifficulty = 'easy' | 'medium' | 'hard';
