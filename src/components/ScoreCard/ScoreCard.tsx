@@ -363,6 +363,7 @@ export function ScoreBoard({ availableCategories: propAvailableCategories }: Sco
     const isAvailable = canSelect && isCurrentPlayer && score === null;
     const isZero = score === 0;
     const isHovered = isDragging && hoveredCategory === category && isCurrentPlayer;
+    const isLastScore = player.lastScoreCategory === category && originalIndex !== currentPlayerIndex; // 轮到某玩家时隐藏其最后选择
     
     // 手柄焦点：通过 availableCategories 索引判断
     const categoryIndex = availableCategories.indexOf(category);
@@ -385,6 +386,7 @@ export function ScoreBoard({ availableCategories: propAvailableCategories }: Sco
           ${isZero ? styles.zero : ''}
           ${isHovered ? styles.hovered : ''}
           ${isGamepadFocused ? styles.gamepadFocused : ''}
+          ${isLastScore ? styles.lastScore : ''}
         `}
         onClick={() => handleScoreClick(category, player)}
       >

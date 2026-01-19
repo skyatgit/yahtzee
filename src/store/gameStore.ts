@@ -242,7 +242,8 @@ export const useGameStore = create<GameStore>()(
         if (index === state.currentPlayerIndex) {
           return {
             ...player,
-            scoreCard: { ...player.scoreCard, [category]: score }
+            scoreCard: { ...player.scoreCard, [category]: score },
+            lastScoreCategory: category // 记录最后选择的计分项
           };
         }
         return player;

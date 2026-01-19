@@ -55,6 +55,7 @@ export interface Player {
   type: PlayerType;
   scoreCard: ScoreCard;
   isConnected: boolean;
+  lastScoreCategory?: ScoreCategory; // 最后选择的计分项
 }
 
 // 游戏阶段

@@ -311,6 +311,11 @@
   color: var(--text-muted);
 }
 
+/* ===== 最后选择的计分项高亮（仅改变字体颜色） ===== */
+.lastScore span {
+  color: var(--accent) !important;
+}
+
 /* ===== 小计行(XX/63 = 5字符) ===== */
 .subtotalRow td {
   background: var(--bg-muted);
