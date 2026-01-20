@@ -382,9 +382,11 @@ export function OnlineSetup({ onBack, onStart, inviteRoomId }: OnlineSetupProps)
     setTimeout(() => setCopiedLink(false), 2000);
   }, [roomId]);
   
-  // 返回时断开连接
+  // 返回时断开连接并重置状态
   const handleBack = useCallback(() => {
     peerService.disconnect();
+    // 重置 gameStore 状态，避免下次进入时误判为已有房间
+    useGameStore.getState().resetGame();
     onBack();
   }, [onBack]);
   
