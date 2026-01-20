@@ -27,7 +27,17 @@ const PEER_CONFIG = {
   host: 'peerjs.sky9527.top',
   port: 9000,
   secure: true,  // 使用 HTTPS
-  debug: 1
+  debug: 1,
+  config: {
+    iceServers: [
+      // Google 公共 STUN 服务器
+      { urls: 'stun:stun.l.google.com:19302' },
+      { urls: 'stun:stun1.l.google.com:19302' },
+      { urls: 'stun:stun2.l.google.com:19302' },
+      { urls: 'stun:stun3.l.google.com:19302' },
+      { urls: 'stun:stun4.l.google.com:19302' },
+    ]
+  }
 };
 
 // 心跳间隔（毫秒）
